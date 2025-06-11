@@ -9,6 +9,8 @@ import Data from "./data/Data.jsx";
 import Filter from "./filter/Filter.jsx";
 import Customers from "./customers/Customers.jsx";
 import Driver from "./driver/Driver.jsx";
+import Vehcile from "./vehcile/Vehcile.jsx";
+import Payments from "./payments/Payments.jsx";
 
 const router = createBrowserRouter([
   {
@@ -38,6 +40,14 @@ const router = createBrowserRouter([
       {
         path:"/driver",
         element:<Driver/>
+      },
+      {
+        path:"/vehicle",
+        element:<Vehcile/>
+      },
+       {
+        path:"/payment",
+        element:<Payments/>
       }
     ],
   },
