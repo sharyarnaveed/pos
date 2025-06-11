@@ -1,16 +1,19 @@
 import React from "react";
 import { FaFilter,FaDatabase,FaTruck, FaSignOutAlt} from "react-icons/fa";
 import { IoPeopleOutline } from "react-icons/io5";
-
+import { Link, NavLink } from "react-router-dom";
+import { FaMoneyBill1 } from "react-icons/fa6";
 const Sidebar = ({ isSidebarCollapsed, setIsSidebarCollapsed }) => {
   const menuItems = [
-    { icon: "📊", label: "Dashboard", active: true },
-    { icon: <FaDatabase/>, label: "Data" },
-    { icon: <FaFilter />, label: "Filter" },
-    { icon: <IoPeopleOutline />, label: "Customers" },
-    {  label: "Driver" },
-    { icon: <FaTruck />, label: "Vechile" },
-    { icon: "💳", label: "Expences" },
+    { icon: "📊", label: "Dashboard", to: "/" },
+    { icon: <FaDatabase/>, label: "Data", to: "/data" },
+    { icon: <FaFilter />, label: "Filter", to: "/filter" },
+    { icon: <IoPeopleOutline />, label: "Customers", to: "/customers" },
+    { icon: "🚗", label: "Driver", to: "/driver" },
+    { icon: <FaTruck />, label: "Vehicle", to: "/vehicle" },
+    { icon: "💳", label: "Expenses", to: "/expenses" },
+    { icon: <FaMoneyBill1 />, label: "Payments", to: "/payment" },
+
   ];
 
   const handleLogout = () => {
@@ -44,17 +47,27 @@ const Sidebar = ({ isSidebarCollapsed, setIsSidebarCollapsed }) => {
 
         <nav className="mt-5 flex-1">
           {menuItems.map((item, index) => (
-            <div
+            <NavLink
+              to={item.to}
               key={index}
-              className={`flex items-center px-4 py-3 mx-2 rounded-lg cursor-pointer transition-all hover:bg-gray-800 ${
-                item.active ? "bg-white text-black" : ""
-              }`}
+              className={({ isActive }) =>
+                `flex items-center px-4 py-3 mx-2 mb-1 rounded-lg cursor-pointer transition-all duration-200 ${
+                  isActive 
+                    ? "bg-gradient-to-r from-gray-500 to-gray-600 text-white shadow-lg transform scale-105" 
+                    : "text-gray-300 hover:bg-gray-800 hover:text-white hover:transform hover:scale-102"
+                }`
+              }
             >
-              <span className="text-lg">{item.icon}</span>
+              <span className={`text-lg text-white `}>
+                {item.icon}
+              </span>
               {!isSidebarCollapsed && (
                 <span className="ml-3 font-medium">{item.label}</span>
               )}
-            </div>
+              { !isSidebarCollapsed && (
+                <div className="ml-auto w-2 h-2 bg-white rounded-full"></div>
+              )}
+            </NavLink>
           ))}
         </nav>
 

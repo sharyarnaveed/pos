@@ -5,6 +5,10 @@ import "./index.css";
 import App from "./App.jsx";
 import Signin from "./Auth/Signin.jsx";
 import Home from "./Home/Home.jsx";
+import Data from "./data/Data.jsx";
+import Filter from "./filter/Filter.jsx";
+import Customers from "./customers/Customers.jsx";
+import Driver from "./driver/Driver.jsx";
 
 const router = createBrowserRouter([
   {
@@ -19,6 +23,22 @@ const router = createBrowserRouter([
         path: "/",
         element: <Home />,
       },
+      {
+        path:"/data",
+        element:<Data/>
+      },
+      {
+        path:"/filter",
+        element:<Filter/>
+      },
+      {
+        path:"/customers",
+        element:<Customers/>
+      },
+      {
+        path:"/driver",
+        element:<Driver/>
+      }
     ],
   },
 ]);
