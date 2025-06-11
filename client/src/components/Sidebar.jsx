@@ -64,9 +64,7 @@ const Sidebar = ({ isSidebarCollapsed, setIsSidebarCollapsed }) => {
               {!isSidebarCollapsed && (
                 <span className="ml-3 font-medium">{item.label}</span>
               )}
-              { !isSidebarCollapsed && (
-                <div className="ml-auto w-2 h-2 bg-white rounded-full"></div>
-              )}
+             
             </NavLink>
           ))}
         </nav>
