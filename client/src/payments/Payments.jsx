@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Sidebar from '../components/Sidebar';
 
 const Payments = () => {
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [paymentAmount, setPaymentAmount] = useState('');
   const [filters, setFilters] = useState({
@@ -69,12 +69,10 @@ const Payments = () => {
   };
 
   const handleMarkAsPaid = () => {
-    // Logic to mark order as completely paid
     console.log(`Marking order ${selectedOrder.id} as paid`);
   };
 
   const handlePartialPayment = () => {
-    // Logic to add partial payment
     console.log(`Adding ${paymentAmount} to order ${selectedOrder.id}`);
     setPaymentAmount('');
   };
@@ -95,9 +93,23 @@ const Payments = () => {
         setIsSidebarCollapsed={setIsSidebarCollapsed}
       />
 
-      <div className={`flex-1 ${isSidebarCollapsed ? "ml-16" : "ml-64"} transition-all duration-300`}>
-        {/* Header */}
-        <div className="border-b border-gray-200 bg-white">
+      <div className="flex-1 lg:ml-16 transition-all duration-300">
+        {/* Mobile Header */}
+        <div className="lg:hidden bg-white shadow-sm border-b border-gray-200 p-4">
+          <div className="flex items-center justify-between">
+            <button
+              onClick={() => setIsSidebarCollapsed(false)}
+              className="p-2 rounded-md hover:bg-gray-100"
+            >
+              <span className="text-xl">☰</span>
+            </button>
+            <h1 className="text-lg font-semibold text-gray-900">Payments</h1>
+            <div className="w-8"></div>
+          </div>
+        </div>
+
+        {/* Desktop Header */}
+        <div className="hidden lg:block border-b border-gray-200 bg-white">
           <div className="px-8 py-6">
             <div className="flex justify-between items-center">
               <div>
@@ -108,12 +120,12 @@ const Payments = () => {
           </div>
         </div>
 
-        <div className="p-8">
+        <div className="p-3 lg:p-8">
           {/* Filters Section */}
-          <div className="bg-white border border-gray-200 p-6 mb-8">
-            <h2 className="text-lg font-semibold text-black mb-6">Filter Orders</h2>
+          <div className="bg-white border border-gray-200 p-3 lg:p-6 mb-4 lg:mb-8">
+            <h2 className="text-base lg:text-lg font-semibold text-black mb-3 lg:mb-6">Filter Orders</h2>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 lg:gap-4">
               <div>
                 <label className="block text-sm font-medium text-black mb-2">Start Date</label>
                 <input
@@ -171,58 +183,58 @@ const Payments = () => {
           </div>
 
           {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div className="bg-white border border-gray-200 p-6">
-              <div className="text-sm text-gray-600">Total Orders</div>
-              <div className="text-2xl font-bold text-black mt-2">{orders.length}</div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-6 mb-4 lg:mb-8">
+            <div className="bg-white border border-gray-200 p-3 lg:p-6">
+              <div className="text-xs lg:text-sm text-gray-600">Total Orders</div>
+              <div className="text-lg lg:text-2xl font-bold text-black mt-2">{orders.length}</div>
             </div>
-            <div className="bg-white border border-gray-200 p-6">
-              <div className="text-sm text-gray-600">Fully Paid</div>
-              <div className="text-2xl font-bold text-green-600 mt-2">
+            <div className="bg-white border border-gray-200 p-3 lg:p-6">
+              <div className="text-xs lg:text-sm text-gray-600">Fully Paid</div>
+              <div className="text-lg lg:text-2xl font-bold text-green-600 mt-2">
                 {orders.filter(order => getPaymentStatus(order) === 'paid').length}
               </div>
             </div>
-            <div className="bg-white border border-gray-200 p-6">
-              <div className="text-sm text-gray-600">Partially Paid</div>
-              <div className="text-2xl font-bold text-yellow-600 mt-2">
+            <div className="bg-white border border-gray-200 p-3 lg:p-6">
+              <div className="text-xs lg:text-sm text-gray-600">Partially Paid</div>
+              <div className="text-lg lg:text-2xl font-bold text-yellow-600 mt-2">
                 {orders.filter(order => getPaymentStatus(order) === 'partial').length}
               </div>
             </div>
-            <div className="bg-white border border-gray-200 p-6">
-              <div className="text-sm text-gray-600">Unpaid</div>
-              <div className="text-2xl font-bold text-red-600 mt-2">
+            <div className="bg-white border border-gray-200 p-3 lg:p-6">
+              <div className="text-xs lg:text-sm text-gray-600">Unpaid</div>
+              <div className="text-lg lg:text-2xl font-bold text-red-600 mt-2">
                 {orders.filter(order => getPaymentStatus(order) === 'unpaid').length}
               </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8">
             {/* Orders List */}
             <div className="bg-white border border-gray-200">
-              <div className="bg-black text-white p-6">
-                <h3 className="text-lg font-semibold">Orders</h3>
+              <div className="bg-black text-white p-3 lg:p-6">
+                <h3 className="text-base lg:text-lg font-semibold">Orders</h3>
               </div>
               
-              <div className="p-6 space-y-4 max-h-96 overflow-y-auto">
+              <div className="p-3 lg:p-6 space-y-3 lg:space-y-4 max-h-80 lg:max-h-96 overflow-y-auto">
                 {orders.map(order => (
                   <div
                     key={order.id}
-                    className={`p-4 border border-gray-200 cursor-pointer transition-all duration-200 hover:shadow-md ${
+                    className={`p-3 lg:p-4 border border-gray-200 cursor-pointer transition-all duration-200 hover:shadow-md ${
                       selectedOrder?.id === order.id ? 'border-black bg-gray-50' : 'hover:border-gray-300'
                     }`}
                     onClick={() => setSelectedOrder(order)}
                   >
                     <div className="flex justify-between items-start mb-3">
                       <div>
-                        <h4 className="font-semibold text-black">{order.orderNumber}</h4>
-                        <p className="text-sm text-gray-600">{order.customerName}</p>
+                        <h4 className="font-semibold text-black text-sm lg:text-base">{order.orderNumber}</h4>
+                        <p className="text-xs lg:text-sm text-gray-600">{order.customerName}</p>
                       </div>
                       <span className={`text-xs px-2 py-1 rounded-full ${getStatusColor(getPaymentStatus(order))}`}>
                         {getPaymentStatus(order).toUpperCase()}
                       </span>
                     </div>
                     
-                    <div className="space-y-1 text-sm">
+                    <div className="space-y-1 text-xs lg:text-sm">
                       <div className="flex justify-between">
                         <span className="text-gray-600">Total:</span>
                         <span className="text-black font-medium">${order.totalAmount.toFixed(2)}</span>
@@ -249,17 +261,17 @@ const Payments = () => {
             <div className="bg-white border border-gray-200">
               {selectedOrder ? (
                 <>
-                  <div className="bg-black text-white p-6">
-                    <h3 className="text-lg font-semibold">Order Details - {selectedOrder.orderNumber}</h3>
+                  <div className="bg-black text-white p-3 lg:p-6">
+                    <h3 className="text-base lg:text-lg font-semibold">Order Details - {selectedOrder.orderNumber}</h3>
                   </div>
                   
-                  <div className="p-6 space-y-6">
+                  <div className="p-3 lg:p-6 space-y-4 lg:space-y-6 max-h-80 lg:max-h-96 overflow-y-auto">
                     {/* Customer Information */}
                     <div>
-                      <h4 className="text-md font-semibold text-black mb-3 border-b border-gray-200 pb-2">
+                      <h4 className="text-sm lg:text-md font-semibold text-black mb-2 lg:mb-3 border-b border-gray-200 pb-2">
                         Customer Information
                       </h4>
-                      <div className="space-y-2 text-sm">
+                      <div className="space-y-2 text-xs lg:text-sm">
                         <div className="flex justify-between">
                           <span className="text-gray-600">Name:</span>
                           <span className="text-black font-medium">{selectedOrder.customerName}</span>
@@ -277,14 +289,14 @@ const Payments = () => {
 
                     {/* Order Items */}
                     <div>
-                      <h4 className="text-md font-semibold text-black mb-3 border-b border-gray-200 pb-2">
+                      <h4 className="text-sm lg:text-md font-semibold text-black mb-2 lg:mb-3 border-b border-gray-200 pb-2">
                         Order Items
                       </h4>
                       <div className="space-y-2">
                         {selectedOrder.items.map((item, index) => (
-                          <div key={index} className="flex justify-between items-center text-sm bg-gray-50 p-3">
+                          <div key={index} className="flex justify-between items-center text-xs lg:text-sm bg-gray-50 p-2 lg:p-3">
                             <span className="text-black font-medium">{item.name}</span>
-                            <div className="flex gap-4 text-gray-600">
+                            <div className="flex gap-2 lg:gap-4 text-gray-600">
                               <span>Qty: {item.quantity}</span>
                               <span className="text-black font-medium">${item.price.toFixed(2)}</span>
                             </div>
@@ -295,10 +307,10 @@ const Payments = () => {
 
                     {/* Payment Summary */}
                     <div>
-                      <h4 className="text-md font-semibold text-black mb-3 border-b border-gray-200 pb-2">
+                      <h4 className="text-sm lg:text-md font-semibold text-black mb-2 lg:mb-3 border-b border-gray-200 pb-2">
                         Payment Summary
                       </h4>
-                      <div className="bg-gray-50 p-4 space-y-2 text-sm">
+                      <div className="bg-gray-50 p-3 lg:p-4 space-y-2 text-xs lg:text-sm">
                         <div className="flex justify-between">
                           <span className="text-gray-600">Total Amount:</span>
                           <span className="text-black font-semibold">${selectedOrder.totalAmount.toFixed(2)}</span>
@@ -316,11 +328,11 @@ const Payments = () => {
 
                     {/* Payment Actions */}
                     <div>
-                      <h4 className="text-md font-semibold text-black mb-3 border-b border-gray-200 pb-2">
+                      <h4 className="text-sm lg:text-md font-semibold text-black mb-2 lg:mb-3 border-b border-gray-200 pb-2">
                         Update Payment
                       </h4>
-                      <div className="space-y-4">
-                        <div className="flex gap-3">
+                      <div className="space-y-3 lg:space-y-4">
+                        <div className="flex flex-col sm:flex-row gap-2 lg:gap-3">
                           <input
                             type="number"
                             placeholder="Enter payment amount"
@@ -354,7 +366,7 @@ const Payments = () => {
                 <div className="bg-gray-50 flex items-center justify-center h-64">
                   <div className="text-center">
                     <div className="text-4xl mb-4">📋</div>
-                    <p className="text-gray-600">Select an order to view details and update payment</p>
+                    <p className="text-gray-600 text-sm lg:text-base px-4">Select an order to view details and update payment</p>
                   </div>
                 </div>
               )}

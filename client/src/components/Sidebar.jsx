@@ -1,9 +1,12 @@
 import React from "react";
 import { FaFilter,FaDatabase,FaTruck, FaSignOutAlt} from "react-icons/fa";
 import { IoPeopleOutline } from "react-icons/io5";
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { FaMoneyBill1 } from "react-icons/fa6";
+import api from "../api";
+import toast from "react-hot-toast";
 const Sidebar = ({ isSidebarCollapsed, setIsSidebarCollapsed }) => {
+  const navigate= useNavigate()
   const menuItems = [
     { icon: "📊", label: "Dashboard", to: "/" },
     { icon: <FaDatabase/>, label: "Data", to: "/data" },
@@ -16,9 +19,31 @@ const Sidebar = ({ isSidebarCollapsed, setIsSidebarCollapsed }) => {
 
   ];
 
-  const handleLogout = () => {
-    // Add your logout logic here
-    console.log("Logging out...");
+  const handleLogout = async() => {
+try {
+  const responce= await api.post("/api/user/logout")
+  console.log(responce.data);
+
+  if(responce.data.success==true)
+  {
+    navigate("/signin")
+    toast.success(responce.data.message,{
+      duration:2000
+    })
+  }
+  else
+  {
+    toast.error(responce.data.message,{
+      duration:3000
+    })
+  }
+  
+
+
+} catch (error) {
+  console.log("error in log out",error);
+  
+}
   };
 
   return (

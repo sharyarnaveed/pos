@@ -11,6 +11,7 @@ import Customers from "./customers/Customers.jsx";
 import Driver from "./driver/Driver.jsx";
 import Vehcile from "./vehcile/Vehcile.jsx";
 import Payments from "./payments/Payments.jsx";
+import { Toaster } from "react-hot-toast";
 
 const router = createBrowserRouter([
   {
@@ -54,5 +55,8 @@ const router = createBrowserRouter([
 ]);
 
 createRoot(document.getElementById("root")).render(
-  <RouterProvider router={router} />
+<>
+  <RouterProvider router={router}  />
+<Toaster position="top-right" reverseOrder={false} />
+</>
 );

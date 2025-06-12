@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import Sidebar from '../components/Sidebar'
 
 const Customers = () => {
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true)
   const [showAddCustomer, setShowAddCustomer] = useState(false)
   const [showCustomerDetail, setShowCustomerDetail] = useState(false)
   const [selectedCustomer, setSelectedCustomer] = useState(null)
@@ -97,9 +97,28 @@ const Customers = () => {
         setIsSidebarCollapsed={setIsSidebarCollapsed}
       />
 
-      <div className={`flex-1 ${isSidebarCollapsed ? "ml-16" : "ml-64"} transition-all duration-300`}>
-        {/* Header */}
-        <div className="border-b border-gray-200 bg-white">
+      <div className="flex-1 lg:ml-16 transition-all duration-300">
+        {/* Mobile Header */}
+        <div className="lg:hidden bg-white shadow-sm border-b border-gray-200 p-4">
+          <div className="flex items-center justify-between">
+            <button
+              onClick={() => setIsSidebarCollapsed(false)}
+              className="p-2 rounded-md hover:bg-gray-100"
+            >
+              <span className="text-xl">☰</span>
+            </button>
+            <h1 className="text-lg font-semibold text-gray-900">Customers</h1>
+            <button 
+              onClick={() => setShowAddCustomer(true)}
+              className="bg-black text-white px-3 py-1 text-sm font-medium hover:bg-gray-800 transition-colors rounded"
+            >
+              Add
+            </button>
+          </div>
+        </div>
+
+        {/* Desktop Header */}
+        <div className="hidden lg:block border-b border-gray-200 bg-white">
           <div className="px-8 py-6">
             <div className="flex justify-between items-center">
               <div>
@@ -116,56 +135,56 @@ const Customers = () => {
           </div>
         </div>
 
-        <div className="p-8">
+        <div className="p-3 lg:p-8">
           {/* Search and Stats */}
-          <div className="mb-8">
+          <div className="mb-4 lg:mb-8">
             {/* Search Bar */}
-            <div className="mb-6">
+            <div className="mb-4 lg:mb-6">
               <input
                 type="text"
-                placeholder="Search customers by name or email..."
+                placeholder="Search customers..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full max-w-md px-4 py-2 border border-gray-300 focus:border-black focus:outline-none text-sm"
+                className="w-full px-4 py-2 border border-gray-300 focus:border-black focus:outline-none text-sm"
               />
             </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              <div className="bg-white border border-gray-200 p-6">
-                <div className="text-sm text-gray-600">Total Customers</div>
-                <div className="text-2xl font-bold text-black mt-2">5</div>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-6">
+              <div className="bg-white border border-gray-200 p-3 lg:p-6">
+                <div className="text-xs lg:text-sm text-gray-600">Total Customers</div>
+                <div className="text-lg lg:text-2xl font-bold text-black mt-1 lg:mt-2">5</div>
               </div>
-              <div className="bg-white border border-gray-200 p-6">
-                <div className="text-sm text-gray-600">Active Customers</div>
-                <div className="text-2xl font-bold text-green-600 mt-2">4</div>
+              <div className="bg-white border border-gray-200 p-3 lg:p-6">
+                <div className="text-xs lg:text-sm text-gray-600">Active Customers</div>
+                <div className="text-lg lg:text-2xl font-bold text-green-600 mt-1 lg:mt-2">4</div>
               </div>
-              <div className="bg-white border border-gray-200 p-6">
-                <div className="text-sm text-gray-600">Total Orders</div>
-                <div className="text-2xl font-bold text-blue-600 mt-2">175</div>
+              <div className="bg-white border border-gray-200 p-3 lg:p-6">
+                <div className="text-xs lg:text-sm text-gray-600">Total Orders</div>
+                <div className="text-lg lg:text-2xl font-bold text-blue-600 mt-1 lg:mt-2">175</div>
               </div>
-              <div className="bg-white border border-gray-200 p-6">
-                <div className="text-sm text-gray-600">Total Revenue</div>
-                <div className="text-2xl font-bold text-black mt-2">$62,140.00</div>
+              <div className="bg-white border border-gray-200 p-3 lg:p-6">
+                <div className="text-xs lg:text-sm text-gray-600">Total Revenue</div>
+                <div className="text-lg lg:text-2xl font-bold text-black mt-1 lg:mt-2">$62,140</div>
               </div>
             </div>
           </div>
 
           {/* Customers Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-6">
             {customers.map((customer) => (
               <div
                 key={customer.id}
                 onClick={() => handleCustomerClick(customer)}
-                className="bg-white border border-gray-200 p-6 hover:shadow-lg transition-all duration-200 cursor-pointer hover:border-gray-300"
+                className="bg-white border border-gray-200 p-4 lg:p-6 hover:shadow-lg transition-all duration-200 cursor-pointer hover:border-gray-300"
               >
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <h3 className="text-lg font-semibold text-black">{customer.name}</h3>
-                    <p className="text-sm text-gray-600">{customer.email}</p>
+                <div className="flex justify-between items-start mb-3 lg:mb-4">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-base lg:text-lg font-semibold text-black truncate">{customer.name}</h3>
+                    <p className="text-sm text-gray-600 truncate">{customer.email}</p>
                   </div>
                   <span
-                    className={`text-xs px-2 py-1 rounded-full ${
+                    className={`text-xs px-2 py-1 rounded-full flex-shrink-0 ml-2 ${
                       customer.status === "Active"
                         ? "bg-green-100 text-green-800"
                         : "bg-red-100 text-red-800"
@@ -175,25 +194,25 @@ const Customers = () => {
                   </span>
                 </div>
 
-                <div className="space-y-2 mb-4">
+                <div className="space-y-2 mb-3 lg:mb-4">
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Phone:</span>
-                    <span className="text-black">{customer.phone}</span>
+                    <span className="text-black truncate ml-2">{customer.phone}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Total Orders:</span>
+                    <span className="text-gray-600">Orders:</span>
                     <span className="text-black font-medium">{customer.totalOrders}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Total Amount:</span>
+                    <span className="text-gray-600">Amount:</span>
                     <span className="text-black font-medium">{customer.totalAmount}</span>
                   </div>
                 </div>
 
-                <div className="pt-4 border-t border-gray-100">
+                <div className="pt-3 lg:pt-4 border-t border-gray-100">
                   <div className="flex justify-between text-xs text-gray-500">
                     <span>Joined: {customer.joinDate}</span>
-                    <span>Last Order: {customer.lastOrder || 'N/A'}</span>
+                    <span>Last: {customer.lastOrder || 'N/A'}</span>
                   </div>
                 </div>
               </div>
@@ -204,13 +223,13 @@ const Customers = () => {
 
       {/* Add Customer Modal */}
       {showAddCustomer && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-8 max-w-md w-full mx-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white p-6 lg:p-8 max-w-md w-full max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-bold text-black">Add New Customer</h2>
+              <h2 className="text-lg lg:text-xl font-bold text-black">Add New Customer</h2>
               <button
                 onClick={() => setShowAddCustomer(false)}
-                className="text-gray-500 hover:text-gray-700"
+                className="text-gray-500 hover:text-gray-700 text-xl"
               >
                 ✕
               </button>
@@ -283,7 +302,7 @@ const Customers = () => {
               </div>
             </div>
 
-            <div className="flex gap-3 mt-8">
+            <div className="flex flex-col sm:flex-row gap-3 mt-8">
               <button
                 onClick={() => setShowAddCustomer(false)}
                 className="flex-1 px-4 py-2 text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
@@ -303,22 +322,22 @@ const Customers = () => {
 
       {/* Customer Detail Modal */}
       {showCustomerDetail && selectedCustomer && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white p-6 lg:p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-bold text-black">Customer Details</h2>
+              <h2 className="text-lg lg:text-xl font-bold text-black">Customer Details</h2>
               <button
                 onClick={() => setShowCustomerDetail(false)}
-                className="text-gray-500 hover:text-gray-700"
+                className="text-gray-500 hover:text-gray-700 text-xl"
               >
                 ✕
               </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Basic Information */}
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-black border-b border-gray-200 pb-2">
+                <h3 className="text-base lg:text-lg font-semibold text-black border-b border-gray-200 pb-2">
                   Basic Information
                 </h3>
                 
@@ -329,7 +348,7 @@ const Customers = () => {
 
                 <div>
                   <label className="text-sm font-medium text-gray-600">Email</label>
-                  <p className="text-black">{selectedCustomer.email}</p>
+                  <p className="text-black break-all">{selectedCustomer.email}</p>
                 </div>
 
                 <div>
@@ -358,7 +377,7 @@ const Customers = () => {
 
               {/* Order Statistics */}
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-black border-b border-gray-200 pb-2">
+                <h3 className="text-base lg:text-lg font-semibold text-black border-b border-gray-200 pb-2">
                   Order Statistics
                 </h3>
 
@@ -393,13 +412,12 @@ const Customers = () => {
                     <button className="px-4 py-2 text-sm border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors">
                       View Order History
                     </button>
-                     <button className="px-4 py-2 text-sm border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors">
-                     Generate Detail Invoice
+                    <button className="px-4 py-2 text-sm border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors">
+                      Generate Detail Invoice
                     </button>
-<button className="px-4 py-2 text-sm border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors">
-                     Generate Overview Invoice
+                    <button className="px-4 py-2 text-sm border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors">
+                      Generate Overview Invoice
                     </button>
-
                     <button className="px-4 py-2 text-sm border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors">
                       Edit Customer
                     </button>
