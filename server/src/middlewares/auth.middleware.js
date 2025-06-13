@@ -1,5 +1,7 @@
 const requireAuth=(req,res,next)=>
 {
+    console.log(req.session,"middleware");
+    
     if(req.session&&req.session.isAuthenticated)
     {
         return next()

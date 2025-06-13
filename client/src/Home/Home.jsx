@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import Spinner from "../components/Spinner";
 
 const Home = () => {
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true); // Default collapsed on mobile
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false); 
   const navigate = useNavigate();
 
   const statsData = [
