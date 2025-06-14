@@ -78,12 +78,10 @@ const viewCustomers= async(req,res)=>
 const customerData=await Customer.findAll({
     raw:true
 })
-console.log(customerData);
 res.json({
     success:true,
     customerData:customerData
 })
-
     } catch (error) {
         console.log("error in getting customers",error)
     }

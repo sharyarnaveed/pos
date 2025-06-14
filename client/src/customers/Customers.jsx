@@ -15,6 +15,7 @@ const Customers = () => {
   const [customerloading, setcustoemrloading] = useState(false);
   const navigate = useNavigate();
   const [customers, setCustomers] = useState([]);
+  const [isSaving,SetisSaving]=useState(false)
   const {
     register,
     handleSubmit,
@@ -41,38 +42,7 @@ const filterData=useMemo(()=>{
   )
 },[customers,searchTerm])
 
-
-  const handleAddCustomer = async (data) => {
-    console.log(data);
-    try {
-      const responce = await api.post("/api/user/addcustomer", data);
-      console.log(responce.data);
-      if (responce.data.success == true) {
-        toast.success(responce.data.message, {
-          duration: 2000,
-        });
-        setShowAddCustomer(false);
-        reset();
-      } else {
-        toast.error(responce.data.message, {
-          duration: 2000,
-        });
-        setShowAddCustomer(true);
-      }
-    } catch (error) {
-      console.log("error in adding customer", error);
-      toast.error("error in adding", {
-        duration: 3000,
-      });
-    }
-  };
-
-  const handleCustomerClick = (customer) => {
-    setSelectedCustomer(customer);
-    setShowCustomerDetail(true);
-  };
-
-  const viewCustomers = useCallback(async () => {
+ const viewCustomers = useCallback(async () => {
     setcustoemrloading(true);
     try {
       const responce = await api.get("/api/user/viewcustomer");
@@ -92,6 +62,41 @@ const filterData=useMemo(()=>{
       setcustoemrloading(false);
     }
   }, []);
+
+  
+  const handleAddCustomer = async (data) => {
+    SetisSaving(true)
+    try {
+      const responce = await api.post("/api/user/addcustomer", data);
+      console.log(responce.data);
+      if (responce.data.success == true) {
+        toast.success(responce.data.message, {
+          duration: 2000,
+        });
+        await viewCustomers()
+        setShowAddCustomer(false);
+        reset();
+      } else {
+        toast.error(responce.data.message, {
+          duration: 2000,
+        });
+        setShowAddCustomer(true);
+      }
+    } catch (error) {
+      console.log("error in adding customer", error);
+      toast.error("error in adding", {
+        duration: 3000,
+      });
+    }
+    SetisSaving(false)
+  };
+
+  const handleCustomerClick = (customer) => {
+    setSelectedCustomer(customer);
+    setShowCustomerDetail(true);
+  };
+
+ 
 
   const checkAccountLogin = async () => {
     SetLoading(true);
@@ -435,6 +440,7 @@ const filterData=useMemo(()=>{
                   </button>
                   <button
                     type="submit"
+                    disabled={isSaving}
                     className="flex-1 bg-black text-white px-4 py-2 text-sm font-medium hover:bg-gray-800 transition-colors"
                   >
                     Add Customer
