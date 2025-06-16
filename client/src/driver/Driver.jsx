@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import Sidebar from "../components/Sidebar";
 import toast from "react-hot-toast";
 import { useForm } from "react-hook-form";
@@ -86,6 +86,14 @@ const Driver = () => {
       setcustoemrloading(false);
     }
   }, []);
+
+const filterData=useMemo(()=>{
+  if (!searchTerm) return drivers
+
+  return drivers.filter(item=>
+    item.drivername.toLowerCase().includes(searchTerm.toLowerCase())
+  )
+},[drivers,searchTerm])
 
 
   const checkAccountLogin = async () => {
@@ -195,7 +203,7 @@ const Driver = () => {
 
     
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {drivers.map((driver) => (
+            {filterData.map((driver) => (
               <div
                 key={driver.id}
                 onClick={() => handleDriverClick(driver)}

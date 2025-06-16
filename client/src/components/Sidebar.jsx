@@ -1,49 +1,42 @@
 import React from "react";
-import { FaFilter,FaDatabase,FaTruck, FaSignOutAlt} from "react-icons/fa";
+import { FaFilter, FaDatabase, FaTruck, FaSignOutAlt } from "react-icons/fa";
 import { IoPeopleOutline } from "react-icons/io5";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { FaMoneyBill1 } from "react-icons/fa6";
+import { FaFileInvoiceDollar } from "react-icons/fa";
 import api from "../api";
 import toast from "react-hot-toast";
 const Sidebar = ({ isSidebarCollapsed, setIsSidebarCollapsed }) => {
-  const navigate= useNavigate()
+  const navigate = useNavigate();
   const menuItems = [
     { icon: "📊", label: "Dashboard", to: "/" },
-    { icon: <FaDatabase/>, label: "Data", to: "/data" },
-    { icon: <FaFilter />, label: "Filter", to: "/filter" },
+    { icon: <FaDatabase />, label: "Data", to: "/data" },
+    { icon: <FaFileInvoiceDollar />, label: "Invoices", to: "/invoice" },
     { icon: <IoPeopleOutline />, label: "Customers", to: "/customers" },
     { icon: "🚗", label: "Driver", to: "/driver" },
     { icon: <FaTruck />, label: "Vehicle", to: "/vehicle" },
     { icon: "💳", label: "Expenses", to: "/expenses" },
     { icon: <FaMoneyBill1 />, label: "Payments", to: "/payment" },
-
   ];
 
-  const handleLogout = async() => {
-try {
-  const responce= await api.post("/api/user/logout")
-  console.log(responce.data);
+  const handleLogout = async () => {
+    try {
+      const responce = await api.post("/api/user/logout");
+      console.log(responce.data);
 
-  if(responce.data.success==true)
-  {
-    navigate("/signin")
-    toast.success(responce.data.message,{
-      duration:2000
-    })
-  }
-  else
-  {
-    toast.error(responce.data.message,{
-      duration:3000
-    })
-  }
-  
-
-
-} catch (error) {
-  console.log("error in log out",error);
-  
-}
+      if (responce.data.success == true) {
+        navigate("/signin");
+        toast.success(responce.data.message, {
+          duration: 2000,
+        });
+      } else {
+        toast.error(responce.data.message, {
+          duration: 3000,
+        });
+      }
+    } catch (error) {
+      console.log("error in log out", error);
+    }
   };
 
   return (
@@ -77,19 +70,16 @@ try {
               key={index}
               className={({ isActive }) =>
                 `flex items-center px-4 py-3 mx-2 mb-1 rounded-lg cursor-pointer transition-all duration-200 ${
-                  isActive 
-                    ? "bg-gradient-to-r from-gray-500 to-gray-600 text-white shadow-lg transform scale-105" 
+                  isActive
+                    ? "bg-gradient-to-r from-gray-500 to-gray-600 text-white shadow-lg transform scale-105"
                     : "text-gray-300 hover:bg-gray-800 hover:text-white hover:transform hover:scale-102"
                 }`
               }
             >
-              <span className={`text-lg text-white `}>
-                {item.icon}
-              </span>
+              <span className={`text-lg text-white `}>{item.icon}</span>
               {!isSidebarCollapsed && (
                 <span className="ml-3 font-medium">{item.label}</span>
               )}
-             
             </NavLink>
           ))}
         </nav>
@@ -100,7 +90,9 @@ try {
             onClick={handleLogout}
             className="flex items-center px-4 py-3 mx-2 rounded-lg cursor-pointer transition-all hover:bg-red-800 hover:text-white"
           >
-            <span className="text-lg"><FaSignOutAlt /></span>
+            <span className="text-lg">
+              <FaSignOutAlt />
+            </span>
             {!isSidebarCollapsed && (
               <span className="ml-3 font-medium">Logout</span>
             )}

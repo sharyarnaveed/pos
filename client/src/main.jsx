@@ -31,7 +31,7 @@ const router = createBrowserRouter([
         element:<Data/>
       },
       {
-        path:"/filter",
+        path:"/invoice",
         element:<Filter/>
       },
       {
