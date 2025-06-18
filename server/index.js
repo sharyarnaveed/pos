@@ -2,7 +2,7 @@ const {app}=require("./src/app.js")
 const dotenv = require("dotenv");
 const { sequelize } = require("./src/database/database.js");
 const port=3000
-
+require("./src/models/associations.js");
 
 dotenv.config({
     path: './.env'

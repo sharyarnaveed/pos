@@ -34,7 +34,7 @@ const Vehcile = () => {
 
   const searchTerm = watch("searchTerm");
 
-  const filteredVehicles = useMemo(()=> vehicles.filter((vehicle) =>
+  const filteredVehicles = useMemo(() => vehicles.filter((vehicle) =>
     vehicle.plateNumber.toLowerCase().includes(searchTerm.toLowerCase())
   ));
 
@@ -126,9 +126,8 @@ const Vehcile = () => {
           />
 
           <div
-            className={`flex-1 ${
-              isSidebarCollapsed ? "ml-16" : "ml-64"
-            } transition-all duration-300`}
+            className={`flex-1 ${isSidebarCollapsed ? "ml-16" : "ml-64"
+              } transition-all duration-300`}
           >
             {/* Header */}
             <div className="border-b border-gray-200 bg-white">
