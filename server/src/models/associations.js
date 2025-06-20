@@ -1,5 +1,6 @@
 const Customer = require("./Customer.model.js");
 const Driver = require("./Driver.model.js");
+const { Expences } = require("./expences.model.js");
 const Order = require("./order.model.js");
 const Vehicle = require("./Vehicle.model.js");
 
@@ -14,4 +15,7 @@ Order.belongsTo(Customer, { foreignKey: 'customer', as: 'CustomerDetails' });
 Customer.hasMany(Order,{ foreignKey: 'customer' })
 
 
-module.exports = { Order, Vehicle };
+Expences.belongsTo(Vehicle,{ foreignKey: 'vehicle', as: 'vehicleDetails' })
+Vehicle.hasMany(Expences,{ foreignKey: 'vehicle' })
+
+module.exports = { Order, Vehicle, Expences };

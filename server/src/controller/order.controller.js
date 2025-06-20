@@ -92,4 +92,80 @@ res.json({
 }
 
 
-module.exports = { addOrder,viewOrder };
+const editorder=async(req,res)=>
+{
+  try {
+ const {id}=req.params
+   const {
+      from,
+      to,
+      containerNumber,
+      customerId,
+      rate,
+      token,
+      custWash,
+      merc,
+      extra,
+      driverId,
+      vehicleId,
+      remarks,
+      orderType,
+      total
+    } = req.body;
+
+    const existingOrder=await Order.findByPk(id);
+    if(!existingOrder)
+    {
+         return res.json({
+        message: "Order not found",
+        success: false,
+      });
+    }
+
+
+    const [updateorder]=await Order.update(
+      {
+            from,
+        to,
+        containerNumber,
+        customer: customerId,
+        rate,
+        token,
+        custWash,
+        merc,
+        extra,
+        driver: driverId,
+        vehicle: vehicleId,
+        remarks,
+        type: orderType,
+        total
+      },
+      {
+        where:{
+          id:id
+        }
+      }
+    )
+
+    if (updateorder > 0) {
+      return res.json({
+        message: "Order updated successfully",
+        success: true,
+      });
+    } else {
+      return res.json({
+        message: "Order not updated",
+        success: false,
+      });
+    }
+    
+  } catch (error) {
+   console.log("error in updating order", error);
+    return res.json({
+      message: error.message || "Order not updated",
+      success: false,
+    });
+  }
+}
+
+module.exports = { addOrder,viewOrder,editorder };

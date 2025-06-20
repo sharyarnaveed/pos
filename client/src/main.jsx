@@ -12,6 +12,7 @@ import Driver from "./driver/Driver.jsx";
 import Vehcile from "./vehcile/Vehcile.jsx";
 import Payments from "./payments/Payments.jsx";
 import { Toaster } from "react-hot-toast";
+import Expence from "./expences/Expence.jsx";
 
 const router = createBrowserRouter([
   {
@@ -49,6 +50,10 @@ const router = createBrowserRouter([
        {
         path:"/payment",
         element:<Payments/>
+      },
+      {
+        path:"/expenses",
+        element:<Expence/>
       }
     ],
   },

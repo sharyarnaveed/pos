@@ -5,7 +5,8 @@ const { AddCustomers, viewCustomers } = require("../controller/customer.controll
 const { requireAuth } = require("../middlewares/auth.middleware");
 const {addDriver, viewDriver} = require("../controller/driver.controller");
 const { addvehicle, viewvehicle } = require("../controller/vehicle.controller");
-const { addOrder, viewOrder } = require("../controller/order.controller");
+const { addOrder, viewOrder, editorder } = require("../controller/order.controller");
+const { addexpences } = require("../controller/expences.controller");
 
 
 
@@ -23,9 +24,10 @@ router.route("/adddriver").post(requireAuth,addDriver)
 router.route("/viewdriver").get(requireAuth,viewDriver)
 router.route("/addvehicle").post(requireAuth,addvehicle)
 router.route("/viewvehicle").get(requireAuth,viewvehicle)
-router.route("/addorder").post(addOrder)
-router.route("/vieworders").get(viewOrder)
-
+router.route("/addorder").post(requireAuth,addOrder)
+router.route("/vieworders").get(requireAuth,viewOrder)
+router.route("/updateorder/:id").put(editorder)
+router.route("/addexpences").post(addexpences)
 
 
 
