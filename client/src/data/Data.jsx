@@ -857,210 +857,101 @@ const Data = () => {
             {/* Modal Body */}
             <form onSubmit={handleSubmit(handleEditOrder)} className="p-6">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {/* Route Information */}
+                {/* Route Information - READ ONLY */}
                 <div>
                   <label className="block text-sm font-medium text-black mb-2">
-                    From *
+                    From (Read Only)
                   </label>
                   <input
                     type="text"
-                    {...register("from", {
-                      required: "From location is required",
-                    })}
-                    className="w-full px-3 py-2 border border-gray-300 focus:border-black focus:outline-none text-sm"
+                    {...register("from")}
+                    className="w-full px-3 py-2 border border-gray-300 bg-gray-100 text-gray-600 text-sm cursor-not-allowed"
                     placeholder="Origin location"
+                    readOnly
                   />
-                  {errors.from && (
-                    <p className="text-red-500 text-xs mt-1">
-                      {errors.from.message}
-                    </p>
-                  )}
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-black mb-2">
-                    To *
+                    To (Read Only)
                   </label>
                   <input
                     type="text"
-                    {...register("to", { required: "Destination is required" })}
-                    className="w-full px-3 py-2 border border-gray-300 focus:border-black focus:outline-none text-sm"
+                    {...register("to")}
+                    className="w-full px-3 py-2 border border-gray-300 bg-gray-100 text-gray-600 text-sm cursor-not-allowed"
                     placeholder="Destination location"
+                    readOnly
                   />
-                  {errors.to && (
-                    <p className="text-red-500 text-xs mt-1">
-                      {errors.to.message}
-                    </p>
-                  )}
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-black mb-2">
-                    Container Number *
+                    Container Number (Read Only)
                   </label>
                   <input
                     type="text"
-                    {...register("containerNumber", {
-                      required: "Container number is required",
-                    })}
-                    className="w-full px-3 py-2 border border-gray-300 focus:border-black focus:outline-none text-sm"
+                    {...register("containerNumber")}
+                    className="w-full px-3 py-2 border border-gray-300 bg-gray-100 text-gray-600 text-sm cursor-not-allowed"
                     placeholder="Container number"
+                    readOnly
                   />
-                  {errors.containerNumber && (
-                    <p className="text-red-500 text-xs mt-1">
-                      {errors.containerNumber.message}
-                    </p>
-                  )}
                 </div>
 
-                {/* Customer Search & Select */}
-                <div className="relative customer-dropdown">
+                {/* Customer - READ ONLY */}
+                <div>
                   <label className="block text-sm font-medium text-black mb-2">
-                    Customer *
+                    Customer (Read Only)
                   </label>
                   <input
                     type="text"
                     value={customerSearch}
-                    onChange={(e) => {
-                      setCustomerSearch(e.target.value);
-                      setShowCustomerDropdown(true);
-                      setValue("customerId", ""); // Clear selection when typing
-                    }}
-                    onFocus={() => setShowCustomerDropdown(true)}
-                    className="w-full px-3 py-2 border border-gray-300 focus:border-black focus:outline-none text-sm"
-                    placeholder="Search customer..."
+                    className="w-full px-3 py-2 border border-gray-300 bg-gray-100 text-gray-600 text-sm cursor-not-allowed"
+                    placeholder="Customer name"
+                    readOnly
                   />
-                  {showCustomerDropdown && (
-                    <div className="absolute z-10 w-full bg-white border border-gray-300 mt-1 max-h-48 overflow-y-auto shadow-lg">
-                      {filteredCustomers.length > 0 ? (
-                        filteredCustomers.map((customer) => (
-                          <div
-                            key={customer.id}
-                            onClick={() => handleCustomerSelect(customer)}
-                            className="px-3 py-2 cursor-pointer hover:bg-gray-100 text-sm"
-                          >
-                            {customer.customername}
-                          </div>
-                        ))
-                      ) : (
-                        <div className="px-3 py-2 text-sm text-gray-500">
-                          No customers found
-                        </div>
-                      )}
-                    </div>
-                  )}
                   <input
                     type="hidden"
-                    {...register("customerId", {
-                      required: "Customer is required",
-                    })}
+                    {...register("customerId")}
                   />
-                  {errors.customerId && (
-                    <p className="text-red-500 text-xs mt-1">
-                      {errors.customerId.message}
-                    </p>
-                  )}
                 </div>
 
-                {/* Driver Search & Select */}
-                <div className="relative driver-dropdown">
+                {/* Driver - READ ONLY */}
+                <div>
                   <label className="block text-sm font-medium text-black mb-2">
-                    Driver *
+                    Driver (Read Only)
                   </label>
                   <input
                     type="text"
                     value={driverSearch}
-                    onChange={(e) => {
-                      setDriverSearch(e.target.value);
-                      setShowDriverDropdown(true);
-                      setValue("driverId", ""); // Clear selection when typing
-                    }}
-                    onFocus={() => setShowDriverDropdown(true)}
-                    className="w-full px-3 py-2 border border-gray-300 focus:border-black focus:outline-none text-sm"
-                    placeholder="Search driver..."
+                    className="w-full px-3 py-2 border border-gray-300 bg-gray-100 text-gray-600 text-sm cursor-not-allowed"
+                    placeholder="Driver name"
+                    readOnly
                   />
-                  {showDriverDropdown && (
-                    <div className="absolute z-10 w-full bg-white border border-gray-300 mt-1 max-h-48 overflow-y-auto shadow-lg">
-                      {filteredDrivers.length > 0 ? (
-                        filteredDrivers.map((driver) => (
-                          <div
-                            key={driver.id}
-                            onClick={() => handleDriverSelect(driver)}
-                            className="px-3 py-2 cursor-pointer hover:bg-gray-100 text-sm"
-                          >
-                            {driver.drivername}
-                          </div>
-                        ))
-                      ) : (
-                        <div className="px-3 py-2 text-sm text-gray-500">
-                          No drivers found
-                        </div>
-                      )}
-                    </div>
-                  )}
                   <input
                     type="hidden"
-                    {...register("driverId", {
-                      required: "Driver is required",
-                    })}
+                    {...register("driverId")}
                   />
-                  {errors.driverId && (
-                    <p className="text-red-500 text-xs mt-1">
-                      {errors.driverId.message}
-                    </p>
-                  )}
                 </div>
 
-                {/* Vehicle Search & Select */}
-                <div className="relative vehicle-dropdown">
+                {/* Vehicle - READ ONLY */}
+                <div>
                   <label className="block text-sm font-medium text-black mb-2">
-                    Vehicle *
+                    Vehicle (Read Only)
                   </label>
                   <input
                     type="text"
                     value={vehicleSearch}
-                    onChange={(e) => {
-                      setVehicleSearch(e.target.value);
-                      setShowVehicleDropdown(true);
-                      setValue("vehicleId", ""); // Clear selection when typing
-                    }}
-                    onFocus={() => setShowVehicleDropdown(true)}
-                    className="w-full px-3 py-2 border border-gray-300 focus:border-black focus:outline-none text-sm"
-                    placeholder="Search vehicle..."
+                    className="w-full px-3 py-2 border border-gray-300 bg-gray-100 text-gray-600 text-sm cursor-not-allowed"
+                    placeholder="Vehicle plate number"
+                    readOnly
                   />
-                  {showVehicleDropdown && (
-                    <div className="absolute z-10 w-full bg-white border border-gray-300 mt-1 max-h-48 overflow-y-auto shadow-lg">
-                      {filteredVehicles.length > 0 ? (
-                        filteredVehicles.map((vehicle) => (
-                          <div
-                            key={vehicle.id}
-                            onClick={() => handleVehicleSelect(vehicle)}
-                            className="px-3 py-2 cursor-pointer hover:bg-gray-100 text-sm"
-                          >
-                            {vehicle.plateNumber}
-                          </div>
-                        ))
-                      ) : (
-                        <div className="px-3 py-2 text-sm text-gray-500">
-                          No vehicles found
-                        </div>
-                      )}
-                    </div>
-                  )}
                   <input
                     type="hidden"
-                    {...register("vehicleId", {
-                      required: "Vehicle is required",
-                    })}
+                    {...register("vehicleId")}
                   />
-                  {errors.vehicleId && (
-                    <p className="text-red-500 text-xs mt-1">
-                      {errors.vehicleId.message}
-                    </p>
-                  )}
                 </div>
 
-                {/* Financial Fields */}
+                {/* Financial Fields - EDITABLE */}
                 <div>
                   <label className="block text-sm font-medium text-black mb-2">
                     Rate
@@ -1138,23 +1029,20 @@ const Data = () => {
                   />
                 </div>
 
-                {/* Order Type */}
+                {/* Order Type - READ ONLY */}
                 <div>
                   <label className="block text-sm font-medium text-black mb-2">
-                    Order Type *
+                    Order Type (Read Only)
                   </label>
-                  <select
-                    {...register("orderType", {
-                      required: "Order type is required",
-                    })}
-                    className="w-full px-3 py-2 border border-gray-300 focus:border-black focus:outline-none text-sm"
-                  >
-                    <option value="import">Import</option>
-                    <option value="export">Export</option>
-                  </select>
+                  <input
+                    type="text"
+                    {...register("orderType")}
+                    className="w-full px-3 py-2 border border-gray-300 bg-gray-100 text-gray-600 text-sm cursor-not-allowed"
+                    readOnly
+                  />
                 </div>
 
-                {/* Remarks */}
+                {/* Remarks - EDITABLE */}
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-black mb-2">
                     Remarks
