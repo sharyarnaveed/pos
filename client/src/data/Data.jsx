@@ -266,6 +266,8 @@ const Data = () => {
         total: total.toFixed(2),
         id: editOrderData.id,
       };
+      console.log(updatedOrder);
+      
       const response = await api.put(
         `/api/user/updateorder/${editOrderData.id}`,
         updatedOrder
@@ -295,22 +297,7 @@ const Data = () => {
     setShowOrderDetail(true);
   };
 
-  const getCustomerName = (customerId) => {
-    const customer = customers.find((c) => c.id === customerId);
-    return customer ? customer.customername : "Unknown Customer";
-  };
 
-  const getDriverName = (driverId) => {
-    const driver = drivers.find((d) => d.id === driverId);
-    return driver ? driver.drivername : "Unknown Driver";
-  };
-
-  const getVehicleInfo = (vehicleId) => {
-    const vehicle = vehicles.find((v) => v.id === vehicleId);
-    return vehicle ? vehicle.plateNumber : "Unknown Vehicle";
-  };
-
-  // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (!event.target.closest(".customer-dropdown")) {

@@ -97,21 +97,24 @@ const editorder=async(req,res)=>
   try {
  const {id}=req.params
    const {
-      from,
-      to,
-      containerNumber,
-      customerId,
       rate,
-      token,
-      custWash,
-      merc,
-      extra,
-      driverId,
-      vehicleId,
-      remarks,
-      orderType,
-      total
+        token,
+        custWash,
+        merc,
+        extra,
+        remarks,
+
+        total
     } = req.body;
+    console.log(   rate,
+        token,
+        custWash,
+        merc,
+        extra,
+        remarks,
+
+        total);
+    
 
     const existingOrder=await Order.findByPk(id);
     if(!existingOrder)
@@ -125,19 +128,14 @@ const editorder=async(req,res)=>
 
     const [updateorder]=await Order.update(
       {
-            from,
-        to,
-        containerNumber,
-        customer: customerId,
+
         rate,
         token,
         custWash,
         merc,
         extra,
-        driver: driverId,
-        vehicle: vehicleId,
         remarks,
-        type: orderType,
+
         total
       },
       {

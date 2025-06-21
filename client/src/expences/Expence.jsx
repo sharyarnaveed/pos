@@ -44,80 +44,16 @@ const Expence = () => {
     },
   });
 
-  // Sample data for UI display
-  const sampleExpenses = [
-    {
-      id: 1,
-      description: "Fuel for Vehicle ABC-123",
-      amount: 250.0,
-      category: "Fuel",
-      vehiclePlateNumber: "ABC-123",
-      date: "2025-01-15",
-      type: "vehicle",
-    },
-    {
-      id: 2,
-      description: "Office Rent",
-      amount: 2500.0,
-      category: "Fixed Costs",
-      vehiclePlateNumber: null,
-      date: "2025-01-15",
-      type: "general",
-    },
-    {
-      id: 3,
-      description: "Vehicle Maintenance - XYZ-789",
-      amount: 800.0,
-      category: "Maintenance",
-      vehiclePlateNumber: "XYZ-789",
-      date: "2025-01-14",
-      type: "vehicle",
-    },
-    {
-      id: 4,
-      description: "Vehicle Maintenance - XYZ-789",
-      amount: 800.0,
-      category: "Maintenance",
-      vehiclePlateNumber: "cdcd-789",
-      date: "2025-01-14",
-      type: "vehicle",
-    },
-  ];
+  const [expencedetail, SetExpenceDetail] = useState(null);
+  const handleExpencedetail = (order) => {
+    setShowExpenseDetail(true);
+    SetExpenceDetail(order);
+  };
 
-  const sampleVehicles = [
-    {
-      id: 1,
-      plateNumber: "ABC-123",
-      make: "Toyota",
-      model: "Hiace",
-      totalAmount: 400.0,
-      expenseCount: 2,
-    },
-    {
-      id: 2,
-      plateNumber: "XYZ-789",
-      make: "Ford",
-      model: "Transit",
-      totalAmount: 1100.0,
-      expenseCount: 2,
-    },
-    {
-      id: 3,
-      plateNumber: "DEF-456",
-      make: "Mercedes",
-      model: "Sprinter",
-      totalAmount: 450.0,
-      expenseCount: 1,
-    },
-    {
-      id: 4,
-      plateNumber: "D-456",
-      make: "Mercedes",
-      model: "Sprinter",
-      totalAmount: 450.0,
-      expenseCount: 1,
-    },
-  ];
+  // Sample data for UI display
+  const [sampleExpenses, setSampleExpences] = useState([]);
+
+  const [sampleVehicles, SetsampleVehicles] = useState(null);
 
   const getCategoryColor = (category) => {
     switch (category.toLowerCase()) {
@@ -134,30 +70,14 @@ const Expence = () => {
     }
   };
 
-  const getVechilesData = useCallback(async () => {
-    try {
-      const responce = await api.get("/api/user/viewvehicle");
-      console.log(responce.data);
-      SetVehicles(responce.data.VehicleData);
-      console.log(Vehicles);
-    } catch (error) {
-      console.log("error in getting vehicle data", error);
-    }
-  }, []);
-
-  useEffect(() => {
-    getVechilesData();
-  }, []);
-
   // Handle Add Expense Form Submission
   const onSubmitExpense = async (data) => {
     try {
       console.log("Expense Data:", data);
 
-      const responce=await api.post("/api/user/addexpence",data)
+      const responce = await api.post("/api/user/addexpence", data);
       console.log(responce.data);
-      
- 
+      viewExpences();
       toast.success("Expense added successfully!", { duration: 2000 });
       resetExpense();
       setIsAddExpenseModalOpen(false);
@@ -175,15 +95,16 @@ const Expence = () => {
       console.log("Amount Data:", data);
 
       // API call example (uncomment when backend is ready)
-      // const response = await api.post("/api/user/addamount", {
-      //   amount: parseFloat(data.amount),
-      //   description: data.description || "Quick Amount Addition",
-      //   date: data.date
-      // });
-
-      toast.success("Amount added successfully!", { duration: 2000 });
-      resetAmount();
-      setIsAddAmountModalOpen(false);
+      const response = await api.post("/api/user/addamount", data);
+      if (response.data.success) {
+        toast.success("Amount added successfully!", { duration: 2000 });
+        resetAmount();
+        setIsAddAmountModalOpen(false);
+      } else {
+        toast.error(response.data.message, {
+          duration: 3000,
+        });
+      }
     } catch (error) {
       console.error("Error adding amount:", error);
       toast.error("Failed to add amount. Please try again.", {
@@ -192,65 +113,265 @@ const Expence = () => {
     }
   };
 
+  const viewExpences = useCallback(async () => {
+    try {
+      const responce = await await api.get("/api/user/viewexpences");
+      console.log(responce.data);
+      setSampleExpences(responce.data.expenceData);
+      SetsampleVehicles(responce.data.expenceCount);
+    } catch (error) {
+      console.error("Error loading expense:", error);
+      toast.error("Failed to load expense. Please try again.", {
+        duration: 3000,
+      });
+    }
+  }, []);
+
+  const getVechilesData = useCallback(async () => {
+    try {
+      const responce = await api.get("/api/user/viewvehicle");
+      console.log(responce.data);
+      SetVehicles(responce.data.VehicleData);
+    } catch (error) {
+      console.log("error in getting vehicle data", error);
+    }
+  }, []);
+
+  useEffect(() => {
+    viewExpences();
+    getVechilesData();
+  }, []);
+
   // Vehicle Expense Chart Component
   const VehicleExpenseChart = () => {
+    if (!sampleVehicles || sampleVehicles.length === 0) {
+      return (
+        <div className="bg-white border border-gray-200 p-6 rounded-lg shadow-sm">
+          <h3 className="text-lg font-semibold text-black mb-6">
+            Vehicle Expenses Comparison
+          </h3>
+          <div className="text-center py-12">
+            <div className="text-gray-400 text-6xl mb-4">📊</div>
+            <p className="text-gray-500">No vehicle expense data available</p>
+          </div>
+        </div>
+      );
+    }
+
     const maxAmount = Math.max(...sampleVehicles.map((v) => v.totalAmount));
+    const totalExpenses = sampleVehicles.reduce(
+      (sum, v) => sum + v.totalAmount,
+      0
+    );
+
+    const gradientColors = [
+      "from-blue-500 to-blue-600",
+      "from-green-500 to-green-600",
+      "from-purple-500 to-purple-600",
+      "from-yellow-500 to-yellow-600",
+      "from-red-500 to-red-600",
+      "from-indigo-500 to-indigo-600",
+      "from-pink-500 to-pink-600",
+      "from-teal-500 to-teal-600",
+    ];
+
+    const iconColors = [
+      "text-blue-500",
+      "text-green-500",
+      "text-purple-500",
+      "text-yellow-500",
+      "text-red-500",
+      "text-indigo-500",
+      "text-pink-500",
+      "text-teal-500",
+    ];
 
     return (
-      <div className="bg-white border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-black mb-6">
-          Vehicle Expenses Comparison
-        </h3>
+      <div className="bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-gray-900 to-gray-800 p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-xl font-bold text-white mb-2">
+                Vehicle Expenses Analysis
+              </h3>
+              <p className="text-gray-300 text-sm">
+                Comprehensive breakdown of expenses by vehicle
+              </p>
+            </div>
+            <div className="text-right">
+              <div className="text-3xl text-white mb-1">🚗</div>
+              <div className="text-white text-sm font-medium">
+                {sampleVehicles.length} Vehicles
+              </div>
+            </div>
+          </div>
+        </div>
 
-        <div className="space-y-6">
-          {sampleVehicles.map((vehicleData, index) => {
-            const percentage =
-              maxAmount > 0 ? (vehicleData.totalAmount / maxAmount) * 100 : 0;
-            const barColors = [
-              "bg-blue-500",
-              "bg-green-500",
-              "bg-yellow-500",
-              "bg-purple-500",
-              "bg-red-500",
-            ];
-            const barColor = barColors[index % barColors.length];
-
-            return (
-              <div key={vehicleData.id} className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-4 h-4 ${barColor} rounded`}></div>
-                    <span className="font-medium text-black">
-                      {vehicleData.plateNumber}
-                    </span>
-                    <span className="text-sm text-gray-600">
-                      ({vehicleData.make} {vehicleData.model})
-                    </span>
-                  </div>
-                  <div className="text-right">
-                    <div className="font-bold text-red-600">
-                      AED {vehicleData.totalAmount.toFixed(2)}
-                    </div>
-                    <div className="text-xs text-gray-500">
-                      {vehicleData.expenseCount} expense
-                      {vehicleData.expenseCount !== 1 ? "s" : ""}
-                    </div>
-                  </div>
+        {/* Summary Cards */}
+        <div className="p-6 bg-gray-50 border-b">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+              <div className="flex items-center">
+                <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center mr-3">
+                  <span className="text-red-600 text-lg">💰</span>
                 </div>
-
-                <div className="w-full bg-gray-200 rounded-full h-3">
-                  <div
-                    className={`${barColor} h-3 rounded-full transition-all duration-500 ease-out`}
-                    style={{ width: `${percentage}%` }}
-                  ></div>
-                </div>
-
-                <div className="text-xs text-gray-500">
-                  {percentage.toFixed(1)}% of highest expense
+                <div>
+                  <p className="text-gray-600 text-xs uppercase tracking-wide">
+                    Total Expenses
+                  </p>
+                  <p className="text-xl font-bold text-red-600">
+                    AED {totalExpenses.toFixed(2)}
+                  </p>
                 </div>
               </div>
-            );
-          })}
+            </div>
+
+            <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+              <div className="flex items-center">
+                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                  <span className="text-blue-600 text-lg">📈</span>
+                </div>
+                <div>
+                  <p className="text-gray-600 text-xs uppercase tracking-wide">
+                    Highest Expense
+                  </p>
+                  <p className="text-xl font-bold text-blue-600">
+                    AED {maxAmount.toFixed(2)}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+              <div className="flex items-center">
+                <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                  <span className="text-green-600 text-lg">📊</span>
+                </div>
+                <div>
+                  <p className="text-gray-600 text-xs uppercase tracking-wide">
+                    Average Expense
+                  </p>
+                  <p className="text-xl font-bold text-green-600">
+                    AED {(totalExpenses / sampleVehicles.length).toFixed(2)}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Chart Content */}
+        <div className="p-6">
+          <div className="space-y-6">
+            {sampleVehicles.map((vehicleData, index) => {
+              const percentage =
+                maxAmount > 0 ? (vehicleData.totalAmount / maxAmount) * 100 : 0;
+              const sharePercentage =
+                totalExpenses > 0 ? (vehicleData.totalAmount / totalExpenses) * 100 : 0;
+              const gradientClass = gradientColors[index % gradientColors.length];
+              const iconColor = iconColors[index % iconColors.length];
+
+              return (
+                <div
+                  key={index}
+                  className="group hover:bg-gray-50 p-4 rounded-lg transition-all duration-300 border border-transparent hover:border-gray-200"
+                >
+                  {/* Vehicle Header */}
+                  <div className="flex justify-between items-center mb-4">
+                    <div className="flex items-center gap-4">
+                      <div className="relative">
+                        <div
+                          className={`w-12 h-12 bg-gradient-to-br ${gradientClass} rounded-full flex items-center justify-center shadow-lg`}
+                        >
+                          <span className="text-white text-lg font-bold">
+                            {(vehicleData["vehicleDetails.plateNumber"] || "N/A")
+                              .substring(0, 2)}
+                          </span>
+                        </div>
+                        <div className="absolute -top-1 -right-1 w-5 h-5 bg-white rounded-full flex items-center justify-center shadow-sm">
+                          <span className={`text-xs ${iconColor}`}>🚗</span>
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-gray-900 text-lg">
+                          {vehicleData["vehicleDetails.plateNumber"] || "Unknown Vehicle"}
+                        </h4>
+                        <p className="text-gray-500 text-sm">
+                          {vehicleData.expenseCount} expense
+                          {vehicleData.expenseCount !== 1 ? "s" : ""} recorded
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="text-right">
+                      <div className="font-bold text-2xl text-gray-900 mb-1">
+                        AED {vehicleData.totalAmount.toFixed(2)}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`text-xs px-2 py-1 rounded-full bg-gradient-to-r ${gradientClass} text-white font-medium`}
+                        >
+                          {sharePercentage.toFixed(1)}% of total
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Progress Bar */}
+                  <div className="relative mb-3">
+                    <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden shadow-inner">
+                      <div
+                        className={`bg-gradient-to-r ${gradientClass} h-4 rounded-full transition-all duration-1000 ease-out shadow-sm relative overflow-hidden`}
+                        style={{ width: `${percentage}%` }}
+                      >
+                        {/* Animated shine effect */}
+                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-30 animate-pulse"></div>
+                      </div>
+                    </div>
+
+                    {/* Progress indicator */}
+                    <div
+                      className="absolute top-0 transform -translate-y-8 transition-all duration-1000 ease-out"
+                      style={{ left: `${Math.min(percentage, 95)}%` }}
+                    >
+                      <div
+                        className={`bg-gradient-to-r ${gradientClass} text-white text-xs px-2 py-1 rounded shadow-lg`}
+                      >
+                        {percentage.toFixed(1)}%
+                      </div>
+                      <div
+                        className={`w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-800 mx-auto`}
+                      ></div>
+                    </div>
+                  </div>
+
+                  {/* Additional Stats */}
+                  <div className="flex justify-between items-center text-xs text-gray-500 mt-2">
+                    <span>Relative to highest expense vehicle</span>
+                    <div className="flex items-center gap-4">
+                      <span className="flex items-center gap-1">
+                        <span className="w-2 h-2 bg-green-400 rounded-full"></span>
+                        Avg: AED {(vehicleData.totalAmount / vehicleData.expenseCount).toFixed(2)}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <span className={`w-2 h-2 bg-gradient-to-r ${gradientClass} rounded-full`}></span>
+                        Rank: #{index + 1}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="bg-gray-50 px-6 py-4 border-t">
+          <div className="flex items-center justify-between text-sm text-gray-600">
+            <span>📊 Data updated in real-time</span>
+            <span>Last updated: {new Date().toLocaleDateString()}</span>
+          </div>
         </div>
       </div>
     );
@@ -400,7 +521,7 @@ const Expence = () => {
                   <div
                     key={expense.id}
                     className="grid grid-cols-7 gap-4 px-6 py-4 text-sm hover:bg-gray-50 transition-colors cursor-pointer"
-                    onClick={() => setShowExpenseDetail(true)}
+                    onClick={() => handleExpencedetail(expense)}
                   >
                     <div className="font-medium text-black">
                       {expense.description}
@@ -418,9 +539,11 @@ const Expence = () => {
                       AED {expense.amount.toFixed(2)}
                     </div>
                     <div className="text-gray-600">
-                      {expense.vehiclePlateNumber || "N/A"}
+                      {expense["vehicleDetails.plateNumber"] || "N/A"}
                     </div>
-                    <div className="text-gray-600">{expense.date}</div>
+                    <div className="text-gray-600">
+                      {expense.createdAt.split("T")[0]}
+                    </div>
                     <div>
                       <span
                         className={`text-xs px-2 py-1 rounded-full ${
@@ -429,7 +552,7 @@ const Expence = () => {
                             : "bg-gray-100 text-gray-800"
                         }`}
                       >
-                        {expense.type}
+                        {expense["vehicleDetails.type"]}
                       </span>
                     </div>
                     <div onClick={(e) => e.stopPropagation()}>
@@ -717,6 +840,7 @@ const Expence = () => {
             <div className="p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {/* Expense Information */}
+
                 <div>
                   <h4 className="text-lg font-semibold text-black border-b border-gray-200 pb-2 mb-4">
                     Expense Information
@@ -724,21 +848,28 @@ const Expence = () => {
                   <div className="space-y-3">
                     <div className="flex justify-between">
                       <span className="text-gray-600">Description:</span>
-                      <span className="font-medium">Fuel for Vehicle ABC-123</span>
+                      <span className="font-medium">
+                        {expencedetail.category} for Vehicle{" "}
+                        {expencedetail["vehicleDetails.plateNumber"]}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Amount:</span>
-                      <span className="font-bold text-red-600">AED 250.00</span>
+                      <span className="font-bold text-red-600">
+                        AED {expencedetail.amount}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Category:</span>
                       <span className="px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
-                        Fuel
+                        {expencedetail.category}
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Date:</span>
-                      <span className="font-medium">2025-01-15</span>
+                      <span className="font-medium">
+                        {expencedetail.createdAt.split("T")[0]}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Type:</span>
@@ -757,7 +888,9 @@ const Expence = () => {
                   <div className="space-y-3">
                     <div className="flex justify-between">
                       <span className="text-gray-600">Plate Number:</span>
-                      <span className="font-medium">ABC-123</span>
+                      <span className="font-medium">
+                        {expencedetail["vehicleDetails.plateNumber"]}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -769,7 +902,7 @@ const Expence = () => {
                   Remarks
                 </h4>
                 <p className="text-gray-700 bg-gray-50 p-4 rounded">
-                  Regular fuel refill for vehicle
+                  {expencedetail.remarks || "No remarks"}
                 </p>
               </div>
 

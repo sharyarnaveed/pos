@@ -10,23 +10,23 @@ const Expences = sequelize.define(
       primaryKey: true,
     },
     description: {
-      type: Sequelize.toString(255),
+      type: DataTypes.STRING(255),
       allowNull: false,
     },
     amount: {
-      type: Sequelize.DOUBLE(10),
+      type: DataTypes.DOUBLE,
       allowNull: false,
     },
     category: {
-      type: Sequelize.STRING(30),
+      type: DataTypes.STRING(30),
       allowNull: false,
     },
     vehicle: {
-      type: Sequelize.INTEGER(255),
+      type: DataTypes.INTEGER,
       allowNull: false,
     },
     remarks: {
-      type: Sequelize.TEXT(255),
+      type: DataTypes.TEXT,
       allowNull: true,
     },
   },
@@ -35,4 +35,4 @@ const Expences = sequelize.define(
   }
 );
 
-module.exports = { Expences };
+module.exports = Expences;
