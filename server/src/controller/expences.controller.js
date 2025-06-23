@@ -16,10 +16,38 @@ const addexpences = async (req, res) => {
     });
 
     if (save) {
+     
+const oldbalance= await Currentbalance.findAll({
+      raw:true
+})
+
+
+const previousbalance=oldbalance[0].balance
+const updatedbalance=previousbalance-amount
+
+const updatebalance = await Currentbalance.update(
+  {
+
+    balance: updatedbalance,
+    
+  },{
+    where: {
+      id: oldbalance[0].id,
+    },
+
+  })
+    if(!updatebalance)
+    {
+      return res.json({
+        message: "Error in updating balance",
+        success: false,
+      });
+    }
       return res.json({
         message: "Expense added successfully",
         success: true,
       });
+
     } else {
       return res.json({
         message: "Error in adding expense",
@@ -92,10 +120,10 @@ const getamount=await Currentbalance.findAll({
 })
 
 console.log(getamount[0].balance);
-const previousbalance=getamount[0].balance
-const updatedbalnce=previousbalance+amount
+const previousbalance = parseFloat(getamount[0].balance)
+const updatedbalance = previousbalance + parseFloat(amount)
 
-console.log(updatedbalnce);
+console.log(updatedbalance);
 
 if(getamount.length<0)
 {
@@ -106,7 +134,7 @@ if(getamount.length<0)
 }
 
 const updatebalance= await Currentbalance.update({
-  balance:updatedbalnce
+  balance:updatedbalance
 },
 {
   where:{
@@ -150,4 +178,79 @@ return res.json({
   }
 }
 
-module.exports = { addexpences, viewexpences, addExpencebalance };
+
+const gettotalexpenceandbalance=async(req,res)=>
+{
+try {
+const totalExpence = await Expences.findAll({
+  attributes: [
+    [Sequelize.fn("SUM", Sequelize.col("amount")), "totalAmount"],
+  ],
+  raw: true,
+});
+const totalBalance = await Currentbalance.findAll({
+  attributes: ["balance"],
+  raw: true,
+});
+if (totalExpence.length === 0 || totalBalance.length === 0) {
+  return res.json({
+    message: "No expenses or balance found",
+    success: false,
+  });
+}
+const totalAmount = totalExpence[0].totalAmount || 0;
+const balance = totalBalance[0].balance || 0;
+return res.json({
+  message: "Total expense and balance fetched successfully",
+  success: true,
+  totalAmount: totalAmount,
+  balance: balance,
+});
+  
+} catch (error) {
+  console.log("error in getting total expence and balance", error);
+  return res.json({
+    message: "Error in getting total expence and balance",
+    success: false,
+  });
+  
+}
+}
+
+const getbalancehistory=async(req,res)=>
+{
+  try {
+    
+    const balanceHistory=await BalanceHistory.findAll({
+      raw:true
+    })
+
+
+
+if(balanceHistory.length === 0)
+{
+  return res.json({
+    message: "No balance history found",
+    success: false,
+  });
+}
+    return res.json({
+      message: "Balance history fetched successfully",
+      success: true,
+      balanceHistory: balanceHistory,
+    });
+
+  } catch (error) {
+    
+    console.log("error in getting balance history", error);
+    return res.json({
+      message: "Error in getting balance history",
+      success: false,
+    });
+  }
+}
+
+
+module.exports = { addexpences, viewexpences, addExpencebalance, gettotalexpenceandbalance,
+  getbalancehistory
+ };

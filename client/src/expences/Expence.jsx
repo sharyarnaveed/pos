@@ -137,9 +137,50 @@ const Expence = () => {
     }
   }, []);
 
+const [balancehistory, setBalanceHistory] = useState([])
+
+  const getbalancehistory = useCallback(async () => {
+    try {
+      const responce = await api.get("/api/user/getbalancehistory");
+      console.log(responce.data);
+      if (responce.data.success) {
+        setBalanceHistory(responce.data.balanceHistory || []);
+      }
+    } catch (error) {
+      console.error("Error loading balance history:", error);
+      toast.error("Failed to load balance history. Please try again.", {
+        duration: 3000,
+      });
+    }
+  }, [])
+
+const [currentbalance, setCurrentBalance] = useState(0);
+const [totalExpence, setTotalExpence] = useState(0);
+
+  const gettotals = useCallback(async() => {
+    try {
+        const responce=await api.get("/api/user/gettoalexpncebalance");
+        if (responce.data.success) {
+        setCurrentBalance(responce.data.balance);
+        setTotalExpence(responce.data.totalAmount);
+        }
+
+
+      
+    } catch (error) {
+      
+      console.error("Error calculating totals:", error);
+      toast.error("Failed to calculate totals. Please try again.", {
+        duration: 3000,
+      });
+    }
+  },[])
+
   useEffect(() => {
     viewExpences();
+    gettotals();
     getVechilesData();
+    getbalancehistory()
   }, []);
 
   // Vehicle Expense Chart Component
@@ -377,6 +418,96 @@ const Expence = () => {
     );
   };
 
+  // Balance History Component
+  const BalanceHistoryChart = () => {
+    if (!balancehistory || balancehistory.length === 0) {
+      return (
+        <div className="bg-white border border-gray-200 p-6 rounded-lg shadow-sm">
+          <h3 className="text-lg font-semibold text-black mb-6">
+            Balance History
+          </h3>
+          <div className="text-center py-12">
+            <div className="text-gray-400 text-6xl mb-4">💰</div>
+            <p className="text-gray-500">No balance history available</p>
+          </div>
+        </div>
+      );
+    }
+
+    const maxAmount = Math.max(...balancehistory.map((entry) => entry.amount));
+    const minAmount = Math.min(...balancehistory.map((entry) => entry.amount));
+
+    return (
+      <div className="bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden">
+
+
+
+        {/* Balance History Timeline */}
+        <div className="p-6">
+          <div className="space-y-4">
+            {balancehistory.map((entry, index) => {
+              const isPositive = entry.type === 'credit' || entry.amount > 0;
+              const date = new Date(entry.createdAt || entry.date);
+              
+              return (
+                <div key={index} className="group hover:bg-gray-50 p-4 rounded-lg transition-all duration-300 border border-transparent hover:border-gray-200">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className={`w-12 h-12 ${isPositive ? 'bg-green-100' : 'bg-red-100'} rounded-full flex items-center justify-center shadow-sm`}>
+                        <span className={`text-lg ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
+                          {isPositive ? '💰' : '💸'}
+                        </span>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-gray-900">
+                          {entry.description || (isPositive ? 'Amount Added' : 'Expense Deducted')}
+                        </h4>
+                        <p className="text-sm text-gray-500">
+                          {date.toLocaleDateString()} at {date.toLocaleTimeString()}
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="text-right">
+                      <div className={`text-xl font-bold ${isPositive ? ' text-red-600' : 'text-green-600'}`}>
+                        {isPositive ? '-' : '+'}AED {Math.abs(entry.balance).toFixed(2)}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Transaction Type Badge */}
+                  <div className="mt-3 flex items-center justify-between">
+                    <span className={`text-xs px-3 py-1 rounded-full ${
+                      isPositive 
+                        ? 'bg-green-100 text-green-800' 
+                        : 'bg-red-100 text-red-800'
+                    }`}>
+                      {entry.type || (isPositive ? 'Credit' : 'Debit')}
+                    </span>
+                    
+                    {entry.reference && (
+                      <span className="text-xs text-gray-400">
+                        Ref: {entry.reference}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="bg-gray-50 px-6 py-4 border-t">
+          <div className="flex items-center justify-between text-sm text-gray-600">
+            <span>💰 Balance history updated in real-time</span>
+            <span>Last updated: {new Date().toLocaleDateString()}</span>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="flex min-h-screen bg-white">
       <Sidebar
@@ -464,7 +595,7 @@ const Expence = () => {
                     : "border-transparent text-gray-600 hover:text-black"
                 }`}
               >
-                Expense History
+                Balance History
               </button>
             </div>
           </div>
@@ -474,23 +605,17 @@ const Expence = () => {
             <div className="bg-white border border-gray-200 p-6">
               <div className="text-sm text-gray-600">Total Expenses</div>
               <div className="text-2xl font-bold text-red-600 mt-2">
-                AED 3,550.00
+              AED  {totalExpence}
               </div>
             </div>
             <div className="bg-white border border-gray-200 p-6">
-              <div className="text-sm text-gray-600">Vehicle Expenses</div>
+              <div className="text-sm text-gray-600">Current Balance</div>
               <div className="text-2xl font-bold text-blue-600 mt-2">
-                AED 1,050.00
+                AED {currentbalance}
               </div>
             </div>
             <div className="bg-white border border-gray-200 p-6">
-              <div className="text-sm text-gray-600">General Expenses</div>
-              <div className="text-2xl font-bold text-purple-600 mt-2">
-                AED 2,500.00
-              </div>
-            </div>
-            <div className="bg-white border border-gray-200 p-6">
-              <div className="text-sm text-gray-600">This Month</div>
+              <div className="text-sm text-gray-600">This Month Expence</div>
               <div className="text-2xl font-bold text-black mt-2">3</div>
             </div>
           </div>
@@ -499,8 +624,11 @@ const Expence = () => {
           {activeTab === "vehicle" ? (
             /* Vehicle Expense Chart */
             <VehicleExpenseChart />
+          ) : activeTab === "history" ? (
+            /* Balance History Chart */
+            <BalanceHistoryChart />
           ) : (
-            /* Expenses Table for All and History tabs */
+            /* Expenses Table for All tab */
             <div className="bg-white border border-gray-200">
               {/* Table Header */}
               <div className="bg-black text-white">
@@ -662,10 +790,10 @@ const Expence = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-black mb-2">
-                    Vehicle (Optional)
+                    Vehicle 
                   </label>
                   <select
-                    {...registerExpense("vehicleId")}
+                    {...registerExpense("vehicleId",{required: "Vehicle is required"})}
                     className="w-full px-3 py-2 border border-gray-300 focus:border-black focus:outline-none text-sm"
                   >
                     <option value="">Select Vehicle</option>

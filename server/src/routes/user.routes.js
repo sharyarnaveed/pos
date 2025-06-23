@@ -6,7 +6,7 @@ const { requireAuth } = require("../middlewares/auth.middleware");
 const {addDriver, viewDriver} = require("../controller/driver.controller");
 const { addvehicle, viewvehicle } = require("../controller/vehicle.controller");
 const { addOrder, viewOrder, editorder } = require("../controller/order.controller");
-const { addexpences, viewexpences, addExpencebalance } = require("../controller/expences.controller");
+const { addexpences, viewexpences, addExpencebalance, gettotalexpenceandbalance, getbalancehistory } = require("../controller/expences.controller");
 const { signup } = require("../controller/signup.controller");
 
 
@@ -29,12 +29,12 @@ router.route("/addvehicle").post(requireAuth,addvehicle)
 router.route("/viewvehicle").get(viewvehicle)
 router.route("/addorder").post(requireAuth,addOrder)
 router.route("/vieworders").get(requireAuth,viewOrder)
-router.route("/updateorder/:id").put(editorder)
-router.route("/addexpence").post(addexpences)
-router.route("/viewexpences").get(viewexpences)
+router.route("/updateorder/:id").put(requireAuth,editorder)
+router.route("/addexpence").post(requireAuth,addexpences)
+router.route("/viewexpences").get(requireAuth,viewexpences)
 router.route("/addamount").post(addExpencebalance)
-
-
+router.route("/gettoalexpncebalance").get(gettotalexpenceandbalance)
+router.route("/getbalancehistory").get(getbalancehistory)
 
 
 
