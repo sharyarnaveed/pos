@@ -3,6 +3,8 @@ import Sidebar from "../components/Sidebar";
 import api from "../api";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
+import Spinner from "../components/Spinner";
 
 const Expence = () => {
   const [isAddExpenseModalOpen, setIsAddExpenseModalOpen] = useState(false);
@@ -12,6 +14,8 @@ const Expence = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("all");
   const [Vehicles, SetVehicles] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   // Form for Add Expense
   const {
@@ -508,545 +512,608 @@ const [totalExpence, setTotalExpence] = useState(0);
     );
   };
 
+  // Add this filtering logic before the return statement
+  const filteredExpenses = sampleExpenses.filter((expense) => {
+    if (!searchTerm.trim()) return true;
+    
+    const searchLower = searchTerm.toLowerCase();
+    const description = expense.description?.toLowerCase() || '';
+    const vehicleNumber = expense["vehicleDetails.plateNumber"]?.toLowerCase() || '';
+    
+    return description.includes(searchLower) || vehicleNumber.includes(searchLower);
+  });
+
+  const checkAccountLogin = async () => {
+    setLoading(true);
+    try {
+      const response = await api.get("/api/user/authcheck");
+      console.log(response.data);
+      if (response.data.authenticated === true) {
+        setLoading(false);
+        // Load all data after authentication check
+        await Promise.all([
+          viewExpences(),
+          gettotals(),
+          getVechilesData(),
+          getbalancehistory()
+        ]);
+      } else {
+        navigate("/signin");
+      }
+      setLoading(false);
+    } catch (error) {
+      console.log("error in checking user login", error);
+      setLoading(false);
+      navigate("/signin");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    checkAccountLogin();
+  }, []);
+
   return (
-    <div className="flex min-h-screen bg-white">
-      <Sidebar
-        isSidebarCollapsed={isSidebarCollapsed}
-        setIsSidebarCollapsed={setIsSidebarCollapsed}
-      />
+    <>
+      {loading ? (
+        <Spinner />
+      ) : (
+        <div className="flex min-h-screen bg-white">
+          <Sidebar
+            isSidebarCollapsed={isSidebarCollapsed}
+            setIsSidebarCollapsed={setIsSidebarCollapsed}
+          />
 
-      <div
-        className={`flex-1 ${
-          isSidebarCollapsed ? "ml-16" : "ml-64"
-        } transition-all duration-300`}
-      >
-        {/* Header */}
-        <div className="border-b border-gray-200 bg-white">
-          <div className="px-8 py-6">
-            <div className="flex justify-between items-center">
-              <div>
-                <h1 className="text-2xl font-bold text-black">
-                  Expense Management
-                </h1>
-                <p className="text-gray-600 text-sm mt-1">
-                  Track and manage your business expenses
-                </p>
-              </div>
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setIsAddAmountModalOpen(true)}
-                  className="bg-gray-800 text-white px-6 py-2 text-sm font-medium hover:bg-gray-700 transition-colors"
-                >
-                  Add Amount
-                </button>
-                <button
-                  onClick={() => setIsAddExpenseModalOpen(true)}
-                  className="bg-black text-white px-6 py-2 text-sm font-medium hover:bg-gray-800 transition-colors"
-                >
-                  Add Expense
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Content */}
-        <div className="p-8">
-          {/* Search and Tabs */}
-          <div className="mb-8">
-            {/* Search Bar */}
-            <div className="mb-6">
-              <input
-                type="text"
-                placeholder="Search expenses by description, category, or vehicle..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full max-w-md px-4 py-2 border border-gray-300 focus:border-black focus:outline-none text-sm"
-              />
-            </div>
-
-            {/* Tabs */}
-            <div className="flex border-b border-gray-200 mb-6">
-              <button
-                onClick={() => setActiveTab("all")}
-                className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
-                  activeTab === "all"
-                    ? "border-black text-black"
-                    : "border-transparent text-gray-600 hover:text-black"
-                }`}
-              >
-                All Expenses
-              </button>
-              <button
-                onClick={() => setActiveTab("vehicle")}
-                className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
-                  activeTab === "vehicle"
-                    ? "border-black text-black"
-                    : "border-transparent text-gray-600 hover:text-black"
-                }`}
-              >
-                View by Vehicle
-              </button>
-              <button
-                onClick={() => setActiveTab("history")}
-                className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
-                  activeTab === "history"
-                    ? "border-black text-black"
-                    : "border-transparent text-gray-600 hover:text-black"
-                }`}
-              >
-                Balance History
-              </button>
-            </div>
-          </div>
-
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div className="bg-white border border-gray-200 p-6">
-              <div className="text-sm text-gray-600">Total Expenses</div>
-              <div className="text-2xl font-bold text-red-600 mt-2">
-              AED  {totalExpence}
+          <div
+            className={`flex-1 ${
+              isSidebarCollapsed ? "ml-16" : "ml-64"
+            } transition-all duration-300`}
+          >
+            {/* Header */}
+            <div className="border-b border-gray-200 bg-white">
+              <div className="px-8 py-6">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h1 className="text-2xl font-bold text-black">
+                      Expense Management
+                    </h1>
+                    <p className="text-gray-600 text-sm mt-1">
+                      Track and manage your business expenses
+                    </p>
+                  </div>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => setIsAddAmountModalOpen(true)}
+                      className="bg-gray-800 text-white px-6 py-2 text-sm font-medium hover:bg-gray-700 transition-colors"
+                    >
+                      Add Amount
+                    </button>
+                    <button
+                      onClick={() => setIsAddExpenseModalOpen(true)}
+                      className="bg-black text-white px-6 py-2 text-sm font-medium hover:bg-gray-800 transition-colors"
+                    >
+                      Add Expense
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
-            <div className="bg-white border border-gray-200 p-6">
-              <div className="text-sm text-gray-600">Current Balance</div>
-              <div className="text-2xl font-bold text-blue-600 mt-2">
-                AED {currentbalance}
-              </div>
-            </div>
-            <div className="bg-white border border-gray-200 p-6">
-              <div className="text-sm text-gray-600">This Month Expence</div>
-              <div className="text-2xl font-bold text-black mt-2">3</div>
-            </div>
-          </div>
 
-          {/* Conditional Content Based on Active Tab */}
-          {activeTab === "vehicle" ? (
-            /* Vehicle Expense Chart */
-            <VehicleExpenseChart />
-          ) : activeTab === "history" ? (
-            /* Balance History Chart */
-            <BalanceHistoryChart />
-          ) : (
-            /* Expenses Table for All tab */
-            <div className="bg-white border border-gray-200">
-              {/* Table Header */}
-              <div className="bg-black text-white">
-                <div className="grid grid-cols-7 gap-4 px-6 py-4 text-sm font-medium">
-                  <div>Description</div>
-                  <div>Category</div>
-                  <div>Amount</div>
-                  <div>Vehicle</div>
-                  <div>Date</div>
-                  <div>Type</div>
-                  <div>Actions</div>
+            {/* Content */}
+            <div className="p-8">
+              {/* Search and Tabs */}
+              <div className="mb-8">
+                {/* Search Bar */}
+                <div className="mb-6">
+                  <input
+                    type="text"
+                    placeholder="Search by vehicle number or description..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full max-w-md px-4 py-2 border border-gray-300 focus:border-black focus:outline-none text-sm"
+                  />
+                  {searchTerm && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      Showing results for: "{searchTerm}" ({filteredExpenses.length} found)
+                    </p>
+                  )}
+                </div>
+
+                {/* Tabs */}
+                <div className="flex border-b border-gray-200 mb-6">
+                  <button
+                    onClick={() => setActiveTab("all")}
+                    className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
+                      activeTab === "all"
+                        ? "border-black text-black"
+                        : "border-transparent text-gray-600 hover:text-black"
+                    }`}
+                  >
+                    All Expenses
+                  </button>
+                  <button
+                    onClick={() => setActiveTab("vehicle")}
+                    className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
+                      activeTab === "vehicle"
+                        ? "border-black text-black"
+                        : "border-transparent text-gray-600 hover:text-black"
+                    }`}
+                  >
+                    View by Vehicle
+                  </button>
+                  <button
+                    onClick={() => setActiveTab("history")}
+                    className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
+                      activeTab === "history"
+                        ? "border-black text-black"
+                        : "border-transparent text-gray-600 hover:text-black"
+                    }`}
+                  >
+                    Balance History
+                  </button>
                 </div>
               </div>
 
-              {/* Table Body */}
-              <div className="divide-y divide-gray-200">
-                {sampleExpenses.map((expense) => (
-                  <div
-                    key={expense.id}
-                    className="grid grid-cols-7 gap-4 px-6 py-4 text-sm hover:bg-gray-50 transition-colors cursor-pointer"
-                    onClick={() => handleExpencedetail(expense)}
-                  >
-                    <div className="font-medium text-black">
-                      {expense.description}
-                    </div>
-                    <div>
-                      <span
-                        className={`text-xs px-2 py-1 rounded-full ${getCategoryColor(
-                          expense.category
-                        )}`}
-                      >
-                        {expense.category}
-                      </span>
-                    </div>
-                    <div className="font-medium text-red-600">
-                      AED {expense.amount.toFixed(2)}
-                    </div>
-                    <div className="text-gray-600">
-                      {expense["vehicleDetails.plateNumber"] || "N/A"}
-                    </div>
-                    <div className="text-gray-600">
-                      {expense.createdAt.split("T")[0]}
-                    </div>
-                    <div>
-                      <span
-                        className={`text-xs px-2 py-1 rounded-full ${
-                          expense.type === "vehicle"
-                            ? "bg-blue-100 text-blue-800"
-                            : "bg-gray-100 text-gray-800"
-                        }`}
-                      >
-                        {expense["vehicleDetails.type"]}
-                      </span>
-                    </div>
-                    <div onClick={(e) => e.stopPropagation()}>
-                      <button
-                        onClick={() => setShowExpenseDetail(true)}
-                        className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-                      >
-                        View
-                      </button>
+              {/* Stats Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div className="bg-white border border-gray-200 p-6">
+                  <div className="text-sm text-gray-600">Total Expenses</div>
+                  <div className="text-2xl font-bold text-red-600 mt-2">
+                  AED  {totalExpence}
+                  </div>
+                </div>
+                <div className="bg-white border border-gray-200 p-6">
+                  <div className="text-sm text-gray-600">Current Balance</div>
+                  <div className="text-2xl font-bold text-blue-600 mt-2">
+                    AED {currentbalance}
+                  </div>
+                </div>
+                <div className="bg-white border border-gray-200 p-6">
+                  <div className="text-sm text-gray-600">This Month Expence</div>
+                  <div className="text-2xl font-bold text-black mt-2">3</div>
+                </div>
+              </div>
+
+              {/* Conditional Content Based on Active Tab */}
+              {activeTab === "vehicle" ? (
+                /* Vehicle Expense Chart */
+                <VehicleExpenseChart />
+              ) : activeTab === "history" ? (
+                /* Balance History Chart */
+                <BalanceHistoryChart />
+              ) : (
+                /* Expenses Table for All tab */
+                <div className="bg-white border border-gray-200">
+                  {/* Table Header */}
+                  <div className="bg-black text-white">
+                    <div className="grid grid-cols-7 gap-4 px-6 py-4 text-sm font-medium">
+                      <div>Description</div>
+                      <div>Category</div>
+                      <div>Amount</div>
+                      <div>Vehicle</div>
+                      <div>Date</div>
+                      <div>Type</div>
+                      <div>Actions</div>
                     </div>
                   </div>
-                ))}
+
+                  {/* Table Body */}
+                  <div className="divide-y divide-gray-200">
+                    {filteredExpenses.length > 0 ? (
+                      filteredExpenses.map((expense) => (
+                        <div
+                          key={expense.id}
+                          className="grid grid-cols-7 gap-4 px-6 py-4 text-sm hover:bg-gray-50 transition-colors cursor-pointer"
+                          onClick={() => handleExpencedetail(expense)}
+                        >
+                          <div className="font-medium text-black">
+                            {expense.description}
+                          </div>
+                          <div>
+                            <span
+                              className={`text-xs px-2 py-1 rounded-full ${getCategoryColor(
+                                expense.category
+                              )}`}
+                            >
+                              {expense.category}
+                            </span>
+                          </div>
+                          <div className="font-medium text-red-600">
+                            AED {expense.amount.toFixed(2)}
+                          </div>
+                          <div className="text-gray-600">
+                            {expense["vehicleDetails.plateNumber"] || "N/A"}
+                          </div>
+                          <div className="text-gray-600">
+                            {expense.createdAt.split("T")[0]}
+                          </div>
+                          <div>
+                            <span
+                              className={`text-xs px-2 py-1 rounded-full ${
+                                expense.type === "vehicle"
+                                  ? "bg-blue-100 text-blue-800"
+                                  : "bg-gray-100 text-gray-800"
+                              }`}
+                            >
+                              {expense["vehicleDetails.type"]}
+                            </span>
+                          </div>
+                          <div onClick={(e) => e.stopPropagation()}>
+                            <button
+                              onClick={() => setShowExpenseDetail(true)}
+                              className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                            >
+                              View
+                            </button>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="px-6 py-12 text-center">
+                        <div className="text-gray-400 text-4xl mb-4">🔍</div>
+                        <p className="text-gray-500 text-lg mb-2">No expenses found</p>
+                        <p className="text-gray-400 text-sm">
+                          Try adjusting your search terms for "{searchTerm}"
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Add Expense Modal */}
+          {isAddExpenseModalOpen && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+              <div className="bg-white w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+                {/* Modal Header */}
+                <div className="bg-black text-white px-6 py-4 flex justify-between items-center">
+                  <h3 className="text-lg font-medium">Add New Expense</h3>
+                  <button
+                    onClick={() => setIsAddExpenseModalOpen(false)}
+                    className="text-white hover:text-gray-300 text-xl"
+                  >
+                    ×
+                  </button>
+                </div>
+
+                {/* Modal Body */}
+                <form
+                  onSubmit={handleSubmitExpense(onSubmitExpense)}
+                  className="p-6"
+                >
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-black mb-2">
+                        Description *
+                      </label>
+                      <input
+                        type="text"
+                        {...registerExpense("description", {
+                          required: "Description is required",
+                        })}
+                        className="w-full px-3 py-2 border border-gray-300 focus:border-black focus:outline-none text-sm"
+                        placeholder="Enter expense description"
+                      />
+                      {expenseErrors.description && (
+                        <p className="text-red-500 text-xs mt-1">
+                          {expenseErrors.description.message}
+                        </p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-black mb-2">
+                        Amount *
+                      </label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        {...registerExpense("amount", {
+                          required: "Amount is required",
+                          min: {
+                            value: 0.01,
+                            message: "Amount must be greater than 0",
+                          },
+                        })}
+                        className="w-full px-3 py-2 border border-gray-300 focus:border-black focus:outline-none text-sm"
+                        placeholder="0.00"
+                      />
+                      {expenseErrors.amount && (
+                        <p className="text-red-500 text-xs mt-1">
+                          {expenseErrors.amount.message}
+                        </p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-black mb-2">
+                        Category *
+                      </label>
+                      <select
+                        {...registerExpense("category", {
+                          required: "Category is required",
+                        })}
+                        className="w-full px-3 py-2 border border-gray-300 focus:border-black focus:outline-none text-sm"
+                      >
+                        <option value="Fuel">Fuel</option>
+                        <option value="Maintenance">Maintenance</option>
+                        <option value="Fixed Costs">Fixed Costs</option>
+                        <option value="Marketing">Marketing</option>
+                        <option value="Utilities">Utilities</option>
+                        <option value="Insurance">Insurance</option>
+                        <option value="Other">Other</option>
+                      </select>
+                      {expenseErrors.category && (
+                        <p className="text-red-500 text-xs mt-1">
+                          {expenseErrors.category.message}
+                        </p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-black mb-2">
+                        Vehicle 
+                      </label>
+                      <select
+                        {...registerExpense("vehicleId",{required: "Vehicle is required"})}
+                        className="w-full px-3 py-2 border border-gray-300 focus:border-black focus:outline-none text-sm"
+                      >
+                        <option value="">Select Vehicle</option>
+                        {Vehicles.map((item) => (
+                          <option key={item.id} value={item.id}>
+                            {item.plateNumber}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-black mb-2">
+                        Date *
+                      </label>
+                      <input
+                        type="date"
+                        {...registerExpense("date", {
+                          required: "Date is required",
+                        })}
+                        className="w-full px-3 py-2 border border-gray-300 focus:border-black focus:outline-none text-sm"
+                      />
+                      {expenseErrors.date && (
+                        <p className="text-red-500 text-xs mt-1">
+                          {expenseErrors.date.message}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-black mb-2">
+                        Remarks
+                      </label>
+                      <textarea
+                        {...registerExpense("remarks")}
+                        rows="3"
+                        className="w-full px-3 py-2 border border-gray-300 focus:border-black focus:outline-none text-sm resize-none"
+                        placeholder="Additional notes or remarks"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Modal Footer */}
+                  <div className="flex justify-end gap-3 mt-6 pt-6 border-t border-gray-200">
+                    <button
+                      type="button"
+                      onClick={() => setIsAddExpenseModalOpen(false)}
+                      className="px-4 py-2 text-sm border border-gray-300 text-gray-700 hover:bg-gray-50"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="px-4 py-2 text-sm bg-black text-white hover:bg-gray-800"
+                    >
+                      Add Expense
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* Add Amount Modal */}
+          {isAddAmountModalOpen && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+              <div className="bg-white w-full max-w-md max-h-[90vh] overflow-y-auto">
+                {/* Modal Header */}
+                <div className="bg-black text-white px-6 py-4 flex justify-between items-center">
+                  <h3 className="text-lg font-medium">Add Amount</h3>
+                  <button
+                    onClick={() => setIsAddAmountModalOpen(false)}
+                    className="text-white hover:text-gray-300 text-xl"
+                  >
+                    ×
+                  </button>
+                </div>
+
+                {/* Modal Body */}
+                <form onSubmit={handleSubmitAmount(onSubmitAmount)} className="p-6">
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-black mb-2">
+                        Amount *
+                      </label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        {...registerAmount("amount", {
+                          required: "Amount is required",
+                          min: {
+                            value: 0.01,
+                            message: "Amount must be greater than 0",
+                          },
+                        })}
+                        className="w-full px-3 py-2 border border-gray-300 focus:border-black focus:outline-none text-sm"
+                        placeholder="0.00"
+                      />
+                      {amountErrors.amount && (
+                        <p className="text-red-500 text-xs mt-1">
+                          {amountErrors.amount.message}
+                        </p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-black mb-2">
+                        Description
+                      </label>
+                      <input
+                        type="text"
+                        {...registerAmount("description")}
+                        className="w-full px-3 py-2 border border-gray-300 focus:border-black focus:outline-none text-sm"
+                        placeholder="Brief description (optional)"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-black mb-2">
+                        Date *
+                      </label>
+                      <input
+                        type="date"
+                        {...registerAmount("date", {
+                          required: "Date is required",
+                        })}
+                        className="w-full px-3 py-2 border border-gray-300 focus:border-black focus:outline-none text-sm"
+                      />
+                      {amountErrors.date && (
+                        <p className="text-red-500 text-xs mt-1">
+                          {amountErrors.date.message}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Modal Footer */}
+                  <div className="flex justify-end gap-3 mt-6 pt-6 border-t border-gray-200">
+                    <button
+                      type="button"
+                      onClick={() => setIsAddAmountModalOpen(false)}
+                      className="px-4 py-2 text-sm border border-gray-300 text-gray-700 hover:bg-gray-50"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="px-4 py-2 text-sm bg-black text-white hover:bg-gray-800"
+                    >
+                      Add Amount
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* Expense Detail Modal */}
+          {showExpenseDetail && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+              <div className="bg-white w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+                <div className="bg-black text-white px-6 py-4 flex justify-between items-center">
+                  <h3 className="text-lg font-medium">Expense Details</h3>
+                  <button
+                    onClick={() => setShowExpenseDetail(false)}
+                    className="text-white hover:text-gray-300 text-xl"
+                  >
+                    ×
+                  </button>
+                </div>
+
+                <div className="p-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    {/* Expense Information */}
+
+                    <div>
+                      <h4 className="text-lg font-semibold text-black border-b border-gray-200 pb-2 mb-4">
+                        Expense Information
+                      </h4>
+                      <div className="space-y-3">
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Description:</span>
+                          <span className="font-medium">
+                            {expencedetail.category} for Vehicle{" "}
+                            {expencedetail["vehicleDetails.plateNumber"]}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Amount:</span>
+                          <span className="font-bold text-red-600">
+                            AED {expencedetail.amount}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Category:</span>
+                          <span className="px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
+                            {expencedetail.category}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Date:</span>
+                          <span className="font-medium">
+                            {expencedetail.createdAt.split("T")[0]}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Type:</span>
+                          <span className="px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
+                            vehicle
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Vehicle Information */}
+                    <div>
+                      <h4 className="text-lg font-semibold text-black border-b border-gray-200 pb-2 mb-4">
+                        Vehicle Information
+                      </h4>
+                      <div className="space-y-3">
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Plate Number:</span>
+                          <span className="font-medium">
+                            {expencedetail["vehicleDetails.plateNumber"]}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Remarks */}
+                  <div className="mt-6">
+                    <h4 className="text-lg font-semibold text-black border-b border-gray-200 pb-2 mb-4">
+                      Remarks
+                    </h4>
+                    <p className="text-gray-700 bg-gray-50 p-4 rounded">
+                      {expencedetail.remarks || "No remarks"}
+                    </p>
+                  </div>
+
+                  <div className="flex justify-end gap-3 mt-6 pt-6 border-t border-gray-200">
+                    <button
+                      onClick={() => setShowExpenseDetail(false)}
+                      className="px-4 py-2 text-sm border border-gray-300 text-gray-700 hover:bg-gray-50"
+                    >
+                      Close
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           )}
         </div>
-      </div>
-
-      {/* Add Expense Modal */}
-      {isAddExpenseModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            {/* Modal Header */}
-            <div className="bg-black text-white px-6 py-4 flex justify-between items-center">
-              <h3 className="text-lg font-medium">Add New Expense</h3>
-              <button
-                onClick={() => setIsAddExpenseModalOpen(false)}
-                className="text-white hover:text-gray-300 text-xl"
-              >
-                ×
-              </button>
-            </div>
-
-            {/* Modal Body */}
-            <form
-              onSubmit={handleSubmitExpense(onSubmitExpense)}
-              className="p-6"
-            >
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-black mb-2">
-                    Description *
-                  </label>
-                  <input
-                    type="text"
-                    {...registerExpense("description", {
-                      required: "Description is required",
-                    })}
-                    className="w-full px-3 py-2 border border-gray-300 focus:border-black focus:outline-none text-sm"
-                    placeholder="Enter expense description"
-                  />
-                  {expenseErrors.description && (
-                    <p className="text-red-500 text-xs mt-1">
-                      {expenseErrors.description.message}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-black mb-2">
-                    Amount *
-                  </label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    {...registerExpense("amount", {
-                      required: "Amount is required",
-                      min: {
-                        value: 0.01,
-                        message: "Amount must be greater than 0",
-                      },
-                    })}
-                    className="w-full px-3 py-2 border border-gray-300 focus:border-black focus:outline-none text-sm"
-                    placeholder="0.00"
-                  />
-                  {expenseErrors.amount && (
-                    <p className="text-red-500 text-xs mt-1">
-                      {expenseErrors.amount.message}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-black mb-2">
-                    Category *
-                  </label>
-                  <select
-                    {...registerExpense("category", {
-                      required: "Category is required",
-                    })}
-                    className="w-full px-3 py-2 border border-gray-300 focus:border-black focus:outline-none text-sm"
-                  >
-                    <option value="Fuel">Fuel</option>
-                    <option value="Maintenance">Maintenance</option>
-                    <option value="Fixed Costs">Fixed Costs</option>
-                    <option value="Marketing">Marketing</option>
-                    <option value="Utilities">Utilities</option>
-                    <option value="Insurance">Insurance</option>
-                    <option value="Other">Other</option>
-                  </select>
-                  {expenseErrors.category && (
-                    <p className="text-red-500 text-xs mt-1">
-                      {expenseErrors.category.message}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-black mb-2">
-                    Vehicle 
-                  </label>
-                  <select
-                    {...registerExpense("vehicleId",{required: "Vehicle is required"})}
-                    className="w-full px-3 py-2 border border-gray-300 focus:border-black focus:outline-none text-sm"
-                  >
-                    <option value="">Select Vehicle</option>
-                    {Vehicles.map((item) => (
-                      <option key={item.id} value={item.id}>
-                        {item.plateNumber}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-black mb-2">
-                    Date *
-                  </label>
-                  <input
-                    type="date"
-                    {...registerExpense("date", {
-                      required: "Date is required",
-                    })}
-                    className="w-full px-3 py-2 border border-gray-300 focus:border-black focus:outline-none text-sm"
-                  />
-                  {expenseErrors.date && (
-                    <p className="text-red-500 text-xs mt-1">
-                      {expenseErrors.date.message}
-                    </p>
-                  )}
-                </div>
-
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-black mb-2">
-                    Remarks
-                  </label>
-                  <textarea
-                    {...registerExpense("remarks")}
-                    rows="3"
-                    className="w-full px-3 py-2 border border-gray-300 focus:border-black focus:outline-none text-sm resize-none"
-                    placeholder="Additional notes or remarks"
-                  />
-                </div>
-              </div>
-
-              {/* Modal Footer */}
-              <div className="flex justify-end gap-3 mt-6 pt-6 border-t border-gray-200">
-                <button
-                  type="button"
-                  onClick={() => setIsAddExpenseModalOpen(false)}
-                  className="px-4 py-2 text-sm border border-gray-300 text-gray-700 hover:bg-gray-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 text-sm bg-black text-white hover:bg-gray-800"
-                >
-                  Add Expense
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
       )}
-
-      {/* Add Amount Modal */}
-      {isAddAmountModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white w-full max-w-md max-h-[90vh] overflow-y-auto">
-            {/* Modal Header */}
-            <div className="bg-black text-white px-6 py-4 flex justify-between items-center">
-              <h3 className="text-lg font-medium">Add Amount</h3>
-              <button
-                onClick={() => setIsAddAmountModalOpen(false)}
-                className="text-white hover:text-gray-300 text-xl"
-              >
-                ×
-              </button>
-            </div>
-
-            {/* Modal Body */}
-            <form onSubmit={handleSubmitAmount(onSubmitAmount)} className="p-6">
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-black mb-2">
-                    Amount *
-                  </label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    {...registerAmount("amount", {
-                      required: "Amount is required",
-                      min: {
-                        value: 0.01,
-                        message: "Amount must be greater than 0",
-                      },
-                    })}
-                    className="w-full px-3 py-2 border border-gray-300 focus:border-black focus:outline-none text-sm"
-                    placeholder="0.00"
-                  />
-                  {amountErrors.amount && (
-                    <p className="text-red-500 text-xs mt-1">
-                      {amountErrors.amount.message}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-black mb-2">
-                    Description
-                  </label>
-                  <input
-                    type="text"
-                    {...registerAmount("description")}
-                    className="w-full px-3 py-2 border border-gray-300 focus:border-black focus:outline-none text-sm"
-                    placeholder="Brief description (optional)"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-black mb-2">
-                    Date *
-                  </label>
-                  <input
-                    type="date"
-                    {...registerAmount("date", {
-                      required: "Date is required",
-                    })}
-                    className="w-full px-3 py-2 border border-gray-300 focus:border-black focus:outline-none text-sm"
-                  />
-                  {amountErrors.date && (
-                    <p className="text-red-500 text-xs mt-1">
-                      {amountErrors.date.message}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              {/* Modal Footer */}
-              <div className="flex justify-end gap-3 mt-6 pt-6 border-t border-gray-200">
-                <button
-                  type="button"
-                  onClick={() => setIsAddAmountModalOpen(false)}
-                  className="px-4 py-2 text-sm border border-gray-300 text-gray-700 hover:bg-gray-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 text-sm bg-black text-white hover:bg-gray-800"
-                >
-                  Add Amount
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Expense Detail Modal */}
-      {showExpenseDetail && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <div className="bg-black text-white px-6 py-4 flex justify-between items-center">
-              <h3 className="text-lg font-medium">Expense Details</h3>
-              <button
-                onClick={() => setShowExpenseDetail(false)}
-                className="text-white hover:text-gray-300 text-xl"
-              >
-                ×
-              </button>
-            </div>
-
-            <div className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {/* Expense Information */}
-
-                <div>
-                  <h4 className="text-lg font-semibold text-black border-b border-gray-200 pb-2 mb-4">
-                    Expense Information
-                  </h4>
-                  <div className="space-y-3">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Description:</span>
-                      <span className="font-medium">
-                        {expencedetail.category} for Vehicle{" "}
-                        {expencedetail["vehicleDetails.plateNumber"]}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Amount:</span>
-                      <span className="font-bold text-red-600">
-                        AED {expencedetail.amount}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Category:</span>
-                      <span className="px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
-                        {expencedetail.category}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Date:</span>
-                      <span className="font-medium">
-                        {expencedetail.createdAt.split("T")[0]}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Type:</span>
-                      <span className="px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
-                        vehicle
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Vehicle Information */}
-                <div>
-                  <h4 className="text-lg font-semibold text-black border-b border-gray-200 pb-2 mb-4">
-                    Vehicle Information
-                  </h4>
-                  <div className="space-y-3">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Plate Number:</span>
-                      <span className="font-medium">
-                        {expencedetail["vehicleDetails.plateNumber"]}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Remarks */}
-              <div className="mt-6">
-                <h4 className="text-lg font-semibold text-black border-b border-gray-200 pb-2 mb-4">
-                  Remarks
-                </h4>
-                <p className="text-gray-700 bg-gray-50 p-4 rounded">
-                  {expencedetail.remarks || "No remarks"}
-                </p>
-              </div>
-
-              <div className="flex justify-end gap-3 mt-6 pt-6 border-t border-gray-200">
-                <button
-                  onClick={() => setShowExpenseDetail(false)}
-                  className="px-4 py-2 text-sm border border-gray-300 text-gray-700 hover:bg-gray-50"
-                >
-                  Close
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+    </>
   );
 };
 

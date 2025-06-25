@@ -589,9 +589,9 @@ const filterData=useMemo(()=>{
                           Generate Overview Invoice
                         </button>
 
-                        <button className="px-4 py-2 text-sm border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors">
+                        {/* <button className="px-4 py-2 text-sm border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors">
                           Edit Customer
-                        </button>
+                        </button> */}
                       </div>
                     </div>
                   </div>

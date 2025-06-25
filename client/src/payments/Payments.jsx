@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import Sidebar from '../components/Sidebar';
+import toast from 'react-hot-toast';
+import api from '../api';
 
 const Payments = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
@@ -8,43 +10,91 @@ const Payments = () => {
   const [filters, setFilters] = useState({
     startDate: '',
     endDate: '',
-    customerName: '',
+    searchQuery: '',
     paymentStatus: 'all'
   });
 
-  // Sample orders data - replace with actual data from your API
-  const orders = [
-    {
-      id: 1,
-      orderNumber: 'ORD-001',
-      customerName: 'John Doe',
-      customerPhone: '+1234567890',
-      totalAmount: 150.00,
-      paidAmount: 100.00,
-      createdAt: '2025-06-10T10:30:00',
-      items: [
-        { name: 'Product A', quantity: 2, price: 50.00 },
-        { name: 'Product B', quantity: 1, price: 50.00 }
-      ]
-    },
-    {
-      id: 2,
-      orderNumber: 'ORD-002',
-      customerName: 'Jane Smith',
-      customerPhone: '+1234567891',
-      totalAmount: 200.00,
-      paidAmount: 200.00,
-      createdAt: '2025-06-09T14:15:00',
-      items: [
-        { name: 'Product C', quantity: 1, price: 100.00 },
-        { name: 'Product D', quantity: 2, price: 50.00 }
-      ]
-    }
-  ];
+  // // Sample orders data - replace with actual data from your API
+  // const orders = [
+  //   {
+  //     id: 1,
+  //     orderNumber: 'ORD-001',
+  //     customerName: 'John Doe',
+  //     customerPhone: '+1234567890',
+  //     totalAmount: 150.00,
+  //     paidAmount: 100.00,
+  //     createdAt: '2025-06-10T10:30:00',
+  //     items: [
+  //       { name: 'Product A', quantity: 2, price: 50.00 },
+  //       { name: 'Product B', quantity: 1, price: 50.00 }
+  //     ]
+  //   },
+  //   {
+  //     id: 2,
+  //     orderNumber: 'ORD-002',
+  //     customerName: 'Jane Smith',
+  //     customerPhone: '+1234567891',
+  //     totalAmount: 200.00,
+  //     paidAmount: 200.00,
+  //     createdAt: '2025-06-09T14:15:00',
+  //     items: [
+  //       { name: 'Product C', quantity: 1, price: 100.00 },
+  //       { name: 'Product D', quantity: 2, price: 50.00 }
+  //     ]
+  //   },
+  //   {
+  //     id: 3,
+  //     orderNumber: 'ORD-003',
+  //     customerName: 'Mike Johnson',
+  //     customerPhone: '+1234567892',
+  //     totalAmount: 350.00,
+  //     paidAmount: 0.00,
+  //     createdAt: '2025-06-08T16:45:00',
+  //     items: [
+  //       { name: 'Product E', quantity: 3, price: 100.00 },
+  //       { name: 'Product F', quantity: 1, price: 50.00 }
+  //     ]
+  //   },
+  //   {
+  //     id: 4,
+  //     orderNumber: 'ORD-004',
+  //     customerName: 'Sarah Wilson',
+  //     customerPhone: '+1234567893',
+  //     totalAmount: 120.00,
+  //     paidAmount: 60.00,
+  //     createdAt: '2025-06-07T11:20:00',
+  //     items: [
+  //       { name: 'Product G', quantity: 2, price: 60.00 }
+  //     ]
+  //   }
+  // ];
+
+  const [orders, setOrders] = useState([]);
+
+const getallorder=useCallback(async()=>{
+try {
+  const responce=await api.get("/api/user/vieworders")
+  console.log(responce.data);
+  setOrders(responce.data.OrderData);
+  
+} catch (error) {
+  console.error("Error fetching orders:", error);
+  toast.error("Failed to fetch orders. Please try again later.",{
+    duration:3000
+  });
+  
+}
+},[])
+
+useEffect(()=>
+{
+getallorder();
+},[])
+
 
   const getPaymentStatus = (order) => {
-    const paidAmount = order.paidAmount || 0;
-    const totalAmount = order.totalAmount;
+    const paidAmount = order.paidamount || 0;
+    const totalAmount = order.total;
     
     if (paidAmount >= totalAmount) return 'paid';
     if (paidAmount > 0) return 'partial';
@@ -52,7 +102,7 @@ const Payments = () => {
   };
 
   const getRemainingAmount = (order) => {
-    return Math.max(0, order.totalAmount - (order.paidAmount || 0));
+    return Math.max(0, order.total - (order.paidamount || 0));
   };
 
   const getStatusColor = (status) => {
@@ -72,22 +122,64 @@ const Payments = () => {
     console.log(`Marking order ${selectedOrder.id} as paid`);
   };
 
-  const handlePartialPayment = () => {
+  const handlePartialPayment = async() => {
     console.log(`Adding ${paymentAmount} to order ${selectedOrder.id}`);
+
+try {
+  
+const responce= await api.put(`/api/user/addpayment/${selectedOrder.id}`, {
+  amount: parseFloat(paymentAmount)
+})
+  if(responce.data.success)
+  {
+    toast.success("Payment added successfully!", {
+      duration: 3000
+    });
+
+  }
+ await  getallorder();
+console.log(responce.data);
+
+
+} catch (error) {
+  log.error("Error processing payment:", error);
+  toast.error("Failed to process payment. Please try again.", {
+    duration: 3000
+  });
+}
+
     setPaymentAmount('');
   };
+
+  const handleSelectOrder = (order) => {
+    setSelectedOrder(order);
+  };
+
+  const filteredOrders = orders.filter(order => {
+    const matchesSearch = 
+      order.containerNumber.toLowerCase().includes(filters.searchQuery.toLowerCase()) ||
+      order["CustomerDetails.customername"].toLowerCase().includes(filters.searchQuery.toLowerCase()) ||
+      order["CustomerDetails.phoneno"].toString().includes(filters.searchQuery);
+    
+    const matchesStatus = filters.paymentStatus === 'all' || getPaymentStatus(order) === filters.paymentStatus;
+    
+    const matchesDate = (!filters.startDate || new Date(order.createdAt) >= new Date(filters.startDate)) &&
+                       (!filters.endDate || new Date(order.createdAt) <= new Date(filters.endDate));
+    
+    return matchesSearch && matchesStatus && matchesDate;
+  });
 
   const handleClearFilters = () => {
     setFilters({
       startDate: '',
       endDate: '',
-      customerName: '',
+      searchQuery: '',
       paymentStatus: 'all'
     });
   };
 
   return (
-    <div className="flex min-h-screen bg-white">
+    <div className="flex min-h-screen bg-gray-50">
       <Sidebar
         isSidebarCollapsed={isSidebarCollapsed}
         setIsSidebarCollapsed={setIsSidebarCollapsed}
@@ -108,265 +200,355 @@ const Payments = () => {
           </div>
         </div>
 
-        {/* Desktop Header */}
-        <div className="hidden lg:block border-b border-gray-200 bg-white">
-          <div className="px-8 py-6">
-            <div className="flex justify-between items-center">
-              <div>
-                <h1 className="text-2xl font-bold text-black">Payment Management</h1>
-                <p className="text-gray-600 text-sm mt-1">Manage order payments and tracking</p>
-              </div>
-            </div>
+        <div className="p-3 lg:p-6">
+          {/* Header Section */}
+          <div className="mb-6">
+            <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">Payment Management</h1>
+            <p className="text-gray-600">Manage order payments and tracking efficiently</p>
           </div>
-        </div>
-
-        <div className="p-3 lg:p-8">
           {/* Filters Section */}
-          <div className="bg-white border border-gray-200 p-3 lg:p-6 mb-4 lg:mb-8">
-            <h2 className="text-base lg:text-lg font-semibold text-black mb-3 lg:mb-6">Filter Orders</h2>
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 lg:p-6 mb-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Search & Filter Orders</h2>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 lg:gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {/* Search Bar */}
               <div>
-                <label className="block text-sm font-medium text-black mb-2">Start Date</label>
-                <input
-                  type="date"
-                  value={filters.startDate}
-                  onChange={(e) => setFilters({...filters, startDate: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 focus:border-black focus:outline-none text-sm"
-                />
+                <label className="block text-sm font-medium text-gray-700 mb-2">Search Orders</label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Search by order number, customer..."
+                    value={filters.searchQuery}
+                    onChange={(e) => setFilters({...filters, searchQuery: e.target.value})}
+                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                  />
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                  </div>
+                </div>
               </div>
               
+              {/* Payment Status Filter */}
               <div>
-                <label className="block text-sm font-medium text-black mb-2">End Date</label>
-                <input
-                  type="date"
-                  value={filters.endDate}
-                  onChange={(e) => setFilters({...filters, endDate: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 focus:border-black focus:outline-none text-sm"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-black mb-2">Customer Name</label>
-                <input
-                  type="text"
-                  placeholder="Search by customer name"
-                  value={filters.customerName}
-                  onChange={(e) => setFilters({...filters, customerName: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 focus:border-black focus:outline-none text-sm"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-black mb-2">Payment Status</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Payment Status</label>
                 <select
                   value={filters.paymentStatus}
                   onChange={(e) => setFilters({...filters, paymentStatus: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 focus:border-black focus:outline-none text-sm"
+                  className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
                 >
-                  <option value="all">All</option>
-                  <option value="paid">Paid</option>
+                  <option value="all">All Status</option>
+                  <option value="paid">Fully Paid</option>
                   <option value="partial">Partially Paid</option>
                   <option value="unpaid">Unpaid</option>
                 </select>
               </div>
               
-              <div className="flex items-end">
-                <button 
-                  onClick={handleClearFilters}
-                  className="w-full px-4 py-2 text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
-                >
-                  Clear Filters
-                </button>
+              {/* Date Range */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
+                <div className="flex gap-2">
+                  <input
+                    type="date"
+                    value={filters.startDate}
+                    onChange={(e) => setFilters({...filters, startDate: e.target.value})}
+                    className="flex-1 px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                  />
+                  <input
+                    type="date"
+                    value={filters.endDate}
+                    onChange={(e) => setFilters({...filters, endDate: e.target.value})}
+                    className="flex-1 px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                  />
+                </div>
               </div>
+            </div>
+
+            {/* Clear Filters Button */}
+            <div className="mt-4 flex justify-end">
+              <button 
+                onClick={handleClearFilters}
+                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium text-sm"
+              >
+                Clear Filters
+              </button>
             </div>
           </div>
 
           {/* Stats Cards */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-6 mb-4 lg:mb-8">
-            <div className="bg-white border border-gray-200 p-3 lg:p-6">
-              <div className="text-xs lg:text-sm text-gray-600">Total Orders</div>
-              <div className="text-lg lg:text-2xl font-bold text-black mt-2">{orders.length}</div>
-            </div>
-            <div className="bg-white border border-gray-200 p-3 lg:p-6">
-              <div className="text-xs lg:text-sm text-gray-600">Fully Paid</div>
-              <div className="text-lg lg:text-2xl font-bold text-green-600 mt-2">
-                {orders.filter(order => getPaymentStatus(order) === 'paid').length}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-6 mb-6">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 lg:p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-sm text-gray-600 font-medium">Total Orders</div>
+                  <div className="text-2xl font-bold text-gray-900 mt-1">{filteredOrders.length}</div>
+                </div>
+                <div className="text-2xl opacity-80">📋</div>
               </div>
             </div>
-            <div className="bg-white border border-gray-200 p-3 lg:p-6">
-              <div className="text-xs lg:text-sm text-gray-600">Partially Paid</div>
-              <div className="text-lg lg:text-2xl font-bold text-yellow-600 mt-2">
-                {orders.filter(order => getPaymentStatus(order) === 'partial').length}
+            
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 lg:p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-sm text-gray-600 font-medium">Fully Paid</div>
+                  <div className="text-2xl font-bold text-green-600 mt-1">
+                    {filteredOrders.filter(order => getPaymentStatus(order) === 'paid').length}
+                  </div>
+                </div>
+                <div className="text-2xl opacity-80">✅</div>
               </div>
             </div>
-            <div className="bg-white border border-gray-200 p-3 lg:p-6">
-              <div className="text-xs lg:text-sm text-gray-600">Unpaid</div>
-              <div className="text-lg lg:text-2xl font-bold text-red-600 mt-2">
-                {orders.filter(order => getPaymentStatus(order) === 'unpaid').length}
+            
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 lg:p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-sm text-gray-600 font-medium">Partially Paid</div>
+                  <div className="text-2xl font-bold text-yellow-600 mt-1">
+                    {filteredOrders.filter(order => getPaymentStatus(order) === 'partial').length}
+                  </div>
+                </div>
+                <div className="text-2xl opacity-80">⏳</div>
+              </div>
+            </div>
+            
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 lg:p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-sm text-gray-600 font-medium">Unpaid</div>
+                  <div className="text-2xl font-bold text-red-600 mt-1">
+                    {filteredOrders.filter(order => getPaymentStatus(order) === 'unpaid').length}
+                  </div>
+                </div>
+                <div className="text-2xl opacity-80">❌</div>
               </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8">
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
             {/* Orders List */}
-            <div className="bg-white border border-gray-200">
-              <div className="bg-black text-white p-3 lg:p-6">
-                <h3 className="text-base lg:text-lg font-semibold">Orders</h3>
+            <div className="xl:col-span-2 bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+              <div className="bg-gray-900 text-white p-4 lg:p-6">
+                <h3 className="text-lg font-semibold flex items-center">
+                  📋 Orders ({filteredOrders.length})
+                </h3>
               </div>
               
-              <div className="p-3 lg:p-6 space-y-3 lg:space-y-4 max-h-80 lg:max-h-96 overflow-y-auto">
-                {orders.map(order => (
-                  <div
-                    key={order.id}
-                    className={`p-3 lg:p-4 border border-gray-200 cursor-pointer transition-all duration-200 hover:shadow-md ${
-                      selectedOrder?.id === order.id ? 'border-black bg-gray-50' : 'hover:border-gray-300'
-                    }`}
-                    onClick={() => setSelectedOrder(order)}
-                  >
-                    <div className="flex justify-between items-start mb-3">
-                      <div>
-                        <h4 className="font-semibold text-black text-sm lg:text-base">{order.orderNumber}</h4>
-                        <p className="text-xs lg:text-sm text-gray-600">{order.customerName}</p>
+              <div className="p-4 lg:p-6">
+                <div className="space-y-3 max-h-[600px] overflow-y-auto">
+                  {filteredOrders.map(order => (
+                    <div
+                      key={order.id}
+                      className={`p-4 rounded-lg border-2 transition-all duration-200 cursor-pointer hover:shadow-md ${
+                        selectedOrder?.id === order.id 
+                          ? 'border-blue-500 bg-blue-50 shadow-md' 
+                          : 'border-gray-200 hover:border-blue-300'
+                      }`}
+                      onClick={() => handleSelectOrder(order)}
+                    >
+                      <div className="flex justify-between items-start mb-3">
+                        <div>
+                          <h4 className="font-bold text-gray-900 text-lg">{order.containerNumber}</h4>
+                          <p className="text-gray-600 font-medium">{order["CustomerDetails.customername"]}</p>
+                          <p className="text-sm text-gray-500">{order["CustomerDetails.phoneno"]}</p>
+                          <p className="text-sm text-gray-500">{order.from} → {order.to}</p>
+                        </div>
+                        <div className="text-right">
+                          <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${getStatusColor(getPaymentStatus(order))}`}>
+                            {getPaymentStatus(order).toUpperCase()}
+                          </span>
+                          <p className="text-sm text-gray-500 mt-1">
+                            {new Date(order.createdAt).toLocaleDateString()}
+                          </p>
+                        </div>
                       </div>
-                      <span className={`text-xs px-2 py-1 rounded-full ${getStatusColor(getPaymentStatus(order))}`}>
-                        {getPaymentStatus(order).toUpperCase()}
-                      </span>
+                      
+                      <div className="grid grid-cols-3 gap-4 text-sm bg-gray-50 p-3 rounded">
+                        <div className="text-center">
+                          <span className="block text-gray-500 text-xs">Total</span>
+                          <span className="font-bold text-gray-900">${order.total.toFixed(2)}</span>
+                        </div>
+                        <div className="text-center">
+                          <span className="block text-gray-500 text-xs">Paid</span>
+                          <span className="font-bold text-green-600">${(order.paidamount || 0).toFixed(2)}</span>
+                        </div>
+                        <div className="text-center">
+                          <span className="block text-gray-500 text-xs">Due</span>
+                          <span className="font-bold text-red-600">${getRemainingAmount(order).toFixed(2)}</span>
+                        </div>
+                      </div>
                     </div>
-                    
-                    <div className="space-y-1 text-xs lg:text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Total:</span>
-                        <span className="text-black font-medium">${order.totalAmount.toFixed(2)}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Paid:</span>
-                        <span className="text-black font-medium">${(order.paidAmount || 0).toFixed(2)}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Remaining:</span>
-                        <span className="text-red-600 font-medium">${getRemainingAmount(order).toFixed(2)}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Date:</span>
-                        <span className="text-black">{new Date(order.createdAt).toLocaleDateString()}</span>
-                      </div>
+                  ))}
+                  
+                  {filteredOrders.length === 0 && (
+                    <div className="text-center py-12">
+                      <div className="text-6xl mb-4">🔍</div>
+                      <h3 className="text-lg font-semibold text-gray-700 mb-2">No Orders Found</h3>
+                      <p className="text-gray-500">Try adjusting your search filters</p>
                     </div>
-                  </div>
-                ))}
+                  )}
+                </div>
               </div>
             </div>
 
-            {/* Order Details & Payment Update */}
-            <div className="bg-white border border-gray-200">
+            {/* Payment Details Panel */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
               {selectedOrder ? (
                 <>
-                  <div className="bg-black text-white p-3 lg:p-6">
-                    <h3 className="text-base lg:text-lg font-semibold">Order Details - {selectedOrder.orderNumber}</h3>
+                  <div className="bg-blue-600 text-white p-4 lg:p-6">
+                    <h3 className="text-lg font-semibold">
+                      💳 Payment Details
+                    </h3>
                   </div>
                   
-                  <div className="p-3 lg:p-6 space-y-4 lg:space-y-6 max-h-80 lg:max-h-96 overflow-y-auto">
-                    {/* Customer Information */}
-                    <div>
-                      <h4 className="text-sm lg:text-md font-semibold text-black mb-2 lg:mb-3 border-b border-gray-200 pb-2">
-                        Customer Information
-                      </h4>
-                      <div className="space-y-2 text-xs lg:text-sm">
+                  <div className="p-4 lg:p-6 space-y-6">
+                    {/* Order Summary */}
+                    <div className="bg-blue-50 rounded-lg p-4">
+                      <h4 className="font-semibold text-gray-900 mb-3">Order Summary</h4>
+                      <div className="space-y-2 text-sm">
                         <div className="flex justify-between">
-                          <span className="text-gray-600">Name:</span>
-                          <span className="text-black font-medium">{selectedOrder.customerName}</span>
+                          <span className="text-gray-600">Container Number:</span>
+                          <span className="font-semibold">{selectedOrder.containerNumber}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Customer:</span>
+                          <span className="font-semibold">{selectedOrder["CustomerDetails.customername"]}</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-gray-600">Phone:</span>
-                          <span className="text-black">{selectedOrder.customerPhone}</span>
+                          <span>{selectedOrder["CustomerDetails.phoneno"]}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Route:</span>
+                          <span>{selectedOrder.from} → {selectedOrder.to}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Driver:</span>
+                          <span>{selectedOrder["driverDetails.drivername"]}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Vehicle:</span>
+                          <span>{selectedOrder["vehicleDetails.plateNumber"]} ({selectedOrder["vehicleDetails.type"]})</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-gray-600">Order Date:</span>
-                          <span className="text-black">{new Date(selectedOrder.createdAt).toLocaleString()}</span>
+                          <span>{new Date(selectedOrder.createdAt).toLocaleString()}</span>
                         </div>
-                      </div>
-                    </div>
-
-                    {/* Order Items */}
-                    <div>
-                      <h4 className="text-sm lg:text-md font-semibold text-black mb-2 lg:mb-3 border-b border-gray-200 pb-2">
-                        Order Items
-                      </h4>
-                      <div className="space-y-2">
-                        {selectedOrder.items.map((item, index) => (
-                          <div key={index} className="flex justify-between items-center text-xs lg:text-sm bg-gray-50 p-2 lg:p-3">
-                            <span className="text-black font-medium">{item.name}</span>
-                            <div className="flex gap-2 lg:gap-4 text-gray-600">
-                              <span>Qty: {item.quantity}</span>
-                              <span className="text-black font-medium">${item.price.toFixed(2)}</span>
-                            </div>
-                          </div>
-                        ))}
                       </div>
                     </div>
 
                     {/* Payment Summary */}
-                    <div>
-                      <h4 className="text-sm lg:text-md font-semibold text-black mb-2 lg:mb-3 border-b border-gray-200 pb-2">
-                        Payment Summary
-                      </h4>
-                      <div className="bg-gray-50 p-3 lg:p-4 space-y-2 text-xs lg:text-sm">
-                        <div className="flex justify-between">
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <h4 className="font-semibold text-gray-900 mb-4">Payment Summary</h4>
+                      <div className="space-y-3">
+                        <div className="flex justify-between text-lg">
                           <span className="text-gray-600">Total Amount:</span>
-                          <span className="text-black font-semibold">${selectedOrder.totalAmount.toFixed(2)}</span>
+                          <span className="font-bold text-gray-900">${selectedOrder.total.toFixed(2)}</span>
                         </div>
-                        <div className="flex justify-between">
+                        <div className="flex justify-between text-lg">
                           <span className="text-gray-600">Paid Amount:</span>
-                          <span className="text-green-600 font-semibold">${(selectedOrder.paidAmount || 0).toFixed(2)}</span>
+                          <span className="font-bold text-green-600">${(selectedOrder.paidamount || 0).toFixed(2)}</span>
                         </div>
-                        <div className="flex justify-between border-t border-gray-200 pt-2">
-                          <span className="text-gray-600 font-medium">Remaining:</span>
-                          <span className="text-red-600 font-bold">${getRemainingAmount(selectedOrder).toFixed(2)}</span>
+                        <div className="border-t border-gray-300 pt-3">
+                          <div className="flex justify-between text-xl">
+                            <span className="font-semibold text-gray-700">Outstanding:</span>
+                            <span className="font-bold text-red-600">${getRemainingAmount(selectedOrder).toFixed(2)}</span>
+                          </div>
                         </div>
                       </div>
                     </div>
 
-                    {/* Payment Actions */}
+                    {/* Order Breakdown */}
                     <div>
-                      <h4 className="text-sm lg:text-md font-semibold text-black mb-2 lg:mb-3 border-b border-gray-200 pb-2">
-                        Update Payment
-                      </h4>
-                      <div className="space-y-3 lg:space-y-4">
-                        <div className="flex flex-col sm:flex-row gap-2 lg:gap-3">
-                          <input
-                            type="number"
-                            placeholder="Enter payment amount"
-                            value={paymentAmount}
-                            onChange={(e) => setPaymentAmount(e.target.value)}
-                            min="0"
-                            step="0.01"
-                            className="flex-1 px-3 py-2 border border-gray-300 focus:border-black focus:outline-none text-sm"
-                          />
-                          <button 
-                            onClick={handlePartialPayment}
-                            disabled={!paymentAmount || paymentAmount <= 0}
-                            className="px-4 py-2 text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
-                          >
-                            Add Payment
-                          </button>
+                      <h4 className="font-semibold text-gray-900 mb-3">Cost Breakdown</h4>
+                      <div className="space-y-2 max-h-32 overflow-y-auto">
+                        <div className="flex justify-between items-center text-sm bg-white border border-gray-200 rounded p-3">
+                          <span className="font-medium">Base Rate</span>
+                          <span className="font-semibold">${selectedOrder.rate.toFixed(2)}</span>
                         </div>
-                        
-                        <button 
-                          onClick={handleMarkAsPaid}
-                          disabled={getRemainingAmount(selectedOrder) === 0}
-                          className="w-full px-4 py-2 text-sm font-medium bg-black text-white hover:bg-gray-800 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
-                        >
-                          Mark as Completely Paid
-                        </button>
+                        <div className="flex justify-between items-center text-sm bg-white border border-gray-200 rounded p-3">
+                          <span className="font-medium">Token</span>
+                          <span className="font-semibold">${selectedOrder.token.toFixed(2)}</span>
+                        </div>
+                        {selectedOrder.custwash && (
+                          <div className="flex justify-between items-center text-sm bg-white border border-gray-200 rounded p-3">
+                            <span className="font-medium">Custom Wash</span>
+                            <span className="font-semibold">${selectedOrder.custwash.toFixed(2)}</span>
+                          </div>
+                        )}
+                        {selectedOrder.merc > 0 && (
+                          <div className="flex justify-between items-center text-sm bg-white border border-gray-200 rounded p-3">
+                            <span className="font-medium">Merc</span>
+                            <span className="font-semibold">${selectedOrder.merc.toFixed(2)}</span>
+                          </div>
+                        )}
+                        {selectedOrder.extra > 0 && (
+                          <div className="flex justify-between items-center text-sm bg-white border border-gray-200 rounded p-3">
+                            <span className="font-medium">Extra</span>
+                            <span className="font-semibold">${selectedOrder.extra.toFixed(2)}</span>
+                          </div>
+                        )}
                       </div>
                     </div>
+
+                    {/* Payment Actions */}
+                    {getRemainingAmount(selectedOrder) > 0 && (
+                      <div className="bg-green-50 rounded-lg p-4">
+                        <h4 className="font-semibold text-gray-900 mb-4">Update Payment</h4>
+                        <div className="space-y-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Payment Amount
+                            </label>
+                            <input
+                              type="number"
+                              placeholder="Enter payment amount"
+                              value={paymentAmount}
+                              onChange={(e) => setPaymentAmount(e.target.value)}
+                              min="0"
+                              step="0.01"
+                              max={getRemainingAmount(selectedOrder)}
+                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all text-lg"
+                            />
+                          </div>
+                          
+                          <div className="space-y-3">
+                            <button 
+                              onClick={handlePartialPayment}
+                              disabled={!paymentAmount || paymentAmount <= 0}
+                              className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-all font-semibold"
+                            >
+                              Add Payment
+                            </button>
+                            
+                            <button 
+                              onClick={handleMarkAsPaid}
+                              className="w-full px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all font-semibold"
+                            >
+                              Mark as Fully Paid
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {getRemainingAmount(selectedOrder) === 0 && (
+                      <div className="bg-green-100 rounded-lg p-4 text-center">
+                        <div className="text-4xl mb-2">✅</div>
+                        <h4 className="font-semibold text-green-800">Payment Complete</h4>
+                        <p className="text-green-700 text-sm">This order has been fully paid</p>
+                      </div>
+                    )}
                   </div>
                 </>
               ) : (
-                <div className="bg-gray-50 flex items-center justify-center h-64">
+                <div className="bg-gray-50 flex items-center justify-center h-full min-h-[400px]">
                   <div className="text-center">
-                    <div className="text-4xl mb-4">📋</div>
-                    <p className="text-gray-600 text-sm lg:text-base px-4">Select an order to view details and update payment</p>
+                    <div className="text-6xl mb-4">💳</div>
+                    <h3 className="text-lg font-semibold text-gray-700 mb-2">Select an Order</h3>
+                    <p className="text-gray-500 text-sm px-4">
+                      Choose an order from the list to view payment details and process payments
+                    </p>
                   </div>
                 </div>
               )}

@@ -64,6 +64,17 @@ const Order = sequelize.define(
       type: Sequelize.STRING(255),
       allowNull: false,
     },
+    paidamount:{
+      type:DataTypes.DOUBLE,
+      allowNull:true,
+      defaultValue:0
+    },
+    paidStatus:{
+type:DataTypes.BOOLEAN,
+defaultValue:false,
+allowNull:true
+
+    },
     remarks: {
       type: DataTypes.TEXT,
       allowNull: true,
