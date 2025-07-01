@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback } from "react";
 import Sidebar from "../components/Sidebar";
 import toast from "react-hot-toast";
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
+import { Links, useNavigate } from "react-router-dom";
 import api from "../api";
 import Spinner from "../components/Spinner";
 const Customers = () => {
@@ -15,7 +15,7 @@ const Customers = () => {
   const [customerloading, setcustoemrloading] = useState(false);
   const navigate = useNavigate();
   const [customers, setCustomers] = useState([]);
-  const [isSaving,SetisSaving]=useState(false)
+  const [isSaving, SetisSaving] = useState(false);
   const {
     register,
     handleSubmit,
@@ -34,15 +34,15 @@ const Customers = () => {
     },
   });
 
-const filterData=useMemo(()=>{
-  if (!searchTerm) return customers
+  const filterData = useMemo(() => {
+    if (!searchTerm) return customers;
 
-  return customers.filter(item=>
-    item.customername.toLowerCase().includes(searchTerm.toLowerCase())
-  )
-},[customers,searchTerm])
+    return customers.filter((item) =>
+      item.customername.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [customers, searchTerm]);
 
- const viewCustomers = useCallback(async () => {
+  const viewCustomers = useCallback(async () => {
     setcustoemrloading(true);
     try {
       const responce = await api.get("/api/user/viewcustomer");
@@ -63,9 +63,8 @@ const filterData=useMemo(()=>{
     }
   }, []);
 
-  
   const handleAddCustomer = async (data) => {
-    SetisSaving(true)
+    SetisSaving(true);
     try {
       const responce = await api.post("/api/user/addcustomer", data);
       console.log(responce.data);
@@ -73,7 +72,7 @@ const filterData=useMemo(()=>{
         toast.success(responce.data.message, {
           duration: 2000,
         });
-        await viewCustomers()
+        await viewCustomers();
         setShowAddCustomer(false);
         reset();
       } else {
@@ -88,15 +87,13 @@ const filterData=useMemo(()=>{
         duration: 3000,
       });
     }
-    SetisSaving(false)
+    SetisSaving(false);
   };
 
   const handleCustomerClick = (customer) => {
     setSelectedCustomer(customer);
     setShowCustomerDetail(true);
   };
-
- 
 
   const checkAccountLogin = async () => {
     SetLoading(true);
@@ -576,22 +573,36 @@ const filterData=useMemo(()=>{
                         Quick Actions
                       </h4>
                       <div className="flex flex-col gap-2">
-                        <button className="px-4 py-2 text-sm bg-black text-white hover:bg-gray-800 transition-colors">
+                        <button onClick={()=>navigate("/data")} className="px-4 py-2 text-sm bg-black text-white hover:bg-gray-800 transition-colors">
                           Create New Order
                         </button>
                         <button className="px-4 py-2 text-sm border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors">
                           View Order History
                         </button>
-                        <button className="px-4 py-2 text-sm border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors">
-                          Generate Detail Invoice
-                        </button>
-                        <button className="px-4 py-2 text-sm border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors">
-                          Generate Overview Invoice
-                        </button>
-
-                        {/* <button className="px-4 py-2 text-sm border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors">
-                          Edit Customer
-                        </button> */}
+                   <a
+  href={`/invoicewithoutvat/${selectedCustomer.id}`}
+  target="_blank"
+  rel="noopener noreferrer"
+  className="px-4 py-2 text-sm border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
+>
+  Generate Detail Invoice Without VAT
+</a>
+                    <a
+  href={`/generatevatinvoie/${selectedCustomer.id}`}
+  target="_blank"
+  rel="noopener noreferrer"
+  className="px-4 py-2 text-sm border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
+>
+  Generate Detail Invoice With VAT
+</a>
+                                    <a
+  href={`/overviewinvoice/${selectedCustomer.id}`}
+  target="_blank"
+  rel="noopener noreferrer"
+  className="px-4 py-2 text-sm border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
+>
+  Generate Overview Invoice 
+</a>
                       </div>
                     </div>
                   </div>

@@ -62,8 +62,8 @@ const Data = () => {
   const merc = watch("merc");
   const extra = watch("extra");
 
-  // Calculate total
-  const total = useMemo(() => {
+  // Calculate subtotal and total with VAT
+  const subtotal = useMemo(() => {
     const rateVal = parseFloat(rate) || 0;
     const tokenVal = parseFloat(token) || 0;
     const custWashVal = parseFloat(custWash) || 0;
@@ -71,6 +71,14 @@ const Data = () => {
     const extraVal = parseFloat(extra) || 0;
     return rateVal + tokenVal + custWashVal + mercVal + extraVal;
   }, [rate, token, custWash, merc, extra]);
+
+  const vat = useMemo(() => {
+    return subtotal * 0.05; // 5% VAT
+  }, [subtotal]);
+
+  const total = useMemo(() => {
+    return subtotal + vat;
+  }, [subtotal, vat]);
 
   // Filter customers based on search
   const filteredCustomers = useMemo(() => {
@@ -215,6 +223,8 @@ const Data = () => {
     try {
       const orderData = {
         ...data,
+        subtotal: subtotal.toFixed(2),
+        vat: vat.toFixed(2),
         total: total.toFixed(2),
       };
       console.log(orderData);
@@ -263,6 +273,8 @@ const Data = () => {
     try {
       const updatedOrder = {
         ...data,
+        subtotal: subtotal.toFixed(2),
+        vat: vat.toFixed(2),
         total: total.toFixed(2),
         id: editOrderData.id,
       };
@@ -759,6 +771,30 @@ const Data = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-black mb-2">
+                    Subtotal
+                  </label>
+                  <input
+                    type="text"
+                    value={`AED ${subtotal.toFixed(2)}`}
+                    className="w-full px-3 py-2 border border-gray-300 bg-gray-50 text-sm font-medium"
+                    readOnly
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-black mb-2">
+                    VAT (5%)
+                  </label>
+                  <input
+                    type="text"
+                    value={`AED ${vat.toFixed(2)}`}
+                    className="w-full px-3 py-2 border border-gray-300 bg-gray-50 text-sm font-medium"
+                    readOnly
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-black mb-2">
                     Total
                   </label>
                   <input
@@ -1006,6 +1042,30 @@ const Data = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-black mb-2">
+                    Subtotal
+                  </label>
+                  <input
+                    type="text"
+                    value={`AED ${subtotal.toFixed(2)}`}
+                    className="w-full px-3 py-2 border border-gray-300 bg-gray-50 text-sm font-medium"
+                    readOnly
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-black mb-2">
+                    VAT (5%)
+                  </label>
+                  <input
+                    type="text"
+                    value={`AED ${vat.toFixed(2)}`}
+                    className="w-full px-3 py-2 border border-gray-300 bg-gray-50 text-sm font-medium"
+                    readOnly
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-black mb-2">
                     Total
                   </label>
                   <input
@@ -1178,6 +1238,30 @@ const Data = () => {
                     </div>
                     <div className="border-t border-gray-200 pt-3">
                       <div className="flex justify-between">
+                        <span className="font-medium text-gray-600">Subtotal:</span>
+                        <span className="font-medium text-black">
+                          AED {(
+                            (parseFloat(selectedOrder.rate) || 0) +
+                            (parseFloat(selectedOrder.token) || 0) +
+                            (parseFloat(selectedOrder.custWash) || 0) +
+                            (parseFloat(selectedOrder.merc) || 0) +
+                            (parseFloat(selectedOrder.extra) || 0)
+                          ).toFixed(2)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between mt-2">
+                        <span className="font-medium text-gray-600">VAT (5%):</span>
+                        <span className="font-medium text-black">
+                          AED {(
+                            ((parseFloat(selectedOrder.rate) || 0) +
+                            (parseFloat(selectedOrder.token) || 0) +
+                            (parseFloat(selectedOrder.custWash) || 0) +
+                            (parseFloat(selectedOrder.merc) || 0) +
+                            (parseFloat(selectedOrder.extra) || 0)) * 0.05
+                          ).toFixed(2)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between mt-2 pt-2 border-t border-gray-300">
                         <span className="font-semibold text-black">Total:</span>
                         <span className="font-bold text-black text-lg">
                           AED {selectedOrder.total}

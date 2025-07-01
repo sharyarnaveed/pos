@@ -56,6 +56,10 @@ const Order = sequelize.define(
       type: DataTypes.DOUBLE,
       allowNull: true,
     },
+    vat:{
+type: DataTypes.DOUBLE,
+      allowNull: true,
+    },
     total: {
       type: DataTypes.DOUBLE,
       allowNull: true,

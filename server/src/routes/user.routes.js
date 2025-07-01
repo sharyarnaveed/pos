@@ -5,7 +5,7 @@ const { AddCustomers, viewCustomers } = require("../controller/customer.controll
 const { requireAuth } = require("../middlewares/auth.middleware");
 const {addDriver, viewDriver} = require("../controller/driver.controller");
 const { addvehicle, viewvehicle } = require("../controller/vehicle.controller");
-const { addOrder, viewOrder, editorder } = require("../controller/order.controller");
+const { addOrder, viewOrder, editorder, vieworderBycustomerId } = require("../controller/order.controller");
 const { addexpences, viewexpences, addExpencebalance, gettotalexpenceandbalance, getbalancehistory } = require("../controller/expences.controller");
 const { signup } = require("../controller/signup.controller");
 const { paymentadd } = require("../controller/payment.controller");
@@ -37,6 +37,8 @@ router.route("/addamount").post(requireAuth,addExpencebalance)
 router.route("/gettoalexpncebalance").get(requireAuth,gettotalexpenceandbalance)
 router.route("/getbalancehistory").get(requireAuth,getbalancehistory)
 router.route("/addpayment/:id").put(paymentadd)
+router.route("/customerdata/:customerid").get(vieworderBycustomerId)
+
 
 
 

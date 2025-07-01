@@ -6,13 +6,15 @@ import App from "./App.jsx";
 import Signin from "./Auth/Signin.jsx";
 import Home from "./Home/Home.jsx";
 import Data from "./data/Data.jsx";
-import Filter from "./filter/Filter.jsx";
 import Customers from "./customers/Customers.jsx";
 import Driver from "./driver/Driver.jsx";
 import Vehcile from "./vehcile/Vehcile.jsx";
 import Payments from "./payments/Payments.jsx";
 import { Toaster } from "react-hot-toast";
 import Expence from "./expences/Expence.jsx";
+import GenerateInvoice from "./generatestuff/GenerateInvoice.jsx";
+import GenerateVatInvoice from "./generatestuff/GenerateVatInvoice.jsx";
+import OverviewInvoice from "./generatestuff/OverviewInvoice.jsx";
 
 const router = createBrowserRouter([
   {
@@ -30,10 +32,6 @@ const router = createBrowserRouter([
       {
         path:"/data",
         element:<Data/>
-      },
-      {
-        path:"/invoice",
-        element:<Filter/>
       },
       {
         path:"/customers",
@@ -54,6 +52,19 @@ const router = createBrowserRouter([
       {
         path:"/expenses",
         element:<Expence/>
+      },
+      {
+        path:"/invoicewithoutvat/:customerid",
+        element:<GenerateInvoice/>,
+        
+      },
+      {
+        path:"/generatevatinvoie/:customerid",
+        element:<GenerateVatInvoice/>
+      },
+      {
+        path:"/overviewinvoice/:customerid",
+        element:<OverviewInvoice/>
       }
     ],
   },

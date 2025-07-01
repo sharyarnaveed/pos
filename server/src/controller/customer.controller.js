@@ -39,13 +39,13 @@ const AddCustomers = async (req, res) => {
         customername,
         address,
         companyname,
-        phoneno:phoneno,
+        phoneno: phoneno,
         mainowner,
         operator,
-        taxnumber:taxnumber,
+        taxnumber: taxnumber,
       });
 
-    //   console.log(save);
+      //   console.log(save);
 
       if (save) {
         return res.json({
@@ -63,29 +63,27 @@ const AddCustomers = async (req, res) => {
   } catch (error) {
     console.log("error in adding customer", error.errors[0].message);
     return res.json({
-      message: error.errors[0].message||"error in adding customer",
+      message: error.errors[0].message || "error in adding customer",
       success: false,
     });
   }
 };
 
+const viewCustomers = async (req, res) => {
+  try {
+    const customerData = await Customer.findAll({
+      raw: true,
+    });
+    res.json({
+      success: true,
+      customerData: customerData,
+    });
+  } catch (error) {
+    console.log("error in getting customers", error);
+  }
+};
 
 
-const viewCustomers= async(req,res)=>
-{
-    try {
-        
-const customerData=await Customer.findAll({
-    raw:true
-})
-res.json({
-    success:true,
-    customerData:customerData
-})
-    } catch (error) {
-        console.log("error in getting customers",error)
-    }
-}
 
 
-module.exports = { AddCustomers,viewCustomers };
+module.exports = { AddCustomers, viewCustomers };

@@ -1,3 +1,4 @@
+const { raw } = require("mysql2");
 const Customer = require("../models/Customer.model.js");
 const Driver = require("../models/Driver.model.js");
 const Order = require("../models/order.model");
@@ -19,7 +20,8 @@ const addOrder = async (req, res) => {
       vehicleId,
       remarks,
       orderType,
-      total
+      total,
+      vat
     } = req.body;
 
     const save = await Order.create({
@@ -36,7 +38,8 @@ const addOrder = async (req, res) => {
       vehicle: vehicleId,
       remarks,
       type: orderType,
-      total
+      total,
+      vat
     });
 
     if (save) {
@@ -166,4 +169,42 @@ const editorder=async(req,res)=>
   }
 }
 
-module.exports = { addOrder,viewOrder,editorder };
+
+
+
+const vieworderBycustomerId=async(req,res)=>
+{
+  try {
+    const {customerid}=req.params;
+    
+    const data= await Order.findAll({
+      where:{
+        customer:customerid
+      },
+      raw:true
+    })
+    
+
+
+
+if (data) {
+  const customerData=await Customer.findByPk(customerid,{raw:true})
+
+  return res.json({
+    success:true,
+    customerData:data,
+    customerInfo:customerData
+  })
+}
+else{
+  return res.json({
+    success:false
+  })
+}
+
+  } catch (error) {
+        console.log("error in getting orders",error)
+    
+  }
+}
+module.exports = { addOrder,viewOrder,editorder,vieworderBycustomerId };

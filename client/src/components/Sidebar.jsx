@@ -3,7 +3,6 @@ import { FaFilter, FaDatabase, FaTruck, FaSignOutAlt } from "react-icons/fa";
 import { IoPeopleOutline } from "react-icons/io5";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { FaMoneyBill1 } from "react-icons/fa6";
-import { FaFileInvoiceDollar } from "react-icons/fa";
 import api from "../api";
 import toast from "react-hot-toast";
 const Sidebar = ({ isSidebarCollapsed, setIsSidebarCollapsed }) => {
@@ -11,7 +10,6 @@ const Sidebar = ({ isSidebarCollapsed, setIsSidebarCollapsed }) => {
   const menuItems = [
     { icon: "📊", label: "Dashboard", to: "/" },
     { icon: <FaDatabase />, label: "Data", to: "/data" },
-    { icon: <FaFileInvoiceDollar />, label: "Invoices", to: "/invoice" },
     { icon: <IoPeopleOutline />, label: "Customers", to: "/customers" },
     { icon: "🚗", label: "Driver", to: "/driver" },
     { icon: <FaTruck />, label: "Vehicle", to: "/vehicle" },

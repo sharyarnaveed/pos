@@ -222,7 +222,8 @@ const getbalancehistory=async(req,res)=>
   try {
     
     const balanceHistory=await BalanceHistory.findAll({
-      raw:true
+      raw:true,
+      balancehistories:[['createdAt', 'DESC']]
     })
 
 
