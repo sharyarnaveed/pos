@@ -339,9 +339,9 @@ const filterData=useMemo(()=>{
                       Quick Actions
                     </h4>
                     <div className="grid grid-cols-1 gap-2">
-                      <button className="px-4 py-2 text-sm bg-black text-white hover:bg-gray-800 transition-colors">
+                      <a href={`/driverreport/${selectedDriver.id}`} target="_blank" className="px-4 py-2 text-sm bg-black text-white hover:bg-gray-800 transition-colors">
                         Generate Driver Report
-                      </button>
+                      </a>
  
       
                     </div>

@@ -174,7 +174,9 @@ const Customers = () => {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                   <div className="bg-white border border-gray-200 p-6">
                     <div className="text-sm text-gray-600">Total Customers</div>
-                    <div className="text-2xl font-bold text-black mt-2">{customers.length}</div>
+                    <div className="text-2xl font-bold text-black mt-2">
+                      {customers.length}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -506,39 +508,50 @@ const Customers = () => {
 
                   {/* Order Statistics */}
                   <div className="space-y-4">
-
                     <div className="space-y-2">
                       <h4 className="text-sm font-medium text-black">
                         Quick Actions
                       </h4>
                       <div className="flex flex-col gap-2">
-                        <button onClick={()=>navigate("/data")} className="px-4 py-2 text-sm bg-black text-white hover:bg-gray-800 transition-colors">
+                        <button
+                          onClick={() => navigate("/data")}
+                          className="px-4 py-2 text-sm bg-black text-white hover:bg-gray-800 transition-colors"
+                        >
                           Create New Order
                         </button>
-                   <a
-  href={`/invoicewithoutvat/${selectedCustomer.id}`}
-  target="_blank"
-  rel="noopener noreferrer"
-  className="px-4 py-2 text-sm border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
->
-  Generate Detail Invoice Without VAT
-</a>
-                    <a
-  href={`/generatevatinvoie/${selectedCustomer.id}`}
-  target="_blank"
-  rel="noopener noreferrer"
-  className="px-4 py-2 text-sm border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
->
-  Generate Detail Invoice With VAT
-</a>
-                                    <a
-  href={`/overviewinvoice/${selectedCustomer.id}`}
-  target="_blank"
-  rel="noopener noreferrer"
-  className="px-4 py-2 text-sm border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
->
-  Generate Overview Invoice 
-</a>
+                        <a
+                          href={`/invoicewithoutvat/${selectedCustomer.id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-4 py-2 text-sm border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
+                        >
+                          Generate Detail Invoice Without VAT
+                        </a>
+                        <a
+                          href={`/generatevatinvoie/${selectedCustomer.id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-4 py-2 text-sm border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
+                        >
+                          Generate Detail Invoice With VAT
+                        </a>
+                        <a
+                          href={`/overviewinvoice/${selectedCustomer.id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-4 py-2 text-sm border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
+                        >
+                          Generate Overview Invoice
+                        </a>
+
+                        <a
+                          href={`/customerpayment/${selectedCustomer.id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-4 py-2 text-sm border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
+                        >
+                          Generate Payment Invoice
+                        </a>
                       </div>
                     </div>
                   </div>

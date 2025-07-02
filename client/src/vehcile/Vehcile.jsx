@@ -188,12 +188,7 @@ const Vehcile = () => {
                         <h3 className="text-lg font-semibold text-black">
                           {vehicle.plateNumber}
                         </h3>
-                        <p className="text-sm text-gray-600">
-                          {vehicle.make} {vehicle.model}
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          {vehicle.year} • {vehicle.type}
-                        </p>
+                     
                       </div>
                       <span
                         className={`text-xs px-2 py-1 rounded-full ${getStatusColor(
@@ -204,39 +199,6 @@ const Vehcile = () => {
                       </span>
                     </div>
 
-                    <div className="space-y-2 mb-4">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-gray-600">Driver:</span>
-                        <span className="text-black font-medium">
-                          {vehicle.driverAssigned}
-                        </span>
-                      </div>
-                      <div className="flex justify-between text-sm">
-                        <span className="text-gray-600">Capacity:</span>
-                        <span className="text-black font-medium">
-                          {vehicle.capacity}
-                        </span>
-                      </div>
-                      <div className="flex justify-between text-sm">
-                        <span className="text-gray-600">Total Trips:</span>
-                        <span className="text-black font-medium">
-                          {vehicle.totalTrips}
-                        </span>
-                      </div>
-                      <div className="flex justify-between text-sm">
-                        <span className="text-gray-600">Distance:</span>
-                        <span className="text-black font-medium">
-                          {vehicle.totalDistance}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="pt-4 border-t border-gray-100">
-                      <div className="flex justify-between text-xs text-gray-500">
-                        <span>Fuel: {vehicle.fuelType}</span>
-                        <span>Color: {vehicle.color}</span>
-                      </div>
-                    </div>
                   </div>
                 ))}
               </div>
@@ -383,25 +345,6 @@ const Vehcile = () => {
                     </div>
                   </div>
 
-                  <div className="space-y-6">
-                    <div>
-                      <div className="space-y-3 mt-6">
-                        <h4 className="text-sm font-medium text-black">
-                          Quick Actions
-                        </h4>
-                        <div className="grid grid-cols-1 gap-2">
-                        
-                          <button className="px-4 py-2 text-sm border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors">
-                            Generate Vehicle Report
-                          </button>
-                        
-                          <div className="pt-2 border-t border-gray-200">
-                           
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
                 </div>
 
                 <div className="flex justify-end mt-8">

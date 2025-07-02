@@ -15,6 +15,8 @@ import Expence from "./expences/Expence.jsx";
 import GenerateInvoice from "./generatestuff/GenerateInvoice.jsx";
 import GenerateVatInvoice from "./generatestuff/GenerateVatInvoice.jsx";
 import OverviewInvoice from "./generatestuff/OverviewInvoice.jsx";
+import DriverReport from "./generatestuff/DriverReport.jsx";
+import PaymentInvoice from "./generatestuff/PaymentInvoice.jsx";
 
 const router = createBrowserRouter([
   {
@@ -65,6 +67,14 @@ const router = createBrowserRouter([
       {
         path:"/overviewinvoice/:customerid",
         element:<OverviewInvoice/>
+      },
+      {
+        path:"/driverreport/:driverId",
+        element:<DriverReport/>
+      },
+       {
+        path:"/customerpayment/:customerid",
+        element:<PaymentInvoice/>
       }
     ],
   },
