@@ -1,49 +1,29 @@
-const {app}=require("./src/app.js")
+const { app } = require("./src/app.js");
 const dotenv = require("dotenv");
 const { sequelize } = require("./src/database/database.js");
-const port=3000
 require("./src/models/associations.js");
 
-dotenv.config({
-    path: './.env'
-  })
+const port = 3000;
 
-async function testConnection()
-{
-    try {
-         sequelize.authenticate()
-         .then(async()=>
-        {
-            console.log("Database connected successfully");
-       await sequelize.sync()
+async function testConnection() {
+  try {
+    await sequelize.authenticate();
+    console.log("✅ Database connected successfully");
 
-            .then(()=>console.log("Database synced")
-        )
-        .catch(()=>console.log("Database Not synced")
-        )
-        })
-        .catch((err)=>console.log(err,"error in db"))
-     
-
-
-    } catch (error) {
-        console.log("error connecting database",error);
-        
-    }
+    await sequelize.sync(); // Use sync({ alter: true }) if needed
+    console.log("✅ Database synced");
+  } catch (error) {
+    console.error("❌ Error connecting or syncing the database:", error);
+    throw error; // So that the server doesn’t start if DB fails
+  }
 }
 
-
 testConnection()
-.then(()=>
-{
-    app.listen(port,()=>
-    {
-        console.log('Server is running on port',port);
-
-    })
-})
-.catch((error)=>
-    {
-        console.log("error in db",error);
-    })
-
+  .then(() => {
+    app.listen(port, () => {
+      console.log("🚀 Server is running on port", port);
+    });
+  })
+  .catch((error) => {
+    console.error("❌ Server not started due to DB error:", error.message);
+  });

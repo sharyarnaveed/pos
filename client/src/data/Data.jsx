@@ -27,6 +27,8 @@ const Data = () => {
   const [showCustomerDropdown, setShowCustomerDropdown] = useState(false);
   const [showDriverDropdown, setShowDriverDropdown] = useState(false);
   const [showVehicleDropdown, setShowVehicleDropdown] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false); // Add this state
+  const [isUpdating, setIsUpdating] = useState(false); // Add this state
 
   const navigate = useNavigate();
 
@@ -220,6 +222,9 @@ const Data = () => {
   };
 
   const handleAddOrder = async (data) => {
+    if (isSubmitting) return; // Prevent multiple submissions
+    
+    setIsSubmitting(true);
     try {
       const orderData = {
         ...data,
@@ -244,6 +249,8 @@ const Data = () => {
     } catch (error) {
       console.error("Error adding order:", error);
       toast.error("Error adding order", { duration: 3000 });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -270,6 +277,9 @@ const Data = () => {
 
   // Add this function to handle edit form submit
   const handleEditOrder = async (data) => {
+    if (isUpdating) return; // Prevent multiple submissions
+    
+    setIsUpdating(true);
     try {
       const updatedOrder = {
         ...data,
@@ -299,6 +309,8 @@ const Data = () => {
     } catch (error) {
       console.error("Error updating order:", error);
       toast.error("Error updating order", { duration: 3000 });
+    } finally {
+      setIsUpdating(false);
     }
   };
 
@@ -846,9 +858,17 @@ const Data = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 text-sm bg-black text-white hover:bg-gray-800"
+                  disabled={isSubmitting}
+                  className="px-4 py-2 text-sm bg-black text-white hover:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2"
                 >
-                  Save Order
+                  {isSubmitting ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                      Saving...
+                    </>
+                  ) : (
+                    "Save Order"
+                  )}
                 </button>
               </div>
             </form>
@@ -1121,9 +1141,17 @@ const Data = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 text-sm bg-black text-white hover:bg-gray-800"
+                  disabled={isUpdating}
+                  className="px-4 py-2 text-sm bg-black text-white hover:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2"
                 >
-                  Save Changes
+                  {isUpdating ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                      Updating...
+                    </>
+                  ) : (
+                    "Save Changes"
+                  )}
                 </button>
               </div>
             </form>

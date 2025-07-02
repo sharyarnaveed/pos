@@ -2,11 +2,10 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import api from '../api';
 
-const DriverReport = () => {
+const DriverReport = ({ driverId }) => {
   const [reportData, setReportData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const { driverId } = useParams();
 
   const fetchDriverReport = useCallback(async () => {
     try {

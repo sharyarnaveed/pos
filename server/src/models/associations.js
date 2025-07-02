@@ -15,7 +15,14 @@ Order.belongsTo(Customer, { foreignKey: 'customer', as: 'CustomerDetails' });
 Customer.hasMany(Order,{ foreignKey: 'customer' })
 
 
-Expences.belongsTo(Vehicle, { foreignKey: 'vehicle', as: 'vehicleDetails' });
-Vehicle.hasMany(Expences, { foreignKey: 'vehicle' });
+Expences.belongsTo(Vehicle, {
+  foreignKey: 'vehicle',
+  as: 'vehicleDetails'
+});
+
+Vehicle.hasMany(Expences, {
+  foreignKey: 'vehicle',
+  as: 'expenses'
+});
 
 module.exports = { Order, Vehicle, Expences };

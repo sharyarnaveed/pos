@@ -3,10 +3,10 @@ import api from '../api';
 import { useParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
-const GenerateInvoice = () => {
+const GenerateInvoice = ({ customerid }) => {
   const [customerData, setCustomerData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { customerid } = useParams();
+  
 
   const handlePrint = () => {
     window.print();

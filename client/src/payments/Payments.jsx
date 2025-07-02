@@ -7,6 +7,7 @@ const Payments = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [paymentAmount, setPaymentAmount] = useState("");
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false); 
   const [filters, setFilters] = useState({
     startDate: "",
     endDate: "",
@@ -60,6 +61,9 @@ const Payments = () => {
   };
 
   const handlePartialPayment = async () => {
+    if (isProcessingPayment) return; // Prevent multiple clicks
+    
+    setIsProcessingPayment(true); // Start loading
     console.log(`Adding ${paymentAmount} to order ${selectedOrder.id}`);
 
     try {
@@ -77,10 +81,12 @@ const Payments = () => {
       await getallorder();
       console.log(responce.data);
     } catch (error) {
-      log.error("Error processing payment:", error);
+      console.error("Error processing payment:", error);
       toast.error("Failed to process payment. Please try again.", {
         duration: 3000,
       });
+    } finally {
+      setIsProcessingPayment(false); // Stop loading
     }
 
     setPaymentAmount("");
@@ -579,10 +585,17 @@ const Payments = () => {
                           <div className="space-y-3">
                             <button
                               onClick={handlePartialPayment}
-                              disabled={!paymentAmount || paymentAmount <= 0}
-                              className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-all font-semibold"
+                              disabled={!paymentAmount || paymentAmount <= 0 || isProcessingPayment}
+                              className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-all font-semibold flex items-center justify-center gap-2"
                             >
-                              Add Payment
+                              {isProcessingPayment ? (
+                                <>
+                                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                                  Processing...
+                                </>
+                              ) : (
+                                "Add Payment"
+                              )}
                             </button>
                           </div>
                         </div>

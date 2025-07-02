@@ -5,6 +5,12 @@ import { useForm } from "react-hook-form";
 import { Links, useNavigate } from "react-router-dom";
 import api from "../api";
 import Spinner from "../components/Spinner";
+// Import the invoice components
+import GenerateInvoice from "../generatestuff/GenerateInvoice";
+import GenerateVatInvoice from "../generatestuff/GenerateVatInvoice";
+import OverviewInvoice from "../generatestuff/OverviewInvoice";
+import PaymentInvoice from "../generatestuff/PaymentInvoice";
+
 const Customers = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [showAddCustomer, setShowAddCustomer] = useState(false);
@@ -13,9 +19,16 @@ const Customers = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, SetLoading] = useState(false);
   const [customerloading, setcustoemrloading] = useState(false);
+  
+  // Add state for invoice modals
+  const [showInvoiceModal, setShowInvoiceModal] = useState(false);
+  const [showVatInvoiceModal, setShowVatInvoiceModal] = useState(false);
+  const [showOverviewInvoiceModal, setShowOverviewInvoiceModal] = useState(false);
+  const [showPaymentInvoiceModal, setShowPaymentInvoiceModal] = useState(false);
+  
   const navigate = useNavigate();
   const [customers, setCustomers] = useState([]);
-  const [isSaving, SetisSaving] = useState(false);
+  const [isSaving, setIsSaving] = useState(false); // Update this line
   const {
     register,
     handleSubmit,
@@ -64,7 +77,9 @@ const Customers = () => {
   }, []);
 
   const handleAddCustomer = async (data) => {
-    SetisSaving(true);
+    if (isSaving) return; // Prevent multiple submissions
+    
+    setIsSaving(true);
     try {
       const responce = await api.post("/api/user/addcustomer", data);
       console.log(responce.data);
@@ -86,8 +101,9 @@ const Customers = () => {
       toast.error("error in adding", {
         duration: 3000,
       });
+    } finally {
+      setIsSaving(false);
     }
-    SetisSaving(false);
   };
 
   const handleCustomerClick = (customer) => {
@@ -420,9 +436,16 @@ const Customers = () => {
                   <button
                     type="submit"
                     disabled={isSaving}
-                    className="flex-1 bg-black text-white px-4 py-2 text-sm font-medium hover:bg-gray-800 transition-colors"
+                    className="flex-1 bg-black text-white px-4 py-2 text-sm font-medium hover:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
                   >
-                    Add Customer
+                    {isSaving ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                        Adding...
+                      </>
+                    ) : (
+                      "Add Customer"
+                    )}
                   </button>
                 </div>
               </form>
@@ -519,39 +542,30 @@ const Customers = () => {
                         >
                           Create New Order
                         </button>
-                        <a
-                          href={`/invoicewithoutvat/${selectedCustomer.id}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                        <button
+                          onClick={() => setShowInvoiceModal(true)}
                           className="px-4 py-2 text-sm border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
                         >
                           Generate Detail Invoice Without VAT
-                        </a>
-                        <a
-                          href={`/generatevatinvoie/${selectedCustomer.id}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                        </button>
+                        <button
+                          onClick={() => setShowVatInvoiceModal(true)}
                           className="px-4 py-2 text-sm border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
                         >
                           Generate Detail Invoice With VAT
-                        </a>
-                        <a
-                          href={`/overviewinvoice/${selectedCustomer.id}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                        </button>
+                        <button
+                          onClick={() => setShowOverviewInvoiceModal(true)}
                           className="px-4 py-2 text-sm border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
                         >
                           Generate Overview Invoice
-                        </a>
-
-                        <a
-                          href={`/customerpayment/${selectedCustomer.id}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                        </button>
+                        <button
+                          onClick={() => setShowPaymentInvoiceModal(true)}
                           className="px-4 py-2 text-sm border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
                         >
                           Generate Payment Invoice
-                        </a>
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -565,6 +579,63 @@ const Customers = () => {
                     Close
                   </button>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* Invoice Modals */}
+          {showInvoiceModal && selectedCustomer && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-white w-full h-full max-w-6xl max-h-[95vh] overflow-auto relative">
+                <button
+                  onClick={() => setShowInvoiceModal(false)}
+                  className="absolute top-4 right-4 z-10 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-colors print:hidden"
+                >
+                  Close
+                </button>
+                <GenerateInvoice customerid={selectedCustomer.id} />
+              </div>
+            </div>
+          )}
+
+          {showVatInvoiceModal && selectedCustomer && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-white w-full h-full max-w-6xl max-h-[95vh] overflow-auto relative">
+                <button
+                  onClick={() => setShowVatInvoiceModal(false)}
+                  className="absolute top-4 right-4 z-10 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-colors print:hidden"
+                >
+                  Close
+                </button>
+                <GenerateVatInvoice customerid={selectedCustomer.id} />
+              </div>
+            </div>
+          )}
+
+          {showOverviewInvoiceModal && selectedCustomer && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-white w-full h-full max-w-6xl max-h-[95vh] overflow-auto relative">
+                <button
+                  onClick={() => setShowOverviewInvoiceModal(false)}
+                  className="absolute top-4 right-4 z-10 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-colors print:hidden"
+                >
+                  Close
+                </button>
+                <OverviewInvoice customerid={selectedCustomer.id} />
+              </div>
+            </div>
+          )}
+
+          {showPaymentInvoiceModal && selectedCustomer && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-white w-full h-full max-w-6xl max-h-[95vh] overflow-auto relative">
+                <button
+                  onClick={() => setShowPaymentInvoiceModal(false)}
+                  className="absolute top-4 right-4 z-10 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-colors print:hidden"
+                >
+                  Close
+                </button>
+                <PaymentInvoice customerid={selectedCustomer.id} />
               </div>
             </div>
           )}

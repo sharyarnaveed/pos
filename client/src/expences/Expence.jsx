@@ -119,12 +119,26 @@ const Expence = () => {
 
   const viewExpences = useCallback(async () => {
     try {
-      const responce = await await api.get("/api/user/viewexpences");
-      console.log(responce.data);
-      setSampleExpences(responce.data.expenceData);
-      SetsampleVehicles(responce.data.expenceCount);
+      const response = await api.get("/api/user/viewexpences");
+      console.log(response.data);
+      
+      // Add proper error handling
+      if (response.data.success && response.data.expenceData) {
+        setSampleExpences(response.data.expenceData);
+        SetsampleVehicles(response.data.expenceCount);
+      } else {
+        // Set to empty array if no data or error
+        setSampleExpences([]);
+        SetsampleVehicles([]);
+        toast.error(response.data.message || "Failed to load expenses", {
+          duration: 3000,
+        });
+      }
     } catch (error) {
       console.error("Error loading expense:", error);
+      // Set to empty arrays on error to prevent undefined filter
+      setSampleExpences([]);
+      SetsampleVehicles([]);
       toast.error("Failed to load expense. Please try again.", {
         duration: 3000,
       });
@@ -513,7 +527,7 @@ const [totalExpence, setTotalExpence] = useState(0);
   };
 
   // Add this filtering logic before the return statement
-  const filteredExpenses = sampleExpenses.filter((expense) => {
+  const filteredExpenses = (sampleExpenses || []).filter((expense) => {
     if (!searchTerm.trim()) return true;
     
     const searchLower = searchTerm.toLowerCase();

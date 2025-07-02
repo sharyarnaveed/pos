@@ -65,6 +65,8 @@ const updatebalance = await Currentbalance.update(
 
 const viewexpences = async (req, res) => {
   try {
+    console.log("Starting to fetch expenses...");
+    
     const expenceData = await Expences.findAll({
       raw: true,
       include: [
@@ -73,14 +75,15 @@ const viewexpences = async (req, res) => {
           as: "vehicleDetails",
         },
       ],
-
       order: [["createdAt", "DESC"]],
     });
-
+    
+    console.log("Expenses fetched successfully:", expenceData.length);
+    
     const expenceCount = await Expences.findAll({
       attributes: [
         "vehicle",
-        [Sequelize.fn("COUNT", Sequelize.col("Expences.id")), "expenseCount"],
+        [Sequelize.fn("COUNT", Sequelize.col("expences.id")), "expenseCount"], // Specify table name
         [Sequelize.fn("SUM", Sequelize.col("amount")), "totalAmount"],
       ],
       include: [
@@ -99,10 +102,13 @@ const viewexpences = async (req, res) => {
       expenceCount: expenceCount,
     });
   } catch (error) {
-    console.log("error in viewing expenses", error);
+    console.log("Detailed error in viewing expenses:", error);
+    console.log("Error message:", error.message);
+    console.log("Error stack:", error.stack);
     return res.json({
       message: "Error in viewing expenses",
       success: false,
+      error: error.message // Add this for debugging
     });
   }
 };

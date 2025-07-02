@@ -3,11 +3,10 @@ import { useParams } from 'react-router-dom';
 import api from '../api';
 import toast from 'react-hot-toast';
 
-const OverviewInvoice = () => {
+const OverviewInvoice = ({ customerid }) => {
   const [customerData, setCustomerData] = useState([]);
   const [customerName, setCustomerName] = useState('');
   const [loading, setLoading] = useState(true);
-  const { customerid } = useParams();
 
   const getCustomerData = async () => {
     try {

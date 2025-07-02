@@ -3,7 +3,7 @@ import api from '../api';
 import { useParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
-const PaymentInvoice = () => {
+const PaymentInvoice = ({ customerid }) => {
   const [paymentData, setPaymentData] = useState({
     unpaiddata: [],
     paiddata: [],
@@ -12,7 +12,7 @@ const PaymentInvoice = () => {
     unpaidtotal: 0
   });
   const [loading, setLoading] = useState(true);
-  const { customerid } = useParams();
+
   const [customername, setCustomerName] = useState('');
 
   const handlePrint = () => {
