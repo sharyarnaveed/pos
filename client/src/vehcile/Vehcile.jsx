@@ -34,9 +34,11 @@ const Vehcile = () => {
 
   const searchTerm = watch("searchTerm");
 
-  const filteredVehicles = useMemo(() => vehicles.filter((vehicle) =>
-    vehicle.plateNumber.toLowerCase().includes(searchTerm.toLowerCase())
-  ));
+  const filteredVehicles = useMemo(() =>
+    vehicles.filter((vehicle) =>
+      vehicle.plateNumber.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+  );
 
   const handleAddVehicle = async (data) => {
     try {
@@ -126,8 +128,9 @@ const Vehcile = () => {
           />
 
           <div
-            className={`flex-1 ${isSidebarCollapsed ? "ml-16" : "ml-64"
-              } transition-all duration-300`}
+            className={`flex-1 ${
+              isSidebarCollapsed ? "ml-16" : "ml-64"
+            } transition-all duration-300`}
           >
             {/* Header */}
             <div className="border-b border-gray-200 bg-white">
@@ -170,31 +173,9 @@ const Vehcile = () => {
                       {vehicles.length}
                     </div>
                   </div>
-                  <div className="bg-white border border-gray-200 p-6">
-                    <div className="text-sm text-gray-600">Active Vehicles</div>
-                    <div className="text-2xl font-bold text-green-600 mt-2">
-                      {vehicles.filter((v) => v.status === "Active").length}
-                    </div>
-                  </div>
-                  <div className="bg-white border border-gray-200 p-6">
-                    <div className="text-sm text-gray-600">In Maintenance</div>
-                    <div className="text-2xl font-bold text-yellow-600 mt-2">
-                      {
-                        vehicles.filter((v) => v.status === "Maintenance")
-                          .length
-                      }
-                    </div>
-                  </div>
-                  <div className="bg-white border border-gray-200 p-6">
-                    <div className="text-sm text-gray-600">Total Distance</div>
-                    <div className="text-2xl font-bold text-black mt-2">
-                      60,140 km
-                    </div>
-                  </div>
                 </div>
               </div>
 
-              {/* Vehicles Grid - Use filteredVehicles instead of vehicles */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredVehicles.map((vehicle) => (
                   <div
@@ -260,7 +241,6 @@ const Vehcile = () => {
                 ))}
               </div>
 
-              {/* Show message when no vehicles found */}
               {filteredVehicles.length === 0 && vehicles.length > 0 && (
                 <div className="text-center py-8">
                   <p className="text-gray-500">
@@ -269,7 +249,6 @@ const Vehcile = () => {
                 </div>
               )}
 
-              {/* Show message when no vehicles at all */}
               {vehicles.length === 0 && (
                 <div className="text-center py-12">
                   <p className="text-gray-500 mb-4">No vehicles added yet.</p>
@@ -284,7 +263,6 @@ const Vehcile = () => {
             </div>
           </div>
 
-          {/* Add Vehicle Modal */}
           {showAddVehicle && (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
               <div className="bg-white p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
@@ -401,177 +379,24 @@ const Vehcile = () => {
                             {selectedVehicle.plateNumber}
                           </p>
                         </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <label className="text-sm font-medium text-gray-600">
-                              Make
-                            </label>
-                            <p className="text-black">{selectedVehicle.make}</p>
-                          </div>
-                          <div>
-                            <label className="text-sm font-medium text-gray-600">
-                              Model
-                            </label>
-                            <p className="text-black">
-                              {selectedVehicle.model}
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-3 gap-4">
-                          <div>
-                            <label className="text-sm font-medium text-gray-600">
-                              Year
-                            </label>
-                            <p className="text-black">{selectedVehicle.year}</p>
-                          </div>
-                          <div>
-                            <label className="text-sm font-medium text-gray-600">
-                              Type
-                            </label>
-                            <p className="text-black">{selectedVehicle.type}</p>
-                          </div>
-                          <div>
-                            <label className="text-sm font-medium text-gray-600">
-                              Color
-                            </label>
-                            <p className="text-black">
-                              {selectedVehicle.color}
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <label className="text-sm font-medium text-gray-600">
-                              Capacity
-                            </label>
-                            <p className="text-black">
-                              {selectedVehicle.capacity}
-                            </p>
-                          </div>
-                          <div>
-                            <label className="text-sm font-medium text-gray-600">
-                              Fuel Type
-                            </label>
-                            <p className="text-black">
-                              {selectedVehicle.fuelType}
-                            </p>
-                          </div>
-                        </div>
-
-                        <div>
-                          <label className="text-sm font-medium text-gray-600">
-                            Assigned Driver
-                          </label>
-                          <p className="text-black font-medium">
-                            {selectedVehicle.driverAssigned}
-                          </p>
-                        </div>
-
-                        <div>
-                          <label className="text-sm font-medium text-gray-600">
-                            Status
-                          </label>
-                          <span
-                            className={`inline-block text-xs px-2 py-1 rounded-full mt-1 ${getStatusColor(
-                              selectedVehicle.status
-                            )}`}
-                          >
-                            {selectedVehicle.status}
-                          </span>
-                        </div>
                       </div>
                     </div>
                   </div>
 
-                  {/* Usage Statistics & Maintenance */}
                   <div className="space-y-6">
                     <div>
-                      <h3 className="text-lg font-semibold text-black border-b border-gray-200 pb-2 mb-4">
-                        Usage Statistics
-                      </h3>
-
-                      <div className="bg-gray-50 p-4 space-y-3 mb-6">
-                        <div className="flex justify-between">
-                          <span className="text-sm text-gray-600">
-                            Total Trips:
-                          </span>
-                          <span className="text-black font-medium">
-                            {selectedVehicle.totalTrips}
-                          </span>
-                        </div>
-
-                        <div className="flex justify-between">
-                          <span className="text-sm text-gray-600">
-                            Total Distance:
-                          </span>
-                          <span className="text-black font-medium">
-                            {selectedVehicle.totalDistance}
-                          </span>
-                        </div>
-                      </div>
-
-                      <h4 className="text-md font-semibold text-black mb-3">
-                        Maintenance & Documents
-                      </h4>
-                      <div className="space-y-3">
-                        <div className="flex justify-between">
-                          <span className="text-sm text-gray-600">
-                            Last Maintenance:
-                          </span>
-                          <span className="text-black">
-                            {selectedVehicle.lastMaintenance}
-                          </span>
-                        </div>
-
-                        <div className="flex justify-between">
-                          <span className="text-sm text-gray-600">
-                            Next Maintenance:
-                          </span>
-                          <span className="text-black font-medium">
-                            {selectedVehicle.nextMaintenance}
-                          </span>
-                        </div>
-
-                        <div className="flex justify-between">
-                          <span className="text-sm text-gray-600">
-                            Registration Expiry:
-                          </span>
-                          <span className="text-black">
-                            {selectedVehicle.registrationExpiry}
-                          </span>
-                        </div>
-
-                        <div className="flex justify-between">
-                          <span className="text-sm text-gray-600">
-                            Insurance Expiry:
-                          </span>
-                          <span className="text-black">
-                            {selectedVehicle.insuranceExpiry}
-                          </span>
-                        </div>
-                      </div>
-
                       <div className="space-y-3 mt-6">
                         <h4 className="text-sm font-medium text-black">
                           Quick Actions
                         </h4>
                         <div className="grid grid-cols-1 gap-2">
-                          <button className="px-4 py-2 text-sm border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors">
-                            View Trip History
-                          </button>
+                        
                           <button className="px-4 py-2 text-sm border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors">
                             Generate Vehicle Report
                           </button>
-                          <button className="px-4 py-2 text-sm border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors">
-                            Edit Vehicle Info
-                          </button>
+                        
                           <div className="pt-2 border-t border-gray-200">
-                            <button className="w-full px-4 py-2 text-sm border border-red-300 text-red-600 hover:bg-red-50 transition-colors">
-                              Deactivate Vehicle
-                            </button>
+                           
                           </div>
                         </div>
                       </div>

@@ -183,18 +183,7 @@ const filterData=useMemo(()=>{
                   {drivers.length}
                 </div>
               </div>
-              <div className="bg-white border border-gray-200 p-6">
-                <div className="text-sm text-gray-600">Total Trips</div>
-                <div className="text-2xl font-bold text-blue-600 mt-2">
-                  {/* {drivers.reduce((sum, d) => sum + d.totalTrips, 0)} */}
-                </div>
-              </div>
-              <div className="bg-white border border-gray-200 p-6">
-                <div className="text-sm text-gray-600">Total Earnings</div>
-                <div className="text-2xl font-bold text-black mt-2">
-                  $60,140.00
-                </div>
-              </div>
+              
             </div>
           )
         }
@@ -343,37 +332,7 @@ const filterData=useMemo(()=>{
               {/* Work Information & Statistics */}
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-lg font-semibold text-black border-b border-gray-200 pb-2 mb-4">
-                    Work Information
-                  </h3>
-
-                  <div className="bg-gray-50 p-4 space-y-3 mb-6">
-
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-600">
-                        Total Trips:
-                      </span>
-                      <span className="text-black font-medium">
-                        {selectedDriver.totalTrips}
-                      </span>
-                    </div>
-
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-600">
-                        Total Earnings:
-                      </span>
-                      <span className="text-black font-medium">
-                        {selectedDriver.totalEarnings}
-                      </span>
-                    </div>
-
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-600">Last Trip:</span>
-                      <span className="text-black">
-                        {selectedDriver.lastTrip}
-                      </span>
-                    </div>
-                  </div>
+               
 
                   <div className="space-y-3">
                     <h4 className="text-sm font-medium text-black">
@@ -383,20 +342,8 @@ const filterData=useMemo(()=>{
                       <button className="px-4 py-2 text-sm bg-black text-white hover:bg-gray-800 transition-colors">
                         Generate Driver Report
                       </button>
-                      <button className="px-4 py-2 text-sm border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors">
-                        View Trip History
-                      </button>
-                      <button className="px-4 py-2 text-sm border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors">
-                        Edit Driver Info
-                      </button>
-                      <button className="px-4 py-2 text-sm border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors">
-                        Change Vehicle
-                      </button>
-                      <div className="pt-2 border-t border-gray-200">
-                        <button className="w-full px-4 py-2 text-sm border border-red-300 text-red-600 hover:bg-red-50 transition-colors">
-                          Deactivate Driver
-                        </button>
-                      </div>
+ 
+      
                     </div>
                   </div>
                 </div>

@@ -174,27 +174,7 @@ const Customers = () => {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                   <div className="bg-white border border-gray-200 p-6">
                     <div className="text-sm text-gray-600">Total Customers</div>
-                    <div className="text-2xl font-bold text-black mt-2">5</div>
-                  </div>
-                  <div className="bg-white border border-gray-200 p-6">
-                    <div className="text-sm text-gray-600">
-                      Active Customers
-                    </div>
-                    <div className="text-2xl font-bold text-green-600 mt-2">
-                      4
-                    </div>
-                  </div>
-                  <div className="bg-white border border-gray-200 p-6">
-                    <div className="text-sm text-gray-600">Total Orders</div>
-                    <div className="text-2xl font-bold text-blue-600 mt-2">
-                      175
-                    </div>
-                  </div>
-                  <div className="bg-white border border-gray-200 p-6">
-                    <div className="text-sm text-gray-600">Total Revenue</div>
-                    <div className="text-2xl font-bold text-black mt-2">
-                      $62,140.00
-                    </div>
+                    <div className="text-2xl font-bold text-black mt-2">{customers.length}</div>
                   </div>
                 </div>
               </div>
@@ -526,47 +506,6 @@ const Customers = () => {
 
                   {/* Order Statistics */}
                   <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-black border-b border-gray-200 pb-2">
-                      Order Statistics
-                    </h3>
-
-                    <div className="bg-gray-50 p-4 space-y-3">
-                      <div className="flex justify-between">
-                        <span className="text-sm text-gray-600">
-                          Total Orders:
-                        </span>
-                        <span className="text-black font-medium">
-                          {selectedCustomer.totalOrders}
-                        </span>
-                      </div>
-
-                      <div className="flex justify-between">
-                        <span className="text-sm text-gray-600">
-                          Total Amount:
-                        </span>
-                        <span className="text-black font-medium">
-                          {selectedCustomer.totalAmount}
-                        </span>
-                      </div>
-
-                      <div className="flex justify-between">
-                        <span className="text-sm text-gray-600">
-                          Join Date:
-                        </span>
-                        <span className="text-black">
-                          {selectedCustomer.joinDate}
-                        </span>
-                      </div>
-
-                      <div className="flex justify-between">
-                        <span className="text-sm text-gray-600">
-                          Last Order:
-                        </span>
-                        <span className="text-black">
-                          {selectedCustomer.lastOrder || "No orders yet"}
-                        </span>
-                      </div>
-                    </div>
 
                     <div className="space-y-2">
                       <h4 className="text-sm font-medium text-black">
@@ -575,9 +514,6 @@ const Customers = () => {
                       <div className="flex flex-col gap-2">
                         <button onClick={()=>navigate("/data")} className="px-4 py-2 text-sm bg-black text-white hover:bg-gray-800 transition-colors">
                           Create New Order
-                        </button>
-                        <button className="px-4 py-2 text-sm border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors">
-                          View Order History
                         </button>
                    <a
   href={`/invoicewithoutvat/${selectedCustomer.id}`}

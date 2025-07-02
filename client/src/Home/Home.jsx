@@ -6,137 +6,95 @@ import Spinner from "../components/Spinner";
 
 const Home = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false); 
+  const [dashboardData, setDashboardData] = useState(null);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const statsData = [
+  const checkAccountLogin = async () => {
+    setLoading(true);
+    try {
+      const response = await api.get("/api/user/authcheck");
+      console.log(response.data);
+      if (response.data.authenticated === true) {
+        await fetchDashboardData();
+      } else {
+        navigate("/signin");
+      }
+    } catch (error) {
+      console.log("error in checking user login", error);
+      navigate("/signin");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchDashboardData = async () => {
+    try {
+      const response = await api.get("/api/user/dashboard");
+      if (response.data.success) {
+        setDashboardData(response.data.data);
+      }
+    } catch (error) {
+      console.log("Error fetching dashboard data:", error);
+    }
+  };
+
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD'
+    }).format(amount);
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    
+    if (date.toDateString() === today.toDateString()) {
+      return "Today";
+    } else if (date.toDateString() === yesterday.toDateString()) {
+      return "Yesterday";
+    } else {
+      const diffTime = Math.abs(today - date);
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      return `${diffDays} days ago`;
+    }
+  };
+
+  const statsData = dashboardData ? [
     {
       title: "Total Revenue",
-      value: "$45,280",
-      change: "+12.5%",
+      value: formatCurrency(dashboardData.currentMonth.revenue),
       isPositive: true,
       icon: "💰",
     },
     {
       title: "Total Expenses",
-      value: "$18,420",
-      change: "+8.2%",
+      value: formatCurrency(dashboardData.currentMonth.expenses),
       isPositive: false,
       icon: "💸",
     },
     {
       title: "Net Profit",
-      value: "$26,860",
-      change: "+15.3%",
-      isPositive: true,
+      value: formatCurrency(dashboardData.currentMonth.profit),
+      isPositive: dashboardData.currentMonth.profit >= 0,
       icon: "📈",
     },
     {
       title: "Total Orders",
-      value: "1,247",
-      change: "+5.7%",
+      value: dashboardData.totalOrders.toString(),
+      change: `+${dashboardData.currentMonth.orders} this month`,
       isPositive: true,
       icon: "🛒",
     },
-  ];
-
-  const recentlyAddedData = [
-    {
-      id: 1,
-      name: "Samsung Galaxy S24",
-      type: "Product",
-      price: "$899.99",
-      time: "2 hours ago",
-    },
-    {
-      id: 2,
-      name: "iPhone 15 Pro",
-      type: "Product",
-      price: "$1,199.99",
-      time: "4 hours ago",
-    },
-    {
-      id: 3,
-      name: "MacBook Air M2",
-      type: "Product",
-      price: "$1,299.99",
-      time: "6 hours ago",
-    },
-    {
-      id: 4,
-      name: "AirPods Pro",
-      type: "Product",
-      price: "$249.99",
-      time: "1 day ago",
-    },
-    {
-      id: 5,
-      name: 'iPad Pro 12.9"',
-      type: "Product",
-      price: "$1,099.99",
-      time: "1 day ago",
-    },
-  ];
-
-  const recentExpenses = [
-    {
-      id: 1,
-      description: "Office Rent",
-      amount: "$2,500.00",
-      category: "Fixed Costs",
-      date: "Today",
-      status: "Paid",
-    },
-    {
-      id: 2,
-      description: "Inventory Purchase",
-      amount: "$8,750.00",
-      category: "Inventory",
-      date: "Yesterday",
-      status: "Paid",
-    },
-    {
-      id: 3,
-      description: "Marketing Campaign",
-      amount: "$1,200.00",
-      category: "Marketing",
-      date: "2 days ago",
-      status: "Pending",
-    },
-    {
-      id: 4,
-      description: "Utility Bills",
-      amount: "$450.00",
-      category: "Utilities",
-      date: "3 days ago",
-      status: "Paid",
-    },
-  ];
-
-  const [loading, SetLoading] = useState(false);
-
-  const checkAccountLogin = async () => {
-    SetLoading(true);
-    try {
-      const responce = await api.get("/api/user/authcheck");
-      console.log(responce.data);
-      if (responce.data.authenticated == true) {
-        SetLoading(false);
-      } else {
-        navigate("/signin");
-      }
-      SetLoading(false);
-    } catch (error) {
-      console.log("error in checking user login", error);
-      SetLoading(false);
-      navigate("/signin");
-    } finally {
-      SetLoading(false);
-    }
-  };
+  ] : [];
 
   useEffect(() => {
     checkAccountLogin();
   }, []);
+
   return (
     <>
       {loading ? (
@@ -149,7 +107,6 @@ const Home = () => {
           />
 
           <div className="flex-1 lg:ml-16 transition-all duration-300">
-            {/* Mobile Header */}
             <div className="lg:hidden bg-white shadow-sm border-b border-gray-200 p-4">
               <div className="flex items-center justify-between">
                 <button
@@ -161,12 +118,11 @@ const Home = () => {
                 <h1 className="text-lg font-semibold text-gray-900">
                   Dashboard
                 </h1>
-                <div className="w-8"></div> {/* Spacer */}
+                <div className="w-8"></div>
               </div>
             </div>
 
             <div className="p-3 lg:p-6">
-              {/* Stats Grid */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-6 mb-6 lg:mb-8">
                 {statsData.map((stat, index) => (
                   <div
@@ -197,46 +153,51 @@ const Home = () => {
                 ))}
               </div>
 
-              {/* Cards Grid */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
-                {/* Recently Added Items */}
                 <div className="bg-white rounded-lg lg:rounded-xl shadow-sm border border-gray-200 p-4 lg:p-6">
                   <h3 className="text-base lg:text-lg font-semibold text-gray-900 mb-3 lg:mb-4">
-                    Recently Added Items
+                    Latest Orders
                   </h3>
                   <div className="space-y-2 lg:space-y-3">
-                    {recentlyAddedData
-                      .slice(0, window.innerWidth < 768 ? 3 : 5)
-                      .map((item) => (
+                    {dashboardData?.latestOrders
+                      ?.slice(0, window.innerWidth < 768 ? 3 : 5)
+                      .map((order) => (
                         <div
-                          key={item.id}
+                          key={order.id}
                           className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0"
                         >
                           <div className="flex-1 min-w-0 pr-2">
                             <p className="text-sm font-medium text-gray-900 truncate">
-                              {item.name}
+                              {order.containerNumber}
                             </p>
-                            <p className="text-xs text-gray-500">{item.type}</p>
+                            <p className="text-xs text-gray-500">
+                              {order["CustomerDetails.customername"]} • {order.from} → {order.to}
+                            </p>
                           </div>
                           <div className="text-right flex-shrink-0">
                             <p className="text-sm font-semibold text-gray-900">
-                              {item.price}
+                              {formatCurrency(order.total)}
                             </p>
-                            <p className="text-xs text-gray-500">{item.time}</p>
+                            <p className="text-xs text-gray-500">
+                              {formatDate(order.createdAt)}
+                            </p>
                           </div>
                         </div>
                       ))}
+                    {(!dashboardData?.latestOrders || dashboardData.latestOrders.length === 0) && (
+                      <p className="text-sm text-gray-500 text-center py-4">No orders found</p>
+                    )}
                   </div>
                 </div>
 
-                {/* Recent Expenses */}
+              
                 <div className="bg-white rounded-lg lg:rounded-xl shadow-sm border border-gray-200 p-4 lg:p-6">
                   <h3 className="text-base lg:text-lg font-semibold text-gray-900 mb-3 lg:mb-4">
                     Recent Expenses
                   </h3>
                   <div className="space-y-2 lg:space-y-3">
-                    {recentExpenses
-                      .slice(0, window.innerWidth < 768 ? 3 : 4)
+                    {dashboardData?.latestExpenses
+                      ?.slice(0, window.innerWidth < 768 ? 3 : 4)
                       .map((expense) => (
                         <div
                           key={expense.id}
@@ -247,49 +208,115 @@ const Home = () => {
                               {expense.description}
                             </p>
                             <p className="text-xs text-gray-500">
-                              {expense.category} • {expense.date}
+                              {expense.category} • {expense["vehicleDetails.plateNumber"]}
                             </p>
                           </div>
                           <div className="text-right flex-shrink-0">
                             <p className="text-sm font-semibold text-red-600">
-                              {expense.amount}
+                              {formatCurrency(expense.amount)}
                             </p>
-                            <span
-                              className={`text-xs px-2 py-1 rounded-full ${
-                                expense.status === "Paid"
-                                  ? "bg-green-100 text-green-800"
-                                  : "bg-yellow-100 text-yellow-800"
-                              }`}
-                            >
-                              {expense.status}
-                            </span>
+                            <p className="text-xs text-gray-500">
+                              {formatDate(expense.createdAt)}
+                            </p>
                           </div>
                         </div>
                       ))}
+                    {(!dashboardData?.latestExpenses || dashboardData.latestExpenses.length === 0) && (
+                      <p className="text-sm text-gray-500 text-center py-4">No expenses found</p>
+                    )}
                   </div>
                 </div>
 
-                {/* Quick Actions */}
+           
                 <div className="bg-white rounded-lg lg:rounded-xl shadow-sm border border-gray-200 p-4 lg:p-6">
                   <h3 className="text-base lg:text-lg font-semibold text-gray-900 mb-3 lg:mb-4">
                     Quick Actions
                   </h3>
                   <div className="grid grid-cols-2 lg:grid-cols-1 gap-2 lg:gap-3">
-                    <button className="p-2 lg:p-3 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors text-sm font-medium">
-                      New Sale
+                    <button 
+                      onClick={() => navigate('/orders/create')}
+                      className="p-2 lg:p-3 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors text-sm font-medium"
+                    >
+                      New Order
                     </button>
-                    <button className="p-2 lg:p-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium">
-                      Add Product
+                    <button 
+                      onClick={() => navigate('/customers')}
+                      className="p-2 lg:p-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
+                    >
+                      Add Customer
                     </button>
-                    <button className="p-2 lg:p-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium">
+                    <button 
+                      onClick={() => navigate('/expenses/create')}
+                      className="p-2 lg:p-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
+                    >
                       Add Expense
                     </button>
-                    <button className="p-2 lg:p-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium">
-                      View Reports
+                    <button 
+                      onClick={() => navigate('/payments')}
+                      className="p-2 lg:p-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
+                    >
+                      Add Payments
                     </button>
                   </div>
                 </div>
               </div>
+
+         
+              {dashboardData?.monthlyTrends && (
+                <div className="mt-6 lg:mt-8">
+                  <div className="bg-white rounded-lg lg:rounded-xl shadow-sm border border-gray-200 p-4 lg:p-6">
+                    <h3 className="text-base lg:text-lg font-semibold text-gray-900 mb-3 lg:mb-4">
+                      Monthly Trends
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Revenue Trend */}
+                      <div>
+                        <h4 className="text-sm font-medium text-gray-700 mb-2">Revenue Trend</h4>
+                        <div className="space-y-2">
+                          {dashboardData.monthlyTrends.revenue.map((item, index) => (
+                            <div key={index} className="flex justify-between items-center py-1">
+                              <span className="text-sm text-gray-600">
+                                {new Date(item.year, item.month - 1).toLocaleDateString('en-US', { 
+                                  month: 'short', 
+                                  year: 'numeric' 
+                                })}
+                              </span>
+                              <div className="text-right">
+                                <div className="text-sm font-semibold text-green-600">
+                                  {formatCurrency(item.revenue)}
+                                </div>
+                                <div className="text-xs text-gray-500">
+                                  {item.orderCount} orders
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Expense Trend */}
+                      <div>
+                        <h4 className="text-sm font-medium text-gray-700 mb-2">Expense Trend</h4>
+                        <div className="space-y-2">
+                          {dashboardData.monthlyTrends.expenses.map((item, index) => (
+                            <div key={index} className="flex justify-between items-center py-1">
+                              <span className="text-sm text-gray-600">
+                                {new Date(item.year, item.month - 1).toLocaleDateString('en-US', { 
+                                  month: 'short', 
+                                  year: 'numeric' 
+                                })}
+                              </span>
+                              <div className="text-sm font-semibold text-red-600">
+                                {formatCurrency(item.expenses)}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
