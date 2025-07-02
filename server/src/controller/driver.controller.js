@@ -1,4 +1,8 @@
+const { where } = require("sequelize");
 const Driver = require("../models/Driver.model");
+const Order = require("../models/order.model");
+const Vehicle = require("../models/Vehicle.model");
+const Customer = require("../models/Customer.model");
 
 const addDriver = async (req, res) => {
   try {
@@ -47,10 +51,49 @@ res.json({
 }
 
 
+const DriverReport= async (req,res)=>
+{
+        try {
+        const {id}=req.params
+        console.log(id);
+        
+const OrderData=await Order.findAll({
+    raw:true,
+    include:[
+      {
+        model:Vehicle,
+        as: 'vehicleDetails'
+      },
+      {
+        model:Driver,
+        as:"driverDetails"
+      },
+      {
+        model:Customer,
+        as:"CustomerDetails"
+      }
+    ],
+    where:{
+        driver:id
+    },
+    order: [['createdAt', 'DESC']]
+})
+
+res.json({
+    success:true,
+    OrderData:OrderData
+})
+    } catch (error) {
+        console.log("error in getting orders",error)
+        res.json({
+            success:false,
+            message:"Error fetching driver report"
+        })
+    }
+}
 
 
 
 
 
-
-module.exports = {addDriver,viewDriver};
+module.exports = {addDriver,viewDriver,DriverReport};

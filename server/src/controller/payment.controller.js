@@ -4,7 +4,7 @@ const paymentadd = async (req, res) => {
   try {
     const { amount } = req.body;
     const { id } = req.params;
-    let paidstatus = false;
+    
     if (!amount || !id) {
       return res.json({
         message: "Please provide amount and order id",
@@ -13,21 +13,24 @@ const paymentadd = async (req, res) => {
     }
 
     const existingOrder = await Order.findByPk(id);
-    console.log("Existing Order:", existingOrder.dataValues);
-
-    const previouspayed = existingOrder.dataValues.paidamount;
-    const updatedpaymed = previouspayed + amount;
-
-    if (existingOrder.dataValues.total == updatedpaymed) {
-      paidstatus = true;
-    } else {
-      paidstatus = false;
+    
+    if (!existingOrder) {
+      return res.json({
+        message: "Order not found",
+        success: false,
+      });
     }
-
+    console.log("Existing Order:", existingOrder.dataValues);
+    const previouspayed = parseFloat(existingOrder.dataValues.paidamount) || 0;
+    const paymentAmount = parseFloat(amount);
+    const updatedpaymed = previouspayed + paymentAmount;
+    const totalAmount = parseFloat(existingOrder.dataValues.total);
+    const paidstatus = Math.round(updatedpaymed * 100) >= Math.round(totalAmount * 100);
+    console.log(`Previous: ${previouspayed}, Payment: ${paymentAmount}, Updated: ${updatedpaymed}, Total: ${totalAmount}, Status: ${paidstatus}`);
     const update = await Order.update(
       {
         paidamount: updatedpaymed,
-        paidstatus: paidstatus,
+        paidStatus: paidstatus,
       },
       {
         where: {
@@ -35,17 +38,20 @@ const paymentadd = async (req, res) => {
         },
       }
     );
-
-    if (!update) {
+    if (update[0] === 0) {
       return res.json({
-        message: "Cannot update Payment",
+        message: "Cannot update Payment - no rows affected",
         success: false,
       });
     }
-
     return res.json({
       message: "Payment Added Successfully",
       success: true,
+      data: {
+        paidAmount: updatedpaymed,
+        totalAmount: totalAmount,
+        paidStatus: paidstatus
+      }
     });
   } catch (error) {
     console.log(error);

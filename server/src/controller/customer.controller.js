@@ -1,4 +1,5 @@
 const Customer = require("../models/Customer.model");
+const Order = require("../models/order.model");
 
 const AddCustomers = async (req, res) => {
   try {
@@ -83,7 +84,80 @@ const viewCustomers = async (req, res) => {
   }
 };
 
+const customerpayment=async(req,res)=>
+{
+  try {
+  const {customerid}=req.params;
+    console.log(customerid);
+    
+    const unpaiddata= await Order.findAll({
+      where:{
+        customer:customerid,
+        paidStatus:false
+      },
+      raw:true
+    })
+    
+const totalpaid= await Order.sum('paidamount',{
+  where:{
+    customer:customerid
+  }
+})
+
+const totalamount= await Order.sum("total",{
+   where:{
+    customer:customerid
+  }
+})
 
 
 
-module.exports = { AddCustomers, viewCustomers };
+
+
+
+
+if(!unpaiddata)
+{
+  return res.json({
+    message:"no unpaid data",
+    success:false
+  })
+}
+
+const paiddata= await Order.findAll({
+      where:{
+        customer:customerid,
+        paidStatus:true
+      },
+      raw:true
+    })
+
+
+if(!paiddata)
+{
+  return res.json({
+    message:"no paid data",
+    success:false
+  })
+}
+
+let unpaidtotal=totalamount-totalpaid
+
+return res.json({
+  success:true,
+  unpaiddata:unpaiddata,
+  paiddata:paiddata,
+  total:totalamount,
+  paidtotal:totalpaid,
+  unpaidtotal:unpaidtotal
+})
+
+
+  } catch (error) {
+    console.log("error in getting customer report",error);
+    
+  }
+}
+
+
+module.exports = { AddCustomers, viewCustomers,customerpayment };
