@@ -5,6 +5,7 @@ import { Link, NavLink, useNavigate } from "react-router-dom";
 import { FaMoneyBill1 } from "react-icons/fa6";
 import api from "../api";
 import toast from "react-hot-toast";
+
 const Sidebar = ({ isSidebarCollapsed, setIsSidebarCollapsed }) => {
   const navigate = useNavigate();
   const menuItems = [
@@ -19,82 +20,103 @@ const Sidebar = ({ isSidebarCollapsed, setIsSidebarCollapsed }) => {
 
   const handleLogout = async () => {
     try {
-      const responce = await api.post("/api/user/logout");
-      console.log(responce.data);
-
-      if (responce.data.success == true) {
+      const response = await api.post("/api/user/logout");
+      if (response.data.success) {
+        toast.success("Logged out successfully");
         navigate("/signin");
-        toast.success(responce.data.message, {
-          duration: 2000,
-        });
-      } else {
-        toast.error(responce.data.message, {
-          duration: 3000,
-        });
       }
     } catch (error) {
-      console.log("error in log out", error);
+      console.error("Logout error:", error);
+      toast.error("Logout failed");
     }
   };
 
   return (
     <>
+      {/* Mobile Overlay */}
+      {!isSidebarCollapsed && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          onClick={() => setIsSidebarCollapsed(true)}
+        />
+      )}
+
+      {/* Sidebar */}
       <div
-        className={`${
-          isSidebarCollapsed ? "w-16" : "w-64"
-        } bg-black text-white transition-all duration-300 fixed h-full z-50 flex flex-col`}
+        className={`fixed top-0 left-0 h-full bg-black text-white transition-all duration-300 z-50 ${
+          isSidebarCollapsed
+            ? "-translate-x-full lg:translate-x-0 lg:w-16"
+            : "w-64"
+        }`}
       >
-        <div className="flex items-center justify-between p-5 border-b border-gray-800">
+        {/* Header */}
+        <div className="flex items-center justify-between p-4 border-b border-gray-700">
           <h2
-            className={`text-xl font-bold ${
-              isSidebarCollapsed ? "hidden" : "block"
+            className={`font-bold transition-all duration-300 ${
+              isSidebarCollapsed ? "hidden lg:hidden" : "text-lg"
             }`}
           >
             POS Dashboard
           </h2>
-          {isSidebarCollapsed && <span className="text-xl font-bold">P</span>}
+          {isSidebarCollapsed && (
+            <span className="text-xl font-bold hidden lg:block">P</span>
+          )}
           <button
             onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-            className="p-1 rounded hover:bg-gray-800 transition-colors"
+            className="p-1 rounded hover:bg-gray-800 transition-colors lg:block"
           >
             {isSidebarCollapsed ? "→" : "←"}
           </button>
         </div>
 
-        <nav className="mt-5 flex-1">
+        {/* Navigation */}
+        <nav className="mt-5 flex-1 px-2">
           {menuItems.map((item, index) => (
             <NavLink
               to={item.to}
               key={index}
+              onClick={() =>
+                window.innerWidth < 1024 && setIsSidebarCollapsed(true)
+              }
               className={({ isActive }) =>
-                `flex items-center px-4 py-3 mx-2 mb-1 rounded-lg cursor-pointer transition-all duration-200 ${
+                `flex items-center px-3 py-3 mb-1 rounded-lg cursor-pointer transition-all duration-200 ${
                   isActive
-                    ? "bg-gradient-to-r from-gray-500 to-gray-600 text-white shadow-lg transform scale-105"
-                    : "text-gray-300 hover:bg-gray-800 hover:text-white hover:transform hover:scale-102"
-                }`
+                    ? "bg-gradient-to-r from-gray-500 to-gray-600 text-white shadow-lg"
+                    : "text-gray-300 hover:bg-gray-800 hover:text-white"
+                } ${isSidebarCollapsed ? "justify-center lg:justify-center" : ""}`
               }
             >
-              <span className={`text-lg text-white `}>{item.icon}</span>
-              {!isSidebarCollapsed && (
-                <span className="ml-3 font-medium">{item.label}</span>
-              )}
+              <span className="text-lg text-white flex-shrink-0">
+                {item.icon}
+              </span>
+              <span
+                className={`ml-3 transition-all duration-300 ${
+                  isSidebarCollapsed ? "hidden lg:hidden" : "block"
+                }`}
+              >
+                {item.label}
+              </span>
             </NavLink>
           ))}
         </nav>
 
         {/* Logout Button */}
-        <div className="p-4 border-t border-gray-800">
-          <div
+        <div className="p-4 border-t border-gray-700">
+          <button
             onClick={handleLogout}
-            className="flex items-center px-4 py-3 mx-2 rounded-lg cursor-pointer transition-all hover:bg-red-800 hover:text-white"
+            className={`flex items-center w-full px-3 py-3 text-gray-300 hover:bg-gray-800 hover:text-white rounded-lg transition-all duration-200 ${
+              isSidebarCollapsed ? "justify-center lg:justify-center" : ""
+            }`}
           >
-            <span className="text-lg">
-              <FaSignOutAlt />
+            <FaSignOutAlt className="text-lg flex-shrink-0" />
+            <span
+              className={`ml-3 transition-all duration-300 ${
+                isSidebarCollapsed ? "hidden lg:hidden" : "block"
+              }`}
+            >
+              Logout
             </span>
-            {!isSidebarCollapsed && (
-              <span className="ml-3 font-medium">Logout</span>
-            )}
-          </div>
+          </button>
         </div>
       </div>
     </>

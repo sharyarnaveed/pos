@@ -9,7 +9,7 @@ import { useNavigate } from "react-router-dom";
 const Data = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
   const [showOrderDetail, setShowOrderDetail] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [editOrderData, setEditOrderData] = useState(null);
@@ -50,10 +50,12 @@ const Data = () => {
       custWash: "",
       merc: "",
       extra: "",
+      extraChargeType: "", // Add this new field
       driverId: "",
       vehicleId: "",
       remarks: "",
       orderType: "import",
+      orderDate: new Date().toISOString().split('T')[0],
     },
   });
 
@@ -63,6 +65,7 @@ const Data = () => {
   const custWash = watch("custWash");
   const merc = watch("merc");
   const extra = watch("extra");
+  const extraChargeType = watch("extraChargeType"); // Watch extra charge type
 
   // Calculate subtotal and total with VAT
   const subtotal = useMemo(() => {
@@ -74,9 +77,16 @@ const Data = () => {
     return rateVal + tokenVal + custWashVal + mercVal + extraVal;
   }, [rate, token, custWash, merc, extra]);
 
+  // VAT calculated only on rate and extra charges
+  const vatableAmount = useMemo(() => {
+    const rateVal = parseFloat(rate) || 0;
+    const extraVal = parseFloat(extra) || 0;
+    return rateVal + extraVal;
+  }, [rate, extra]);
+
   const vat = useMemo(() => {
-    return subtotal * 0.05; // 5% VAT
-  }, [subtotal]);
+    return vatableAmount * 0.05; // 5% VAT only on rate and extra
+  }, [vatableAmount]);
 
   const total = useMemo(() => {
     return subtotal + vat;
@@ -260,19 +270,21 @@ const Data = () => {
     setValue("from", order.from || "");
     setValue("to", order.to || "");
     setValue("containerNumber", order.containerNumber || "");
-    setValue("customerId", order.customerId || "");
+    setValue("customerId", order.customer || ""); // Fixed: use 'customer' instead of 'customerId'
     setCustomerSearch(order["CustomerDetails.customername"] || "");
     setValue("rate", order.rate || "");
     setValue("token", order.token || "");
-    setValue("custWash", order.custWash || "");
+    setValue("custWash", order.custwash || ""); // Fixed: use 'custwash' instead of 'custWash'
     setValue("merc", order.merc || "");
     setValue("extra", order.extra || "");
-    setValue("driverId", order.driverId || "");
+    setValue("extraChargeType", order.extratype || ""); // Fixed: use 'extratype' instead of 'extraChargeType'
+    setValue("driverId", order.driver || ""); // Fixed: use 'driver' instead of 'driverId'
     setDriverSearch(order["driverDetails.drivername"] || "");
-    setValue("vehicleId", order.vehicleId || "");
+    setValue("vehicleId", order.vehicle || ""); // Fixed: use 'vehicle' instead of 'vehicleId'
     setVehicleSearch(order["vehicleDetails.plateNumber"] || "");
     setValue("remarks", order.remarks || "");
     setValue("orderType", order.type || "import");
+    setValue("orderDate", order.date || new Date(order.createdAt).toISOString().split('T')[0]); // Use date or createdAt
   };
 
   // Add this function to handle edit form submit
@@ -343,32 +355,43 @@ const Data = () => {
   }
 
   return (
-    <div className="flex min-h-screen bg-white">
+    <div className="flex min-h-screen bg-white overflow-x-hidden">
       <Sidebar
         isSidebarCollapsed={isSidebarCollapsed}
         setIsSidebarCollapsed={setIsSidebarCollapsed}
       />
 
-      <div
-        className={`flex-1 ${
-          isSidebarCollapsed ? "ml-16" : "ml-64"
-        } transition-all duration-300`}
-      >
-        {/* Header */}
-        <div className="border-b border-gray-200 bg-white">
+      <div className="flex-1 lg:ml-16 transition-all duration-300 min-w-0">
+        {/* Mobile Header */}
+        <div className="lg:hidden bg-white shadow-sm border-b border-gray-200 p-4">
+          <div className="flex items-center justify-between">
+            <button
+              onClick={() => setIsSidebarCollapsed(false)}
+              className="p-2 rounded-md hover:bg-gray-100 flex-shrink-0"
+            >
+              <span className="text-xl">☰</span>
+            </button>
+            <h1 className="text-lg font-semibold text-gray-900 truncate mx-4">Orders</h1>
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="bg-black text-white px-3 py-1 text-sm rounded flex-shrink-0"
+            >
+              Add
+            </button>
+          </div>
+        </div>
+
+        {/* Desktop Header */}
+        <div className="hidden lg:block border-b border-gray-200 bg-white">
           <div className="px-8 py-6">
             <div className="flex justify-between items-center">
-              <div>
-                <h1 className="text-2xl font-bold text-black">
-                  Order Management
-                </h1>
-                <p className="text-gray-600 text-sm mt-1">
-                  Manage your shipping orders
-                </p>
+              <div className="min-w-0 flex-1">
+                <h1 className="text-2xl font-bold text-black">Order Management</h1>
+                <p className="text-gray-600 text-sm mt-1">Manage your shipping orders</p>
               </div>
               <button
                 onClick={() => setIsModalOpen(true)}
-                className="bg-black text-white px-6 py-2 text-sm font-medium hover:bg-gray-800 transition-colors"
+                className="bg-black text-white px-6 py-2 text-sm font-medium hover:bg-gray-800 transition-colors flex-shrink-0"
               >
                 Add New Order
               </button>
@@ -377,129 +400,171 @@ const Data = () => {
         </div>
 
         {/* Content */}
-        <div className="p-8">
+        <div className="p-3 lg:p-8">
           {/* Search */}
-          <div className="mb-6">
+          <div className="mb-4 lg:mb-6">
             <input
               type="text"
-              placeholder="Search orders by container number, route, or customer..."
+              placeholder="Search orders..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full max-w-md px-4 py-2 border border-gray-300 focus:border-black focus:outline-none text-sm"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-black focus:outline-none text-sm"
             />
           </div>
 
-          {/* Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div className="bg-white border border-gray-200 p-6">
-              <div className="text-sm text-gray-600">Total Orders</div>
-              <div className="text-2xl font-bold text-black mt-2">
-                {orders.length}
-              </div>
-            </div>
-            <div className="bg-white border border-gray-200 p-6">
-              <div className="text-sm text-gray-600">Import Orders</div>
-              <div className="text-2xl font-bold text-blue-600 mt-2">
-                {orders.filter((o) => o.type === "import").length}
-              </div>
-            </div>
-            <div className="bg-white border border-gray-200 p-6">
-              <div className="text-sm text-gray-600">Export Orders</div>
-              <div className="text-2xl font-bold text-green-600 mt-2">
-                {orders.filter((o) => o.type === "export").length}
-              </div>
-            </div>
-            <div className="bg-white border border-gray-200 p-6">
-              <div className="text-sm text-gray-600">Total Revenue</div>
-              <div className="text-2xl font-bold text-black mt-2">
-                AED{" "}
-                {orders
-                  .reduce((sum, o) => sum + parseFloat(o.total || 0), 0)
-                  .toFixed(2)}
-              </div>
+          {/* Desktop Table View */}
+          <div className="hidden lg:block bg-white border border-gray-200 rounded-lg overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Container
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Customer
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Route
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Driver
+                    </th>
+
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Date
+                    </th>
+
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Amount
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {filteredOrders.map((order) => (
+                    <tr key={order.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 uppercase">
+                        {order.containerNumber}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 uppercase">
+                        {order["CustomerDetails.customername"]}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 uppercase">
+                        {order.from} → {order.to}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 uppercase">
+                        {order["driverDetails.drivername"]}
+                      </td>
+
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {new Date(order.date || order.createdAt).toLocaleDateString()}
+                      </td>
+
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        AED {order.total}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <button
+                          onClick={() => handleOrderClick(order)}
+                          className="text-blue-600 hover:text-blue-800"
+                        >
+                          View
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
 
-          {/* Orders Table */}
-          <div className="bg-white border border-gray-200">
-            {/* Table Header */}
-            <div className="bg-black text-white">
-              <div className="grid grid-cols-8 gap-4 px-6 py-4 text-sm font-medium">
-                <div>Container #</div>
-                <div>Route</div>
-                <div>Customer</div>
-                <div>Driver</div>
-                <div>Vehicle</div>
-                <div>Type</div>
-                <div>Total</div>
-                <div>Actions</div>
-              </div>
-            </div>
-
-            {/* Table Body */}
-            <div className="divide-y divide-gray-200">
+          {/* Mobile Card View */}
+          <div className="lg:hidden">
+            <div className="space-y-4">
               {filteredOrders.map((order) => (
                 <div
                   key={order.id}
-                  className="grid grid-cols-8 gap-4 px-6 py-4 text-sm hover:bg-gray-50 transition-colors cursor-pointer"
                   onClick={() => handleOrderClick(order)}
+                  className="bg-white border border-gray-200 rounded-lg p-4 cursor-pointer hover:shadow-md transition-shadow"
                 >
-                  <div className="font-medium text-black">
-                    {order.containerNumber}
-                  </div>
-                  <div className="text-gray-600">
-                    {order.from} → {order.to}
-                  </div>
-                  <div className="text-gray-600">
-                    {order["CustomerDetails.customername"]}
-                  </div>
-                  <div className="text-gray-600">
-                    {order["driverDetails.drivername"]}
-                  </div>
-                  <td>{order["vehicleDetails.plateNumber"]}</td>
-
-                  <div>
-                    <span
-                      className={`text-xs px-2 py-1 rounded-full ${
+                  <div className="flex justify-between items-start mb-3">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-gray-900 uppercase truncate">
+                        {order.containerNumber}
+                      </h3>
+                      <p className="text-sm text-gray-600 uppercase truncate">
+                        {order["CustomerDetails.customername"]}
+                      </p>
+                    </div>
+                    <div className="ml-2 flex-shrink-0">
+                      <span className={`text-xs px-2 py-1 rounded-full whitespace-nowrap ${
                         order.type === "import"
                           ? "bg-blue-100 text-blue-800"
                           : "bg-green-100 text-green-800"
-                      }`}
-                    >
-                      {order.type?.toUpperCase()}
-                    </span>
+                      }`}>
+                        {order.type?.toUpperCase()}
+                      </span>
+                    </div>
                   </div>
-                  <div className="font-medium text-black">
-                    AED {order.total}
-                  </div>
-                  <div onClick={(e) => e.stopPropagation()}>
-                    <button
-                      onClick={() => handleOrderClick(order)}
-                      className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-                    >
-                      View
-                    </button>
+                  
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-500 flex-shrink-0">Route:</span>
+                      <span className="text-gray-900 uppercase text-right truncate ml-2">
+                        {order.from} → {order.to}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-500 flex-shrink-0">Driver:</span>
+                      <span className="text-gray-900 uppercase text-right truncate ml-2">
+                        {order["driverDetails.drivername"]}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-500 flex-shrink-0">Vehicle:</span>
+                      <span className="text-gray-900 uppercase text-right truncate ml-2">
+                        {order["vehicleDetails.plateNumber"]}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-500 flex-shrink-0">Date:</span>
+                      <span className="text-gray-900 text-right ml-2">
+                        {new Date(order.date || order.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-sm font-semibold border-t border-gray-200 pt-2">
+                      <span className="text-gray-500 flex-shrink-0">Amount:</span>
+                      <span className="text-gray-900 text-right ml-2">AED {order.total}</span>
+                    </div>
                   </div>
                 </div>
               ))}
             </div>
-
-            {/* Empty State */}
-            {filteredOrders.length === 0 && (
-              <div className="text-center py-12">
-                <p className="text-gray-500">No orders found</p>
-              </div>
-            )}
           </div>
+
+          {/* Empty State */}
+          {filteredOrders.length === 0 && (
+            <div className="text-center py-12">
+              <p className="text-gray-500 mb-4">No orders found matching your search.</p>
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="bg-black text-white px-6 py-2 text-sm font-medium hover:bg-gray-800 transition-colors rounded"
+              >
+                Add Your First Order
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Add Order Modal */}
+      {/* Modal - Responsive */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-            {/* Modal Header */}
-            <div className="bg-black text-white px-6 py-4 flex justify-between items-center">
+          <div className="bg-white w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-lg">
+            <div className="bg-black text-white px-4 lg:px-6 py-4 flex justify-between items-center">
               <h3 className="text-lg font-medium">Add New Order</h3>
               <button
                 onClick={() => setIsModalOpen(false)}
@@ -509,9 +574,8 @@ const Data = () => {
               </button>
             </div>
 
-            {/* Modal Body */}
-            <form onSubmit={handleSubmit(handleAddOrder)} className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <form onSubmit={handleSubmit(handleAddOrder)} className="p-4 lg:p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
                 {/* Route Information */}
                 <div>
                   <label className="block text-sm font-medium text-black mb-2">
@@ -522,7 +586,7 @@ const Data = () => {
                     {...register("from", {
                       required: "From location is required",
                     })}
-                    className="w-full px-3 py-2 border border-gray-300 focus:border-black focus:outline-none text-sm"
+                    className="w-full px-3 py-2 border border-gray-300 focus:border-black focus:outline-none text-sm uppercase"
                     placeholder="Origin location"
                   />
                   {errors.from && (
@@ -539,7 +603,7 @@ const Data = () => {
                   <input
                     type="text"
                     {...register("to", { required: "Destination is required" })}
-                    className="w-full px-3 py-2 border border-gray-300 focus:border-black focus:outline-none text-sm"
+                    className="w-full px-3 py-2 border border-gray-300 focus:border-black focus:outline-none text-sm uppercase"
                     placeholder="Destination location"
                   />
                   {errors.to && (
@@ -558,7 +622,7 @@ const Data = () => {
                     {...register("containerNumber", {
                       required: "Container number is required",
                     })}
-                    className="w-full px-3 py-2 border border-gray-300 focus:border-black focus:outline-none text-sm"
+                    className="w-full px-3 py-2 border border-gray-300 focus:border-black focus:outline-none text-sm uppercase"
                     placeholder="Container number"
                   />
                   {errors.containerNumber && (
@@ -582,7 +646,7 @@ const Data = () => {
                       setValue("customerId", ""); // Clear selection when typing
                     }}
                     onFocus={() => setShowCustomerDropdown(true)}
-                    className="w-full px-3 py-2 border border-gray-300 focus:border-black focus:outline-none text-sm"
+                    className="w-full px-3 py-2 border border-gray-300 focus:border-black focus:outline-none text-sm uppercase"
                     placeholder="Search customer..."
                   />
                   {showCustomerDropdown && (
@@ -592,7 +656,7 @@ const Data = () => {
                           <div
                             key={customer.id}
                             onClick={() => handleCustomerSelect(customer)}
-                            className="px-3 py-2 cursor-pointer hover:bg-gray-100 text-sm"
+                            className="px-3 py-2 cursor-pointer hover:bg-gray-100 text-sm uppercase"
                           >
                             {customer.customername}
                           </div>
@@ -631,7 +695,7 @@ const Data = () => {
                       setValue("driverId", ""); // Clear selection when typing
                     }}
                     onFocus={() => setShowDriverDropdown(true)}
-                    className="w-full px-3 py-2 border border-gray-300 focus:border-black focus:outline-none text-sm"
+                    className="w-full px-3 py-2 border border-gray-300 focus:border-black focus:outline-none text-sm uppercase"
                     placeholder="Search driver..."
                   />
                   {showDriverDropdown && (
@@ -680,7 +744,7 @@ const Data = () => {
                       setValue("vehicleId", ""); // Clear selection when typing
                     }}
                     onFocus={() => setShowVehicleDropdown(true)}
-                    className="w-full px-3 py-2 border border-gray-300 focus:border-black focus:outline-none text-sm"
+                    className="w-full px-3 py-2 border border-gray-300 focus:border-black focus:outline-none text-sm uppercase"
                     placeholder="Search vehicle..."
                   />
                   {showVehicleDropdown && (
@@ -779,6 +843,50 @@ const Data = () => {
                     className="w-full px-3 py-2 border border-gray-300 focus:border-black focus:outline-none text-sm"
                     placeholder="0.00"
                   />
+                  
+                  {/* Extra Charge Type Radio Buttons - Show only when extra amount is entered */}
+                  {extra && parseFloat(extra) > 0 && (
+                    <div className="mt-3">
+                      <label className="block text-sm font-medium text-black mb-2">
+                        Extra Charge Type *
+                      </label>
+                      <div className="space-y-2">
+                        <div className="flex items-center">
+                          <input
+                            type="radio"
+                            id="custom-inspection"
+                            value="custom-inspection"
+                            {...register("extraChargeType", {
+                              required: extra && parseFloat(extra) > 0 ? "Please select extra charge type" : false,
+                            })}
+                            className="mr-2"
+                          />
+                          <label htmlFor="custom-inspection" className="text-sm text-gray-700">
+                            Custom Inspection
+                          </label>
+                        </div>
+                        <div className="flex items-center">
+                          <input
+                            type="radio"
+                            id="waiting-charges"
+                            value="municipality-inspection"
+                            {...register("extraChargeType", {
+                              required: extra && parseFloat(extra) > 0 ? "Please select extra charge type" : false,
+                            })}
+                            className="mr-2"
+                          />
+                          <label htmlFor="municipality-inspection" className="text-sm text-gray-700">
+                            Municipality Inspection
+                          </label>
+                        </div>
+                      </div>
+                      {errors.extraChargeType && (
+                        <p className="text-red-500 text-xs mt-1">
+                          {errors.extraChargeType.message}
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 <div>
@@ -833,6 +941,25 @@ const Data = () => {
                   </select>
                 </div>
 
+                {/* Order Date */}
+                <div>
+                  <label className="block text-sm font-medium text-black mb-2">
+                    Order Date *
+                  </label>
+                  <input
+                    type="date"
+                    {...register("orderDate", {
+                      required: "Order date is required",
+                    })}
+                    className="w-full px-3 py-2 border border-gray-300 focus:border-black focus:outline-none text-sm"
+                  />
+                  {errors.orderDate && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.orderDate.message}
+                    </p>
+                  )}
+                </div>
+
                 {/* Remarks */}
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-black mb-2">
@@ -848,18 +975,18 @@ const Data = () => {
               </div>
 
               {/* Modal Footer */}
-              <div className="flex justify-end gap-3 mt-6 pt-6 border-t border-gray-200">
+              <div className="flex flex-col sm:flex-row justify-end gap-3 mt-6 pt-6 border-t border-gray-200">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 text-sm border border-gray-300 text-gray-700 hover:bg-gray-50"
+                  className="px-4 py-2 text-sm border border-gray-300 text-gray-700 hover:bg-gray-50 rounded"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-4 py-2 text-sm bg-black text-white hover:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2"
+                  className="px-4 py-2 text-sm bg-black text-white hover:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2 rounded"
                 >
                   {isSubmitting ? (
                     <>
@@ -1058,6 +1185,64 @@ const Data = () => {
                     className="w-full px-3 py-2 border border-gray-300 focus:border-black focus:outline-none text-sm"
                     placeholder="0.00"
                   />
+                  
+                  {/* Extra Charge Type Radio Buttons - Show only when extra amount is entered */}
+                  {extra && parseFloat(extra) > 0 && (
+                    <div className="mt-3">
+                      <label className="block text-sm font-medium text-black mb-2">
+                        Extra Charge Type *
+                      </label>
+                      <div className="space-y-2">
+                        <div className="flex items-center">
+                          <input
+                            type="radio"
+                            id="edit-custom-inspection"
+                            value="custom-inspection"
+                            {...register("extraChargeType", {
+                              required: extra && parseFloat(extra) > 0 ? "Please select extra charge type" : false,
+                            })}
+                            className="mr-2"
+                          />
+                          <label htmlFor="edit-custom-inspection" className="text-sm text-gray-700">
+                            Custom Inspection
+                          </label>
+                        </div>
+                        <div className="flex items-center">
+                          <input
+                            type="radio"
+                            id="edit-waiting-charges"
+                            value="waiting-charges"
+                            {...register("extraChargeType", {
+                              required: extra && parseFloat(extra) > 0 ? "Please select extra charge type" : false,
+                            })}
+                            className="mr-2"
+                          />
+                          <label htmlFor="edit-waiting-charges" className="text-sm text-gray-700">
+                            Waiting Charges
+                          </label>
+                        </div>
+                        <div className="flex items-center">
+                          <input
+                            type="radio"
+                            id="edit-municipality-inspection"
+                            value="municipality-inspection"
+                            {...register("extraChargeType", {
+                              required: extra && parseFloat(extra) > 0 ? "Please select extra charge type" : false,
+                            })}
+                            className="mr-2"
+                          />
+                          <label htmlFor="edit-municipality-inspection" className="text-sm text-gray-700">
+                            Municipality Inspection
+                          </label>
+                        </div>
+                      </div>
+                      {errors.extraChargeType && (
+                        <p className="text-red-500 text-xs mt-1">
+                          {errors.extraChargeType.message}
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 <div>
@@ -1107,6 +1292,25 @@ const Data = () => {
                     className="w-full px-3 py-2 border border-gray-300 bg-gray-100 text-gray-600 text-sm cursor-not-allowed"
                     readOnly
                   />
+                </div>
+
+                {/* Order Date */}
+                <div>
+                  <label className="block text-sm font-medium text-black mb-2">
+                    Order Date *
+                  </label>
+                  <input
+                    type="date"
+                    {...register("orderDate", {
+                      required: "Order date is required",
+                    })}
+                    className="w-full px-3 py-2 border border-gray-300 focus:border-black focus:outline-none text-sm"
+                  />
+                  {errors.orderDate && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.orderDate.message}
+                    </p>
+                  )}
                 </div>
 
                 {/* Remarks - EDITABLE */}
@@ -1185,31 +1389,31 @@ const Data = () => {
                   <div className="space-y-3">
                     <div className="flex justify-between">
                       <span className="text-gray-600">Container Number:</span>
-                      <span className="font-medium">
+                      <span className="font-medium uppercase">
                         {selectedOrder.containerNumber}
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Route:</span>
-                      <span className="font-medium">
+                      <span className="font-medium uppercase">
                         {selectedOrder.from} → {selectedOrder.to}
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Customer:</span>
-                      <span className="font-medium">
+                      <span className="font-medium uppercase">
                         {selectedOrder["CustomerDetails.customername"]}
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Driver:</span>
-                      <span className="font-medium">
+                      <span className="font-medium uppercase">
                         {selectedOrder["driverDetails.drivername"]}
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Vehicle:</span>
-                      <span className="font-medium">
+                      <span className="font-medium uppercase">
                         {selectedOrder["vehicleDetails.plateNumber"]}
                       </span>
                     </div>
@@ -1225,6 +1429,20 @@ const Data = () => {
                         {selectedOrder.type?.toUpperCase()}
                       </span>
                     </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Order Date:</span>
+                      <span className="font-medium">
+                        {new Date(selectedOrder.date || selectedOrder.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                    {selectedOrder.extratype && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Extra Charge Type:</span>
+                        <span className="font-medium uppercase">
+                          {selectedOrder.extratype.replace('-', ' ')}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -1249,7 +1467,7 @@ const Data = () => {
                     <div className="flex justify-between">
                       <span className="text-gray-600">Cust Wash:</span>
                       <span className="font-medium">
-                        AED {selectedOrder.custWash || "0.00"}
+                        AED {selectedOrder.custwash || "0.00"}
                       </span>
                     </div>
                     <div className="flex justify-between">
@@ -1260,9 +1478,16 @@ const Data = () => {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Extra:</span>
-                      <span className="font-medium">
-                        AED {selectedOrder.extra || "0.00"}
-                      </span>
+                      <div className="text-right">
+                        <span className="font-medium">
+                          AED {selectedOrder.extra || "0.00"}
+                        </span>
+                        {selectedOrder.extratype && (
+                          <div className="text-xs text-gray-500 uppercase">
+                            ({selectedOrder.extratype.replace('-', ' ')})
+                          </div>
+                        )}
+                      </div>
                     </div>
                     <div className="border-t border-gray-200 pt-3">
                       <div className="flex justify-between">
@@ -1271,7 +1496,7 @@ const Data = () => {
                           AED {(
                             (parseFloat(selectedOrder.rate) || 0) +
                             (parseFloat(selectedOrder.token) || 0) +
-                            (parseFloat(selectedOrder.custWash) || 0) +
+                            (parseFloat(selectedOrder.custwash) || 0) +
                             (parseFloat(selectedOrder.merc) || 0) +
                             (parseFloat(selectedOrder.extra) || 0)
                           ).toFixed(2)}
@@ -1280,13 +1505,7 @@ const Data = () => {
                       <div className="flex justify-between mt-2">
                         <span className="font-medium text-gray-600">VAT (5%):</span>
                         <span className="font-medium text-black">
-                          AED {(
-                            ((parseFloat(selectedOrder.rate) || 0) +
-                            (parseFloat(selectedOrder.token) || 0) +
-                            (parseFloat(selectedOrder.custWash) || 0) +
-                            (parseFloat(selectedOrder.merc) || 0) +
-                            (parseFloat(selectedOrder.extra) || 0)) * 0.05
-                          ).toFixed(2)}
+                          AED {selectedOrder.vat}
                         </span>
                       </div>
                       <div className="flex justify-between mt-2 pt-2 border-t border-gray-300">
@@ -1306,7 +1525,7 @@ const Data = () => {
                   <h4 className="text-lg font-semibold text-black border-b border-gray-200 pb-2 mb-4">
                     Remarks
                   </h4>
-                  <p className="text-gray-700 bg-gray-50 p-4 rounded">
+                  <p className="text-gray-700 bg-gray-50 p-4 rounded uppercase">
                     {selectedOrder.remarks}
                   </p>
                 </div>

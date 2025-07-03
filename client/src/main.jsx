@@ -1,22 +1,24 @@
-import { StrictMode } from "react";
+import { StrictMode, Suspense, lazy } from "react";
 import { createRoot } from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import "./index.css";
 import App from "./App.jsx";
-import Signin from "./Auth/Signin.jsx";
-import Home from "./Home/Home.jsx";
-import Data from "./data/Data.jsx";
-import Customers from "./customers/Customers.jsx";
-import Driver from "./driver/Driver.jsx";
-import Vehcile from "./vehcile/Vehcile.jsx";
-import Payments from "./payments/Payments.jsx";
 import { Toaster } from "react-hot-toast";
-import Expence from "./expences/Expence.jsx";
-import GenerateInvoice from "./generatestuff/GenerateInvoice.jsx";
-import GenerateVatInvoice from "./generatestuff/GenerateVatInvoice.jsx";
-import OverviewInvoice from "./generatestuff/OverviewInvoice.jsx";
-import DriverReport from "./generatestuff/DriverReport.jsx";
-import PaymentInvoice from "./generatestuff/PaymentInvoice.jsx";
+
+// Lazy load components
+const Signin = lazy(() => import("./Auth/Signin.jsx"));
+const Home = lazy(() => import("./Home/Home.jsx"));
+const Data = lazy(() => import("./data/Data.jsx"));
+const Customers = lazy(() => import("./customers/Customers.jsx"));
+const Driver = lazy(() => import("./driver/Driver.jsx"));
+const Vehcile = lazy(() => import("./vehcile/Vehcile.jsx"));
+const Payments = lazy(() => import("./payments/Payments.jsx"));
+const Expence = lazy(() => import("./expences/Expence.jsx"));
+const GenerateInvoice = lazy(() => import("./generatestuff/GenerateInvoice.jsx"));
+const GenerateVatInvoice = lazy(() => import("./generatestuff/GenerateVatInvoice.jsx"));
+const OverviewInvoice = lazy(() => import("./generatestuff/OverviewInvoice.jsx"));
+const DriverReport = lazy(() => import("./generatestuff/DriverReport.jsx"));
+const PaymentInvoice = lazy(() => import("./generatestuff/PaymentInvoice.jsx"));
 
 const router = createBrowserRouter([
   {
@@ -25,56 +27,107 @@ const router = createBrowserRouter([
     children: [
       {
         path: "/signin",
-        element: <Signin />,
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <Signin />
+          </Suspense>
+        ),
       },
       {
         path: "/",
-        element: <Home />,
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <Home />
+          </Suspense>
+        ),
       },
       {
         path:"/data",
-        element:<Data/>
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <Data/>
+          </Suspense>
+        )
       },
       {
         path:"/customers",
-        element:<Customers/>
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <Customers/>
+          </Suspense>
+        )
       },
       {
         path:"/driver",
-        element:<Driver/>
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <Driver/>
+          </Suspense>
+        )
       },
       {
         path:"/vehicle",
-        element:<Vehcile/>
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <Vehcile/>
+          </Suspense>
+        )
       },
        {
         path:"/payment",
-        element:<Payments/>
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <Payments/>
+          </Suspense>
+        )
       },
       {
         path:"/expenses",
-        element:<Expence/>
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <Expence/>
+          </Suspense>
+        )
       },
       {
         path:"/invoicewithoutvat/:customerid",
-        element:<GenerateInvoice/>,
-        
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <GenerateInvoice/>
+          </Suspense>
+        )
       },
       {
         path:"/generatevatinvoie/:customerid",
-        element:<GenerateVatInvoice/>
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <GenerateVatInvoice/>
+          </Suspense>
+        )
       },
       {
         path:"/overviewinvoice/:customerid",
-        element:<OverviewInvoice/>
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <OverviewInvoice/>
+          </Suspense>
+        )
       },
       {
         path:"/driverreport/:driverId",
-        element:<DriverReport/>
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <DriverReport/>
+          </Suspense>
+        )
       },
        {
         path:"/customerpayment/:customerid",
-        element:<PaymentInvoice/>
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <PaymentInvoice/>
+          </Suspense>
+        )
       }
     ],
   },

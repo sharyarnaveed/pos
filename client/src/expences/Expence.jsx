@@ -9,7 +9,7 @@ import Spinner from "../components/Spinner";
 const Expence = () => {
   const [isAddExpenseModalOpen, setIsAddExpenseModalOpen] = useState(false);
   const [isAddAmountModalOpen, setIsAddAmountModalOpen] = useState(false);
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
   const [showExpenseDetail, setShowExpenseDetail] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("all");
@@ -85,6 +85,7 @@ const Expence = () => {
       toast.success("Expense added successfully!", { duration: 2000 });
       resetExpense();
       setIsAddExpenseModalOpen(false);
+      await gettotals();
     } catch (error) {
       console.error("Error adding expense:", error);
       toast.error("Failed to add expense. Please try again.", {
@@ -104,6 +105,7 @@ const Expence = () => {
         toast.success("Amount added successfully!", { duration: 2000 });
         resetAmount();
         setIsAddAmountModalOpen(false);
+        await gettotals();
       } else {
         toast.error(response.data.message, {
           duration: 3000,
@@ -121,7 +123,7 @@ const Expence = () => {
     try {
       const response = await api.get("/api/user/viewexpences");
       console.log(response.data);
-      
+
       // Add proper error handling
       if (response.data.success && response.data.expenceData) {
         setSampleExpences(response.data.expenceData);
@@ -155,7 +157,7 @@ const Expence = () => {
     }
   }, []);
 
-const [balancehistory, setBalanceHistory] = useState([])
+  const [balancehistory, setBalanceHistory] = useState([]);
 
   const getbalancehistory = useCallback(async () => {
     try {
@@ -170,35 +172,31 @@ const [balancehistory, setBalanceHistory] = useState([])
         duration: 3000,
       });
     }
-  }, [])
+  }, []);
 
-const [currentbalance, setCurrentBalance] = useState(0);
-const [totalExpence, setTotalExpence] = useState(0);
+  const [currentbalance, setCurrentBalance] = useState(0);
+  const [totalExpence, setTotalExpence] = useState(0);
 
-  const gettotals = useCallback(async() => {
+  const gettotals = useCallback(async () => {
     try {
-        const responce=await api.get("/api/user/gettoalexpncebalance");
-        if (responce.data.success) {
+      const responce = await api.get("/api/user/gettoalexpncebalance");
+      if (responce.data.success) {
         setCurrentBalance(responce.data.balance);
         setTotalExpence(responce.data.totalAmount);
-        }
-
-
-      
+      }
     } catch (error) {
-      
       console.error("Error calculating totals:", error);
       toast.error("Failed to calculate totals. Please try again.", {
         duration: 3000,
       });
     }
-  },[])
+  }, []);
 
   useEffect(() => {
     viewExpences();
     gettotals();
     getVechilesData();
-    getbalancehistory()
+    getbalancehistory();
   }, []);
 
   // Vehicle Expense Chart Component
@@ -267,59 +265,6 @@ const [totalExpence, setTotalExpence] = useState(0);
           </div>
         </div>
 
-        {/* Summary Cards */}
-        <div className="p-6 bg-gray-50 border-b">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-              <div className="flex items-center">
-                <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center mr-3">
-                  <span className="text-red-600 text-lg">💰</span>
-                </div>
-                <div>
-                  <p className="text-gray-600 text-xs uppercase tracking-wide">
-                    Total Expenses
-                  </p>
-                  <p className="text-xl font-bold text-red-600">
-                    AED {totalExpenses.toFixed(2)}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-              <div className="flex items-center">
-                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
-                  <span className="text-blue-600 text-lg">📈</span>
-                </div>
-                <div>
-                  <p className="text-gray-600 text-xs uppercase tracking-wide">
-                    Highest Expense
-                  </p>
-                  <p className="text-xl font-bold text-blue-600">
-                    AED {maxAmount.toFixed(2)}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-              <div className="flex items-center">
-                <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-3">
-                  <span className="text-green-600 text-lg">📊</span>
-                </div>
-                <div>
-                  <p className="text-gray-600 text-xs uppercase tracking-wide">
-                    Average Expense
-                  </p>
-                  <p className="text-xl font-bold text-green-600">
-                    AED {(totalExpenses / sampleVehicles.length).toFixed(2)}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
         {/* Chart Content */}
         <div className="p-6">
           <div className="space-y-6">
@@ -327,8 +272,11 @@ const [totalExpence, setTotalExpence] = useState(0);
               const percentage =
                 maxAmount > 0 ? (vehicleData.totalAmount / maxAmount) * 100 : 0;
               const sharePercentage =
-                totalExpenses > 0 ? (vehicleData.totalAmount / totalExpenses) * 100 : 0;
-              const gradientClass = gradientColors[index % gradientColors.length];
+                totalExpenses > 0
+                  ? (vehicleData.totalAmount / totalExpenses) * 100
+                  : 0;
+              const gradientClass =
+                gradientColors[index % gradientColors.length];
               const iconColor = iconColors[index % iconColors.length];
 
               return (
@@ -345,7 +293,8 @@ const [totalExpence, setTotalExpence] = useState(0);
                         >
                           <span className="text-white text-lg font-bold">
                             {(vehicleData["vehicleDetails.plateNumber"] || "N/A")
-                              .substring(0, 2)}
+                              .substring(0, 2)
+                              .toUpperCase()}
                           </span>
                         </div>
                         <div className="absolute -top-1 -right-1 w-5 h-5 bg-white rounded-full flex items-center justify-center shadow-sm">
@@ -353,8 +302,9 @@ const [totalExpence, setTotalExpence] = useState(0);
                         </div>
                       </div>
                       <div>
-                        <h4 className="font-bold text-gray-900 text-lg">
-                          {vehicleData["vehicleDetails.plateNumber"] || "Unknown Vehicle"}
+                        <h4 className="font-bold text-gray-900 text-lg uppercase">
+                          {vehicleData["vehicleDetails.plateNumber"] ||
+                            "Unknown Vehicle"}
                         </h4>
                         <p className="text-gray-500 text-sm">
                           {vehicleData.expenseCount} expense
@@ -457,9 +407,6 @@ const [totalExpence, setTotalExpence] = useState(0);
 
     return (
       <div className="bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden">
-
-
-
         {/* Balance History Timeline */}
         <div className="p-6">
           <div className="space-y-4">
@@ -477,7 +424,7 @@ const [totalExpence, setTotalExpence] = useState(0);
                         </span>
                       </div>
                       <div>
-                        <h4 className="font-semibold text-gray-900">
+                        <h4 className="font-semibold text-gray-900 uppercase">
                           {entry.description || (isPositive ? 'Amount Added' : 'Expense Deducted')}
                         </h4>
                         <p className="text-sm text-gray-500">
@@ -500,11 +447,11 @@ const [totalExpence, setTotalExpence] = useState(0);
                         ? 'bg-green-100 text-green-800' 
                         : 'bg-red-100 text-red-800'
                     }`}>
-                      {entry.type || (isPositive ? 'Credit' : 'Debit')}
+                      {(entry.type || (isPositive ? 'Credit' : 'Debit')).toUpperCase()}
                     </span>
                     
                     {entry.reference && (
-                      <span className="text-xs text-gray-400">
+                      <span className="text-xs text-gray-400 uppercase">
                         Ref: {entry.reference}
                       </span>
                     )}
@@ -529,12 +476,15 @@ const [totalExpence, setTotalExpence] = useState(0);
   // Add this filtering logic before the return statement
   const filteredExpenses = (sampleExpenses || []).filter((expense) => {
     if (!searchTerm.trim()) return true;
-    
+
     const searchLower = searchTerm.toLowerCase();
-    const description = expense.description?.toLowerCase() || '';
-    const vehicleNumber = expense["vehicleDetails.plateNumber"]?.toLowerCase() || '';
-    
-    return description.includes(searchLower) || vehicleNumber.includes(searchLower);
+    const description = expense.description?.toLowerCase() || "";
+    const vehicleNumber =
+      expense["vehicleDetails.plateNumber"]?.toLowerCase() || "";
+
+    return (
+      description.includes(searchLower) || vehicleNumber.includes(searchLower)
+    );
   });
 
   const checkAccountLogin = async () => {
@@ -549,7 +499,7 @@ const [totalExpence, setTotalExpence] = useState(0);
           viewExpences(),
           gettotals(),
           getVechilesData(),
-          getbalancehistory()
+          getbalancehistory(),
         ]);
       } else {
         navigate("/signin");
@@ -579,33 +529,60 @@ const [totalExpence, setTotalExpence] = useState(0);
             setIsSidebarCollapsed={setIsSidebarCollapsed}
           />
 
-          <div
-            className={`flex-1 ${
-              isSidebarCollapsed ? "ml-16" : "ml-64"
-            } transition-all duration-300`}
-          >
-            {/* Header */}
-            <div className="border-b border-gray-200 bg-white">
-              <div className="px-8 py-6">
-                <div className="flex justify-between items-center">
+          <div className="flex-1 lg:ml-16 transition-all duration-300">
+            {/* Mobile Header */}
+            <div className="lg:hidden bg-white shadow-sm border-b border-gray-200 p-4">
+              <div className="flex items-center justify-between">
+                <button
+                  onClick={() => setIsSidebarCollapsed(false)}
+                  className="p-2 rounded-md hover:bg-gray-100"
+                >
+                  <span className="text-xl">☰</span>
+                </button>
+                <h1 className="text-lg font-semibold text-gray-900">
+                  Expenses
+                </h1>
+
+                {/* Mobile Action Buttons */}
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setIsAddAmountModalOpen(true)}
+                    className="bg-gray-800 text-white px-2 py-1 text-xs rounded"
+                  >
+                    Amount
+                  </button>
+                  <button
+                    onClick={() => setIsAddExpenseModalOpen(true)}
+                    className="bg-black text-white px-2 py-1 text-xs rounded"
+                  >
+                    Expense
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Desktop Header */}
+            <div className="hidden lg:block border-b border-gray-200 bg-white">
+              <div className="px-4 sm:px-8 py-4 md:py-6">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                   <div>
-                    <h1 className="text-2xl font-bold text-black">
+                    <h1 className="text-xl md:text-2xl font-bold text-black">
                       Expense Management
                     </h1>
-                    <p className="text-gray-600 text-sm mt-1">
+                    <p className="text-gray-600 text-xs md:text-sm mt-1">
                       Track and manage your business expenses
                     </p>
                   </div>
-                  <div className="flex gap-3">
+                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
                     <button
                       onClick={() => setIsAddAmountModalOpen(true)}
-                      className="bg-gray-800 text-white px-6 py-2 text-sm font-medium hover:bg-gray-700 transition-colors"
+                      className="bg-gray-800 text-white px-4 py-2 text-xs md:text-sm font-medium hover:bg-gray-700 transition-colors w-full sm:w-auto"
                     >
                       Add Amount
                     </button>
                     <button
                       onClick={() => setIsAddExpenseModalOpen(true)}
-                      className="bg-black text-white px-6 py-2 text-sm font-medium hover:bg-gray-800 transition-colors"
+                      className="bg-black text-white px-4 py-2 text-xs md:text-sm font-medium hover:bg-gray-800 transition-colors w-full sm:w-auto"
                     >
                       Add Expense
                     </button>
@@ -615,77 +592,80 @@ const [totalExpence, setTotalExpence] = useState(0);
             </div>
 
             {/* Content */}
-            <div className="p-8">
+            <div className="p-3 lg:p-8">
               {/* Search and Tabs */}
-              <div className="mb-8">
+              <div className="mb-6 lg:mb-8">
                 {/* Search Bar */}
-                <div className="mb-6">
+                <div className="mb-4 lg:mb-6">
                   <input
                     type="text"
                     placeholder="Search by vehicle number or description..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full max-w-md px-4 py-2 border border-gray-300 focus:border-black focus:outline-none text-sm"
+                    className="w-full px-3 lg:px-4 py-2 lg:py-3 border border-gray-300 rounded-lg focus:border-black focus:outline-none text-sm lg:text-base"
                   />
                   {searchTerm && (
-                    <p className="text-xs text-gray-500 mt-1">
-                      Showing results for: "{searchTerm}" ({filteredExpenses.length} found)
+                    <p className="text-xs text-gray-500 mt-2">
+                      Showing results for: "{searchTerm}" (
+                      {filteredExpenses.length} found)
                     </p>
                   )}
                 </div>
 
-                {/* Tabs */}
-                <div className="flex border-b border-gray-200 mb-6">
-                  <button
-                    onClick={() => setActiveTab("all")}
-                    className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
-                      activeTab === "all"
-                        ? "border-black text-black"
-                        : "border-transparent text-gray-600 hover:text-black"
-                    }`}
-                  >
-                    All Expenses
-                  </button>
-                  <button
-                    onClick={() => setActiveTab("vehicle")}
-                    className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
-                      activeTab === "vehicle"
-                        ? "border-black text-black"
-                        : "border-transparent text-gray-600 hover:text-black"
-                    }`}
-                  >
-                    View by Vehicle
-                  </button>
-                  <button
-                    onClick={() => setActiveTab("history")}
-                    className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
-                      activeTab === "history"
-                        ? "border-black text-black"
-                        : "border-transparent text-gray-600 hover:text-black"
-                    }`}
-                  >
-                    Balance History
-                  </button>
+                {/* Tabs - Mobile Scrollable */}
+                <div className="flex overflow-x-auto border-b border-gray-200 mb-4 lg:mb-6 scrollbar-hide">
+                  <div className="flex space-x-0 min-w-max">
+                    <button
+                      onClick={() => setActiveTab("all")}
+                      className={`px-4 lg:px-6 py-2 lg:py-3 text-sm lg:text-base font-medium border-b-2 transition-colors whitespace-nowrap ${
+                        activeTab === "all"
+                          ? "border-black text-black"
+                          : "border-transparent text-gray-600 hover:text-black"
+                      }`}
+                    >
+                      All Expenses
+                    </button>
+                    <button
+                      onClick={() => setActiveTab("vehicle")}
+                      className={`px-4 lg:px-6 py-2 lg:py-3 text-sm lg:text-base font-medium border-b-2 transition-colors whitespace-nowrap ${
+                        activeTab === "vehicle"
+                          ? "border-black text-black"
+                          : "border-transparent text-gray-600 hover:text-black"
+                      }`}
+                    >
+                      View by Vehicle
+                    </button>
+                    <button
+                      onClick={() => setActiveTab("history")}
+                      className={`px-4 lg:px-6 py-2 lg:py-3 text-sm lg:text-base font-medium border-b-2 transition-colors whitespace-nowrap ${
+                        activeTab === "history"
+                          ? "border-black text-black"
+                          : "border-transparent text-gray-600 hover:text-black"
+                      }`}
+                    >
+                      Balance History
+                    </button>
+                  </div>
                 </div>
               </div>
 
-              {/* Stats Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                <div className="bg-white border border-gray-200 p-6">
-                  <div className="text-sm text-gray-600">Total Expenses</div>
-                  <div className="text-2xl font-bold text-red-600 mt-2">
-                  AED  {totalExpence}
+              {/* Stats Cards - Responsive Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-6 mb-6 lg:mb-8">
+                <div className="bg-white border border-gray-200 p-4 lg:p-6 rounded-lg shadow-sm">
+                  <div className="text-xs lg:text-sm text-gray-600">
+                    Total Expenses
+                  </div>
+                  <div className="text-lg lg:text-2xl font-bold text-red-600 mt-2">
+                    AED {totalExpence}
                   </div>
                 </div>
-                <div className="bg-white border border-gray-200 p-6">
-                  <div className="text-sm text-gray-600">Current Balance</div>
-                  <div className="text-2xl font-bold text-blue-600 mt-2">
+                <div className="bg-white border border-gray-200 p-4 lg:p-6 rounded-lg shadow-sm">
+                  <div className="text-xs lg:text-sm text-gray-600">
+                    Current Balance
+                  </div>
+                  <div className="text-lg lg:text-2xl font-bold text-blue-600 mt-2">
                     AED {currentbalance}
                   </div>
-                </div>
-                <div className="bg-white border border-gray-200 p-6">
-                  <div className="text-sm text-gray-600">This Month Expence</div>
-                  <div className="text-2xl font-bold text-black mt-2">3</div>
                 </div>
               </div>
 
@@ -697,78 +677,137 @@ const [totalExpence, setTotalExpence] = useState(0);
                 /* Balance History Chart */
                 <BalanceHistoryChart />
               ) : (
-                /* Expenses Table for All tab */
-                <div className="bg-white border border-gray-200">
-                  {/* Table Header */}
-                  <div className="bg-black text-white">
-                    <div className="grid grid-cols-7 gap-4 px-6 py-4 text-sm font-medium">
-                      <div>Description</div>
-                      <div>Category</div>
-                      <div>Amount</div>
-                      <div>Vehicle</div>
-                      <div>Date</div>
-                      <div>Type</div>
-                      <div>Actions</div>
+                /* Expenses Table - Mobile Cards + Desktop Table */
+                <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+                  {/* Desktop Table View */}
+                  <div className="hidden lg:block">
+                    <div className="bg-black text-white">
+                      <div className="grid grid-cols-7 gap-4 px-6 py-4 text-sm font-medium">
+                        <div>Description</div>
+                        <div>Category</div>
+                        <div>Amount</div>
+                        <div>Vehicle</div>
+                        <div>Date</div>
+                        <div>Type</div>
+                        <div>Actions</div>
+                      </div>
+                    </div>
+                    <div className="divide-y divide-gray-200">
+                      {filteredExpenses.length > 0 ? (
+                        filteredExpenses.map((expense) => (
+                          <div
+                            key={expense.id}
+                            className="grid grid-cols-7 gap-4 px-6 py-4 text-sm hover:bg-gray-50 transition-colors cursor-pointer"
+                            onClick={() => handleExpencedetail(expense)}
+                          >
+                            <div className="font-medium text-black truncate uppercase">
+                              {expense.description}
+                            </div>
+                            <div>
+                              <span
+                                className={`text-xs px-2 py-1 rounded-full ${getCategoryColor(
+                                  expense.category
+                                )}`}
+                              >
+                                {expense.category.toUpperCase()}
+                              </span>
+                            </div>
+                            <div className="font-medium text-red-600">
+                              AED {expense.amount.toFixed(2)}
+                            </div>
+                            <div className="text-gray-600 truncate uppercase">
+                              {expense["vehicleDetails.plateNumber"] || "N/A"}
+                            </div>
+                            <div className="text-gray-600">
+                              {expense.createdAt.split("T")[0]}
+                            </div>
+                            <div>
+                              <span
+                                className={`text-xs px-2 py-1 rounded-full ${
+                                  expense.type === "vehicle"
+                                    ? "bg-blue-100 text-blue-800"
+                                    : "bg-gray-100 text-gray-800"
+                                }`}
+                              >
+                                {expense["vehicleDetails.type"]?.toUpperCase() || "VEHICLE"}
+                              </span>
+                            </div>
+                            <div onClick={(e) => e.stopPropagation()}>
+                              <button
+                                onClick={() => setShowExpenseDetail(true)}
+                                className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                              >
+                                View
+                              </button>
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="px-6 py-12 text-center">
+                          <div className="text-gray-400 text-4xl mb-4">🔍</div>
+                          <p className="text-gray-500 text-lg mb-2">No expenses found</p>
+                          <p className="text-gray-400 text-sm">
+                            Try adjusting your search terms for "{searchTerm.toUpperCase()}"
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </div>
 
-                  {/* Table Body */}
-                  <div className="divide-y divide-gray-200">
+                  {/* Mobile Card View */}
+                  <div className="lg:hidden space-y-3 p-3">
                     {filteredExpenses.length > 0 ? (
                       filteredExpenses.map((expense) => (
                         <div
                           key={expense.id}
-                          className="grid grid-cols-7 gap-4 px-6 py-4 text-sm hover:bg-gray-50 transition-colors cursor-pointer"
                           onClick={() => handleExpencedetail(expense)}
+                          className="bg-white border border-gray-200 rounded-lg p-4 cursor-pointer hover:shadow-md transition-shadow"
                         >
-                          <div className="font-medium text-black">
-                            {expense.description}
+                          <div className="flex justify-between items-start mb-3">
+                            <div className="flex-1 min-w-0">
+                              <h3 className="font-medium text-gray-900 truncate uppercase">
+                                {expense.description}
+                              </h3>
+                              <p className="text-sm text-gray-600 mt-1 uppercase">
+                                {expense["vehicleDetails.plateNumber"] || "N/A"}
+                              </p>
+                            </div>
+                            <div className="text-right ml-3">
+                              <div className="font-bold text-red-600">
+                                AED {expense.amount.toFixed(2)}
+                              </div>
+                              <div className="text-xs text-gray-500">
+                                {expense.createdAt.split("T")[0]}
+                              </div>
+                            </div>
                           </div>
-                          <div>
+                          
+                          <div className="flex items-center justify-between">
                             <span
                               className={`text-xs px-2 py-1 rounded-full ${getCategoryColor(
                                 expense.category
                               )}`}
                             >
-                              {expense.category}
+                              {expense.category.toUpperCase()}
                             </span>
-                          </div>
-                          <div className="font-medium text-red-600">
-                            AED {expense.amount.toFixed(2)}
-                          </div>
-                          <div className="text-gray-600">
-                            {expense["vehicleDetails.plateNumber"] || "N/A"}
-                          </div>
-                          <div className="text-gray-600">
-                            {expense.createdAt.split("T")[0]}
-                          </div>
-                          <div>
-                            <span
-                              className={`text-xs px-2 py-1 rounded-full ${
-                                expense.type === "vehicle"
-                                  ? "bg-blue-100 text-blue-800"
-                                  : "bg-gray-100 text-gray-800"
-                              }`}
-                            >
-                              {expense["vehicleDetails.type"]}
-                            </span>
-                          </div>
-                          <div onClick={(e) => e.stopPropagation()}>
                             <button
-                              onClick={() => setShowExpenseDetail(true)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleExpencedetail(expense);
+                              }}
                               className="text-blue-600 hover:text-blue-800 text-sm font-medium"
                             >
-                              View
+                              View Details
                             </button>
                           </div>
                         </div>
                       ))
                     ) : (
-                      <div className="px-6 py-12 text-center">
+                      <div className="text-center py-12">
                         <div className="text-gray-400 text-4xl mb-4">🔍</div>
-                        <p className="text-gray-500 text-lg mb-2">No expenses found</p>
+                        <p className="text-gray-500 text-base mb-2">No expenses found</p>
                         <p className="text-gray-400 text-sm">
-                          Try adjusting your search terms for "{searchTerm}"
+                          Try adjusting your search terms for "{searchTerm.toUpperCase()}"
                         </p>
                       </div>
                     )}
@@ -778,13 +817,13 @@ const [totalExpence, setTotalExpence] = useState(0);
             </div>
           </div>
 
-          {/* Add Expense Modal */}
+          {/* Add Expense Modal - Enhanced Responsive */}
           {isAddExpenseModalOpen && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-              <div className="bg-white w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
+              <div className="bg-white w-full max-w-full sm:max-w-2xl max-h-[95vh] overflow-y-auto rounded-lg m-2">
                 {/* Modal Header */}
-                <div className="bg-black text-white px-6 py-4 flex justify-between items-center">
-                  <h3 className="text-lg font-medium">Add New Expense</h3>
+                <div className="bg-black text-white px-4 sm:px-6 py-3 sm:py-4 flex justify-between items-center sticky top-0 z-10">
+                  <h3 className="text-base sm:text-lg font-medium">Add New Expense</h3>
                   <button
                     onClick={() => setIsAddExpenseModalOpen(false)}
                     className="text-white hover:text-gray-300 text-xl"
@@ -796,10 +835,10 @@ const [totalExpence, setTotalExpence] = useState(0);
                 {/* Modal Body */}
                 <form
                   onSubmit={handleSubmitExpense(onSubmitExpense)}
-                  className="p-6"
+                  className="p-4 sm:p-6"
                 >
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="md:col-span-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                    <div className="sm:col-span-2">
                       <label className="block text-sm font-medium text-black mb-2">
                         Description *
                       </label>
@@ -808,7 +847,7 @@ const [totalExpence, setTotalExpence] = useState(0);
                         {...registerExpense("description", {
                           required: "Description is required",
                         })}
-                        className="w-full px-3 py-2 border border-gray-300 focus:border-black focus:outline-none text-sm"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-black focus:outline-none text-sm uppercase"
                         placeholder="Enter expense description"
                       />
                       {expenseErrors.description && (
@@ -832,7 +871,7 @@ const [totalExpence, setTotalExpence] = useState(0);
                             message: "Amount must be greater than 0",
                           },
                         })}
-                        className="w-full px-3 py-2 border border-gray-300 focus:border-black focus:outline-none text-sm"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-black focus:outline-none text-sm"
                         placeholder="0.00"
                       />
                       {expenseErrors.amount && (
@@ -850,7 +889,7 @@ const [totalExpence, setTotalExpence] = useState(0);
                         {...registerExpense("category", {
                           required: "Category is required",
                         })}
-                        className="w-full px-3 py-2 border border-gray-300 focus:border-black focus:outline-none text-sm"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-black focus:outline-none text-sm"
                       >
                         <option value="Fuel">Fuel</option>
                         <option value="Maintenance">Maintenance</option>
@@ -873,15 +912,20 @@ const [totalExpence, setTotalExpence] = useState(0);
                       </label>
                       <select
                         {...registerExpense("vehicleId",{required: "Vehicle is required"})}
-                        className="w-full px-3 py-2 border border-gray-300 focus:border-black focus:outline-none text-sm"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-black focus:outline-none text-sm"
                       >
                         <option value="">Select Vehicle</option>
                         {Vehicles.map((item) => (
-                          <option key={item.id} value={item.id}>
+                          <option key={item.id} value={item.id} className="uppercase">
                             {item.plateNumber}
                           </option>
                         ))}
                       </select>
+                      {expenseErrors.vehicleId && (
+                        <p className="text-red-500 text-xs mt-1">
+                          {expenseErrors.vehicleId.message}
+                        </p>
+                      )}
                     </div>
 
                     <div>
@@ -893,7 +937,7 @@ const [totalExpence, setTotalExpence] = useState(0);
                         {...registerExpense("date", {
                           required: "Date is required",
                         })}
-                        className="w-full px-3 py-2 border border-gray-300 focus:border-black focus:outline-none text-sm"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-black focus:outline-none text-sm"
                       />
                       {expenseErrors.date && (
                         <p className="text-red-500 text-xs mt-1">
@@ -902,31 +946,31 @@ const [totalExpence, setTotalExpence] = useState(0);
                       )}
                     </div>
 
-                    <div className="md:col-span-2">
+                    <div className="sm:col-span-2">
                       <label className="block text-sm font-medium text-black mb-2">
                         Remarks
                       </label>
                       <textarea
                         {...registerExpense("remarks")}
                         rows="3"
-                        className="w-full px-3 py-2 border border-gray-300 focus:border-black focus:outline-none text-sm resize-none"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-black focus:outline-none text-sm resize-none uppercase"
                         placeholder="Additional notes or remarks"
                       />
                     </div>
                   </div>
 
                   {/* Modal Footer */}
-                  <div className="flex justify-end gap-3 mt-6 pt-6 border-t border-gray-200">
+                  <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 mt-6 pt-6 border-t border-gray-200">
                     <button
                       type="button"
                       onClick={() => setIsAddExpenseModalOpen(false)}
-                      className="px-4 py-2 text-sm border border-gray-300 text-gray-700 hover:bg-gray-50"
+                      className="w-full sm:w-auto px-4 py-2 text-sm border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
-                      className="px-4 py-2 text-sm bg-black text-white hover:bg-gray-800"
+                      className="w-full sm:w-auto px-4 py-2 text-sm bg-black text-white hover:bg-gray-800 rounded-lg"
                     >
                       Add Expense
                     </button>
@@ -936,13 +980,13 @@ const [totalExpence, setTotalExpence] = useState(0);
             </div>
           )}
 
-          {/* Add Amount Modal */}
+          {/* Add Amount Modal - Enhanced Responsive */}
           {isAddAmountModalOpen && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-              <div className="bg-white w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
+              <div className="bg-white w-full max-w-md max-h-[90vh] overflow-y-auto rounded-lg m-2">
                 {/* Modal Header */}
-                <div className="bg-black text-white px-6 py-4 flex justify-between items-center">
-                  <h3 className="text-lg font-medium">Add Amount</h3>
+                <div className="bg-black text-white px-4 sm:px-6 py-3 sm:py-4 flex justify-between items-center sticky top-0 z-10">
+                  <h3 className="text-base sm:text-lg font-medium">Add Amount</h3>
                   <button
                     onClick={() => setIsAddAmountModalOpen(false)}
                     className="text-white hover:text-gray-300 text-xl"
@@ -952,7 +996,7 @@ const [totalExpence, setTotalExpence] = useState(0);
                 </div>
 
                 {/* Modal Body */}
-                <form onSubmit={handleSubmitAmount(onSubmitAmount)} className="p-6">
+                <form onSubmit={handleSubmitAmount(onSubmitAmount)} className="p-4 sm:p-6">
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-black mb-2">
@@ -968,7 +1012,7 @@ const [totalExpence, setTotalExpence] = useState(0);
                             message: "Amount must be greater than 0",
                           },
                         })}
-                        className="w-full px-3 py-2 border border-gray-300 focus:border-black focus:outline-none text-sm"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-black focus:outline-none text-sm"
                         placeholder="0.00"
                       />
                       {amountErrors.amount && (
@@ -985,7 +1029,7 @@ const [totalExpence, setTotalExpence] = useState(0);
                       <input
                         type="text"
                         {...registerAmount("description")}
-                        className="w-full px-3 py-2 border border-gray-300 focus:border-black focus:outline-none text-sm"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-black focus:outline-none text-sm uppercase"
                         placeholder="Brief description (optional)"
                       />
                     </div>
@@ -999,7 +1043,7 @@ const [totalExpence, setTotalExpence] = useState(0);
                         {...registerAmount("date", {
                           required: "Date is required",
                         })}
-                        className="w-full px-3 py-2 border border-gray-300 focus:border-black focus:outline-none text-sm"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-black focus:outline-none text-sm"
                       />
                       {amountErrors.date && (
                         <p className="text-red-500 text-xs mt-1">
@@ -1010,17 +1054,17 @@ const [totalExpence, setTotalExpence] = useState(0);
                   </div>
 
                   {/* Modal Footer */}
-                  <div className="flex justify-end gap-3 mt-6 pt-6 border-t border-gray-200">
+                  <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 mt-6 pt-6 border-t border-gray-200">
                     <button
                       type="button"
                       onClick={() => setIsAddAmountModalOpen(false)}
-                      className="px-4 py-2 text-sm border border-gray-300 text-gray-700 hover:bg-gray-50"
+                      className="w-full sm:w-auto px-4 py-2 text-sm border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
-                      className="px-4 py-2 text-sm bg-black text-white hover:bg-gray-800"
+                      className="w-full sm:w-auto px-4 py-2 text-sm bg-black text-white hover:bg-gray-800 rounded-lg"
                     >
                       Add Amount
                     </button>
@@ -1030,12 +1074,12 @@ const [totalExpence, setTotalExpence] = useState(0);
             </div>
           )}
 
-          {/* Expense Detail Modal */}
-          {showExpenseDetail && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-              <div className="bg-white w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-                <div className="bg-black text-white px-6 py-4 flex justify-between items-center">
-                  <h3 className="text-lg font-medium">Expense Details</h3>
+          {/* Expense Detail Modal - Enhanced Responsive */}
+          {showExpenseDetail && expencedetail && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
+              <div className="bg-white w-full max-w-full sm:max-w-2xl max-h-[95vh] overflow-y-auto rounded-lg m-2">
+                <div className="bg-black text-white px-4 sm:px-6 py-3 sm:py-4 flex justify-between items-center sticky top-0 z-10">
+                  <h3 className="text-base sm:text-lg font-medium">Expense Details</h3>
                   <button
                     onClick={() => setShowExpenseDetail(false)}
                     className="text-white hover:text-gray-300 text-xl"
@@ -1044,44 +1088,42 @@ const [totalExpence, setTotalExpence] = useState(0);
                   </button>
                 </div>
 
-                <div className="p-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="p-4 sm:p-6">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
                     {/* Expense Information */}
-
                     <div>
                       <h4 className="text-lg font-semibold text-black border-b border-gray-200 pb-2 mb-4">
                         Expense Information
                       </h4>
                       <div className="space-y-3">
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Description:</span>
-                          <span className="font-medium">
-                            {expencedetail.category} for Vehicle{" "}
-                            {expencedetail["vehicleDetails.plateNumber"]}
+                        <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0">
+                          <span className="text-gray-600 text-sm">Description:</span>
+                          <span className="font-medium text-sm break-words uppercase">
+                            {expencedetail.description || `${expencedetail.category} for Vehicle ${expencedetail["vehicleDetails.plateNumber"]}`}
                           </span>
                         </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Amount:</span>
+                        <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0">
+                          <span className="text-gray-600 text-sm">Amount:</span>
                           <span className="font-bold text-red-600">
                             AED {expencedetail.amount}
                           </span>
                         </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Category:</span>
-                          <span className="px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
-                            {expencedetail.category}
+                        <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0">
+                          <span className="text-gray-600 text-sm">Category:</span>
+                          <span className="px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800 w-fit">
+                            {expencedetail.category.toUpperCase()}
                           </span>
                         </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Date:</span>
-                          <span className="font-medium">
+                        <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0">
+                          <span className="text-gray-600 text-sm">Date:</span>
+                          <span className="font-medium text-sm">
                             {expencedetail.createdAt.split("T")[0]}
                           </span>
                         </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Type:</span>
-                          <span className="px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
-                            vehicle
+                        <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0">
+                          <span className="text-gray-600 text-sm">Type:</span>
+                          <span className="px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800 w-fit">
+                            VEHICLE
                           </span>
                         </div>
                       </div>
@@ -1093,9 +1135,9 @@ const [totalExpence, setTotalExpence] = useState(0);
                         Vehicle Information
                       </h4>
                       <div className="space-y-3">
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Plate Number:</span>
-                          <span className="font-medium">
+                        <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0">
+                          <span className="text-gray-600 text-sm">Plate Number:</span>
+                          <span className="font-medium text-sm uppercase">
                             {expencedetail["vehicleDetails.plateNumber"]}
                           </span>
                         </div>
@@ -1105,18 +1147,18 @@ const [totalExpence, setTotalExpence] = useState(0);
 
                   {/* Remarks */}
                   <div className="mt-6">
-                    <h4 className="text-lg font-semibold text-black border-b border-gray-200 pb-2 mb-4">
+                    <h4 className="text-base lg:text-lg font-semibold text-black border-b border-gray-200 pb-2 mb-4">
                       Remarks
                     </h4>
-                    <p className="text-gray-700 bg-gray-50 p-4 rounded">
+                    <p className="text-gray-700 bg-gray-50 p-4 rounded-lg text-sm uppercase">
                       {expencedetail.remarks || "No remarks"}
                     </p>
                   </div>
 
-                  <div className="flex justify-end gap-3 mt-6 pt-6 border-t border-gray-200">
+                  <div className="flex justify-end mt-6 pt-6 border-t border-gray-200">
                     <button
                       onClick={() => setShowExpenseDetail(false)}
-                      className="px-4 py-2 text-sm border border-gray-300 text-gray-700 hover:bg-gray-50"
+                      className="w-full sm:w-auto px-4 py-2 text-sm border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg"
                     >
                       Close
                     </button>

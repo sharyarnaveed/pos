@@ -7,7 +7,6 @@ const GenerateVatInvoice = ({ customerid }) => {
   const [customerData, setCustomerData] = useState([]);
   const [loading, setLoading] = useState(true);
 
-
   const handlePrint = () => {
     window.print();
   };
@@ -16,7 +15,7 @@ const GenerateVatInvoice = ({ customerid }) => {
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     const day = date.getDate().toString().padStart(2, '0');
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
     const month = months[date.getMonth()];
     const year = date.getFullYear().toString().slice(-2);
     return `${day}/${month}/${year}`;
@@ -26,15 +25,16 @@ const GenerateVatInvoice = ({ customerid }) => {
   const transformDataToInvoiceFormat = (data) => {
     return data.map((item, index) => ({
       sno: index + 1,
-      date: formatDate(item.createdAt),
-      from: item.from.toUpperCase(),
-      to: item.to.toUpperCase(),
-      container: item.containerNumber,
-      rate: item.rate,
-      token: item.token,
-      insp: item.merc || "",
+      date: formatDate(item.date),
+      from: String(item.from || "").toUpperCase(),
+      to: String(item.to || "").toUpperCase(),
+      container: String(item.containerNumber || "").toUpperCase(),
+      rate: item.rate || 0,
+      token: item.token || 0,
+      insp: String(item.merc || "").toUpperCase(),
       bills: "",
-      extra: item.extra || "",
+      extra: String(item.extra || "").toUpperCase(),
+      extratype: String(item.extratype || "").toUpperCase(),
       // Display the amount as total - vat
       amount: (item.total - (item.vat || 0)).toFixed(2),
       vat: (item.vat || 0).toFixed(2)
@@ -107,7 +107,9 @@ const GenerateVatInvoice = ({ customerid }) => {
     
     return result + " ONLY.";
   };
-const [customername,SetCustomerName]=useState()
+
+  const [customername, SetCustomerName] = useState();
+
   const getCustomerData = async () => {
     try {
       setLoading(true);
@@ -132,7 +134,6 @@ const [customername,SetCustomerName]=useState()
     }
   };
 
-
   useEffect(() => {
     getCustomerData();
   }, [customerid]);
@@ -141,7 +142,7 @@ const [customername,SetCustomerName]=useState()
   if (loading) {
     return (
       <div className="min-h-screen bg-white p-4 flex items-center justify-center">
-        <div className="text-lg">Loading invoice data...</div>
+        <div className="text-lg">LOADING INVOICE DATA...</div>
       </div>
     );
   }
@@ -154,7 +155,7 @@ const [customername,SetCustomerName]=useState()
           onClick={handlePrint}
           className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition-colors"
         >
-          🖨️ Print Invoice
+          🖨️ PRINT INVOICE
         </button>
       </div>
 
@@ -176,7 +177,7 @@ const [customername,SetCustomerName]=useState()
             </div>
             <div className="text-center">
               <h1 className="text-2xl font-bold">BURJ AL SAMA TRANSPORT LLC</h1>
-              <p className="text-sm">CONTACT NO: 055-2347526, P.O.BOX 76498, DUBAI, UAE, E-MAIL: abid.daud@gmail.com</p>
+              <p className="text-sm">CONTACT NO: 055-2347526, P.O.BOX 76498, DUBAI, UAE, E-MAIL: ABID.DAUD@GMAIL.COM</p>
             </div>
           </div>
           
@@ -190,11 +191,10 @@ const [customername,SetCustomerName]=useState()
         <div className="flex border-b border-black">
           <div className="flex-1 p-3 border-r border-black">
             <p><strong>COMPANY NAME:</strong> DMX GLOBAL LOGISTICS LLC.</p>
-            <p><strong>CONTACT PERSON:</strong> {customername}</p>
+            <p><strong>CONTACT PERSON:</strong> {customername?.toUpperCase()}</p>
           </div>
           <div className="flex-1 p-3 text-right">
             <p><strong>DATE:</strong> {new Date().toLocaleDateString()}</p>
-         
           </div>
         </div>
 
@@ -212,6 +212,7 @@ const [customername,SetCustomerName]=useState()
               <th className="border border-black px-1 py-1 w-12">INSP</th>
               <th className="border border-black px-1 py-1 w-12">BILLS</th>
               <th className="border border-black px-1 py-1 w-12">EXTRA</th>
+              <th className="border border-black px-1 py-1 w-16">EXTRA TYPE</th>
               <th className="border border-black px-1 py-1 w-16">AMOUNT</th>
               <th className="border border-black px-1 py-1 w-12">VAT</th>
             </tr>
@@ -229,6 +230,7 @@ const [customername,SetCustomerName]=useState()
                 <td className="border border-black px-1 py-1 text-center">{item.insp}</td>
                 <td className="border border-black px-1 py-1 text-center">{item.bills}</td>
                 <td className="border border-black px-1 py-1 text-center">{item.extra}</td>
+                <td className="border border-black px-1 py-1 text-center">{item.extratype}</td>
                 <td className="border border-black px-1 py-1 text-center">{item.amount}</td>
                 <td className="border border-black px-1 py-1 text-center">{item.vat}</td>
               </tr>
@@ -281,7 +283,7 @@ const [customername,SetCustomerName]=useState()
       </div>
 
       {/* Print Styles */}
-      <style >{`
+      <style>{`
         @media print {
           .print\\:hidden {
             display: none !important;

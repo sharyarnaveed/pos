@@ -29,6 +29,7 @@ app.use(session({
     secret:"just a shit",
     resave:false,
     saveUninitialized:false,
+    store:sessionStore,
     cookie:{
         secure:false,
         httpOnly:true,

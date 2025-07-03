@@ -23,7 +23,7 @@ const PaymentInvoice = ({ customerid }) => {
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     const day = date.getDate().toString().padStart(2, '0');
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
     const month = months[date.getMonth()];
     const year = date.getFullYear().toString().slice(-2);
     return `${day}/${month}/${year}`;
@@ -34,14 +34,14 @@ const PaymentInvoice = ({ customerid }) => {
     return data.map((item, index) => ({
       sno: index + 1,
       date: formatDate(item.createdAt),
-      from: item.from.toUpperCase(),
-      to: item.to.toUpperCase(),
-      container: item.containerNumber,
-      rate: item.rate,
-      token: item.token,
-      insp: item.merc || "",
+      from: String(item.from || "").toUpperCase(),
+      to: String(item.to || "").toUpperCase(),
+      container: String(item.containerNumber || "").toUpperCase(),
+      rate: item.rate || 0,
+      token: item.token || 0,
+      insp: String(item.merc || "").toUpperCase(),
       bills: "",
-      extra: item.extra || "",
+      extra: String(item.extra || "").toUpperCase(),
       amount: (item.total - (item.vat || 0)).toFixed(2),
       status: isPaid ? 'PAID' : 'UNPAID',
       paidAmount: isPaid ? item.paidamount : 0
@@ -160,7 +160,7 @@ const PaymentInvoice = ({ customerid }) => {
   if (loading) {
     return (
       <div className="min-h-screen bg-white p-4 flex items-center justify-center">
-        <div className="text-lg">Loading payment invoice data...</div>
+        <div className="text-lg">LOADING PAYMENT INVOICE DATA...</div>
       </div>
     );
   }
@@ -173,7 +173,7 @@ const PaymentInvoice = ({ customerid }) => {
           onClick={handlePrint}
           className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition-colors"
         >
-          🖨️ Print Payment Invoice
+          🖨️ PRINT PAYMENT INVOICE
         </button>
       </div>
 
@@ -195,7 +195,7 @@ const PaymentInvoice = ({ customerid }) => {
             </div>
             <div className="text-center">
               <h1 className="text-2xl font-bold">BURJ AL SAMA TRANSPORT LLC</h1>
-              <p className="text-sm">CONTACT NO: 055-2347526, P.O.BOX 76498, DUBAI, UAE, E-MAIL: abid.daud@gmail.com</p>
+              <p className="text-sm">CONTACT NO: 055-2347526, P.O.BOX 76498, DUBAI, UAE, E-MAIL: ABID.DAUD@GMAIL.COM</p>
             </div>
           </div>
           
@@ -209,7 +209,7 @@ const PaymentInvoice = ({ customerid }) => {
         <div className="flex border-b border-black">
           <div className="flex-1 p-3 border-r border-black">
             <p><strong>COMPANY NAME:</strong> DMX GLOBAL LOGISTICS LLC.</p>
-            <p><strong>CONTACT PERSON:</strong> {customername}</p>
+            <p><strong>CONTACT PERSON:</strong> {customername?.toUpperCase()}</p>
           </div>
           <div className="flex-1 p-3 text-right">
             <p><strong>DATE:</strong> {new Date().toLocaleDateString()}</p>
@@ -221,13 +221,13 @@ const PaymentInvoice = ({ customerid }) => {
           <div className="flex-1 p-3">
             <div className="grid grid-cols-3 gap-4 text-sm">
               <div>
-                <p><strong>TOTAL AMOUNT:</strong> {paymentData.total.toFixed(2)}</p>
+                <p><strong>TOTAL AMOUNT:</strong> AED {paymentData.total.toFixed(2)}</p>
               </div>
               <div>
-                <p><strong>PAID AMOUNT:</strong> {paymentData.paidtotal.toFixed(2)}</p>
+                <p><strong>PAID AMOUNT:</strong> AED {paymentData.paidtotal.toFixed(2)}</p>
               </div>
               <div>
-                <p><strong>UNPAID AMOUNT:</strong> {paymentData.unpaidtotal.toFixed(2)}</p>
+                <p><strong>UNPAID AMOUNT:</strong> AED {paymentData.unpaidtotal.toFixed(2)}</p>
               </div>
             </div>
           </div>
@@ -264,7 +264,7 @@ const PaymentInvoice = ({ customerid }) => {
                 <td className="border border-black px-1 py-1 text-center">{item.insp}</td>
                 <td className="border border-black px-1 py-1 text-center">{item.bills}</td>
                 <td className="border border-black px-1 py-1 text-center">{item.extra}</td>
-                <td className="border border-black px-1 py-1 text-center">{item.amount}</td>
+                <td className="border border-black px-1 py-1 text-center">AED {item.amount}</td>
                 <td className={`border border-black px-1 py-1 text-center font-bold ${item.status === 'PAID' ? 'text-green-600' : 'text-red-600'}`}>
                   {item.status}
                 </td>
@@ -281,9 +281,9 @@ const PaymentInvoice = ({ customerid }) => {
           </div>
           <div className="w-40 p-3">
             <div className="text-right space-y-1">
-              <p><strong>TOTAL:</strong> {paymentData.total.toFixed(2)}</p>
-              <p className="text-green-600"><strong>PAID:</strong> {paymentData.paidtotal.toFixed(2)}</p>
-              <p className="text-red-600"><strong>OUTSTANDING:</strong> {paymentData.unpaidtotal.toFixed(2)}</p>
+              <p><strong>TOTAL:</strong> AED {paymentData.total.toFixed(2)}</p>
+              <p className="text-green-600"><strong>PAID:</strong> AED {paymentData.paidtotal.toFixed(2)}</p>
+              <p className="text-red-600"><strong>OUTSTANDING:</strong> AED {paymentData.unpaidtotal.toFixed(2)}</p>
             </div>
           </div>
         </div>

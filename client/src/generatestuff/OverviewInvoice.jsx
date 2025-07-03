@@ -5,7 +5,7 @@ import toast from 'react-hot-toast';
 
 const OverviewInvoice = ({ customerid }) => {
   const [customerData, setCustomerData] = useState([]);
-  const [customerName, setCustomerName] = useState('');
+  const [customerInfo, setCustomerInfo] = useState(null);
   const [loading, setLoading] = useState(true);
 
   const getCustomerData = async () => {
@@ -16,7 +16,7 @@ const OverviewInvoice = ({ customerid }) => {
       
       if (response.data.success && response.data.customerData) {
         setCustomerData(response.data.customerData);
-        setCustomerName(response.data.customerInfo.customername);
+        setCustomerInfo(response.data.customerInfo);
       } else {
         toast.error("No customer data found", {
           duration: 3000
@@ -65,7 +65,58 @@ const OverviewInvoice = ({ customerid }) => {
 
   const convertToWords = (amount) => {
     if (amount === 0) return 'ZERO';
-    return `${amount.toLocaleString()} ONLY`;
+    
+    const ones = ["", "ONE", "TWO", "THREE", "FOUR", "FIVE", "SIX", "SEVEN", "EIGHT", "NINE"];
+    const teens = ["TEN", "ELEVEN", "TWELVE", "THIRTEEN", "FOURTEEN", "FIFTEEN", "SIXTEEN", "SEVENTEEN", "EIGHTEEN", "NINETEEN"];
+    const tens = ["", "", "TWENTY", "THIRTY", "FORTY", "FIFTY", "SIXTY", "SEVENTY", "EIGHTY", "NINETY"];
+    const thousands = ["", "THOUSAND", "MILLION", "BILLION"];
+    
+    const convertHundreds = (n) => {
+      let result = "";
+      if (n >= 100) {
+        result += ones[Math.floor(n / 100)] + " HUNDRED ";
+        n %= 100;
+      }
+      if (n >= 10 && n < 20) {
+        result += teens[n - 10] + " ";
+      } else {
+        if (n >= 20) {
+          result += tens[Math.floor(n / 10)] + " ";
+          n %= 10;
+        }
+        if (n > 0) {
+          result += ones[n] + " ";
+        }
+      }
+      return result.trim();
+    };
+    
+    const integerPart = Math.floor(amount);
+    const decimalPart = Math.round((amount - integerPart) * 100);
+    
+    let result = "";
+    let chunkCount = 0;
+    let tempNum = integerPart;
+    
+    if (tempNum === 0) {
+      result = "ZERO";
+    } else {
+      while (tempNum > 0) {
+        const chunk = tempNum % 1000;
+        if (chunk !== 0) {
+          const chunkWords = convertHundreds(chunk);
+          result = chunkWords + (thousands[chunkCount] ? " " + thousands[chunkCount] : "") + (result ? " " + result : "");
+        }
+        tempNum = Math.floor(tempNum / 1000);
+        chunkCount++;
+      }
+    }
+    
+    if (decimalPart > 0) {
+      result += " & " + convertHundreds(decimalPart) + " FILS";
+    }
+    
+    return result + " ONLY.";
   };
 
   const handlePrint = () => {
@@ -75,16 +126,20 @@ const OverviewInvoice = ({ customerid }) => {
   if (loading) {
     return (
       <div className="min-h-screen bg-white p-4 flex items-center justify-center">
-        <div className="text-lg">Loading invoice data...</div>
+        <div className="text-lg">LOADING INVOICE DATA...</div>
       </div>
     );
   }
 
   const companyInfo = { trn: '104235363900003' };
   const invoiceDetails = {
-    clientName: customerName || 'CLIENT NAME',
-    clientAddress: 'CLIENT ADDRESS',
-    clientTrn: '100601837600003',
+    clientName: String(customerInfo?.customername || 'CLIENT NAME').toUpperCase(),
+    clientAddress: String(customerInfo?.address || 'CLIENT ADDRESS').toUpperCase(),
+    clientTrn: String(customerInfo?.taxnumber || '100601837600003'),
+    companyName: String(customerInfo?.companyname || 'COMPANY NAME').toUpperCase(),
+    mainOwner: String(customerInfo?.mainowner || 'MAIN OWNER').toUpperCase(),
+    operator: String(customerInfo?.operator || 'OPERATOR').toUpperCase(),
+    phoneNo: String(customerInfo?.phoneno || 'PHONE NUMBER'),
     invoiceNo: `BAST-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`,
     date: new Date().toLocaleDateString('en-GB')
   };
@@ -97,7 +152,7 @@ const OverviewInvoice = ({ customerid }) => {
           onClick={handlePrint}
           className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition-colors"
         >
-          🖨️ Print Invoice
+          🖨️ PRINT INVOICE
         </button>
       </div>
 
@@ -106,7 +161,7 @@ const OverviewInvoice = ({ customerid }) => {
         <div className="border-b-2 border-gray-800 pb-4 mb-6">
           <div className="flex items-center gap-4">
             <div className="bg-gradient-to-br from-red-500 to-gray-800 text-white px-4 py-3 font-bold text-2xl rounded">
-              EAST
+              BAST
             </div>
             <div className="flex flex-col">
               <div className="text-lg text-gray-600 text-right mb-1" dir="rtl">
@@ -131,13 +186,23 @@ const OverviewInvoice = ({ customerid }) => {
         <div className="flex justify-between my-6">
           <div className="space-y-1">
             <p className="font-bold">TO</p>
-            <p>{invoiceDetails?.clientName || 'CLIENT NAME'}</p>
-            <p>{invoiceDetails?.clientAddress || 'CLIENT ADDRESS'}</p>
-            <p>TRN {invoiceDetails?.clientTrn || '100601837600003'}</p>
+            <p className="font-medium">{invoiceDetails.clientName}</p>
+            <p>{invoiceDetails.clientAddress}</p>
+            {invoiceDetails.companyName !== 'COMPANY NAME' && (
+              <p className="font-medium">COMPANY: {invoiceDetails.companyName}</p>
+            )}
+            <p>TRN: {invoiceDetails.clientTrn}</p>
+            <p>PHONE: {invoiceDetails.phoneNo}</p>
+            {invoiceDetails.mainOwner !== 'MAIN OWNER' && (
+              <p>MAIN OWNER: {invoiceDetails.mainOwner}</p>
+            )}
+            {invoiceDetails.operator !== 'OPERATOR' && (
+              <p>OPERATOR: {invoiceDetails.operator}</p>
+            )}
           </div>
           <div className="text-right space-y-1">
-            <p>INVOICE NO : {invoiceDetails?.invoiceNo || 'BAST-042'}</p>
-            <p>DATE : {invoiceDetails?.date || new Date().toLocaleDateString('en-GB')}</p>
+            <p>INVOICE NO: {invoiceDetails.invoiceNo}</p>
+            <p>DATE: {invoiceDetails.date}</p>
           </div>
         </div>
 
@@ -153,49 +218,49 @@ const OverviewInvoice = ({ customerid }) => {
             </thead>
             <tbody>
               <tr>
-                <td className="border border-gray-800 p-3 text-left font-semibold">Total Number of Orders</td>
+                <td className="border border-gray-800 p-3 text-left font-semibold">TOTAL NUMBER OF ORDERS</td>
                 <td className="border border-gray-800 p-3 text-center">{overview.totalOrders}</td>
                 <td className="border border-gray-800 p-3 text-center">-</td>
               </tr>
               <tr>
-                <td className="border border-gray-800 p-3 text-left font-semibold">Total Containers Handled</td>
+                <td className="border border-gray-800 p-3 text-left font-semibold">TOTAL CONTAINERS HANDLED</td>
                 <td className="border border-gray-800 p-3 text-center">{overview.totalContainers}</td>
                 <td className="border border-gray-800 p-3 text-center">-</td>
               </tr>
               <tr>
-                <td className="border border-gray-800 p-3 text-left font-semibold">Transportation Charges</td>
+                <td className="border border-gray-800 p-3 text-left font-semibold">TRANSPORTATION CHARGES</td>
                 <td className="border border-gray-800 p-3 text-center">-</td>
-                <td className="border border-gray-800 p-3 text-center">{overview.totalRate.toFixed(2)}</td>
+                <td className="border border-gray-800 p-3 text-center">AED {overview.totalRate.toFixed(2)}</td>
               </tr>
               <tr>
-                <td className="border border-gray-800 p-3 text-left font-semibold">Container Inspection Cost</td>
+                <td className="border border-gray-800 p-3 text-left font-semibold">CONTAINER INSPECTION COST</td>
                 <td className="border border-gray-800 p-3 text-center">-</td>
-                <td className="border border-gray-800 p-3 text-center">{overview.totalInspectionCost.toFixed(2)}</td>
+                <td className="border border-gray-800 p-3 text-center">AED {overview.totalInspectionCost.toFixed(2)}</td>
               </tr>
               <tr>
-                <td className="border border-gray-800 p-3 text-left font-semibold">Token Charges</td>
+                <td className="border border-gray-800 p-3 text-left font-semibold">TOKEN CHARGES</td>
                 <td className="border border-gray-800 p-3 text-center">-</td>
-                <td className="border border-gray-800 p-3 text-center">{overview.totalTokenCharges.toFixed(2)}</td>
+                <td className="border border-gray-800 p-3 text-center">AED {overview.totalTokenCharges.toFixed(2)}</td>
               </tr>
               <tr>
-                <td className="border border-gray-800 p-3 text-left font-semibold">Extra Charges</td>
+                <td className="border border-gray-800 p-3 text-left font-semibold">EXTRA CHARGES</td>
                 <td className="border border-gray-800 p-3 text-center">-</td>
-                <td className="border border-gray-800 p-3 text-center">{overview.totalExtra.toFixed(2)}</td>
+                <td className="border border-gray-800 p-3 text-center">AED {overview.totalExtra.toFixed(2)}</td>
               </tr>
               <tr className="bg-gray-50">
                 <td className="border border-gray-800 p-3 text-left font-bold">SUBTOTAL</td>
                 <td className="border border-gray-800 p-3 text-center">-</td>
-                <td className="border border-gray-800 p-3 text-center font-bold">{overview.subtotal.toFixed(2)}</td>
+                <td className="border border-gray-800 p-3 text-center font-bold">AED {overview.subtotal.toFixed(2)}</td>
               </tr>
               <tr className="bg-gray-50">
                 <td className="border border-gray-800 p-3 text-left font-bold">VAT 5%</td>
                 <td className="border border-gray-800 p-3 text-center">-</td>
-                <td className="border border-gray-800 p-3 text-center font-bold">{overview.vatAmount.toFixed(2)}</td>
+                <td className="border border-gray-800 p-3 text-center font-bold">AED {overview.vatAmount.toFixed(2)}</td>
               </tr>
               <tr className="bg-gray-100">
                 <td className="border border-gray-800 p-3 text-left font-bold">NET TOTAL</td>
                 <td className="border border-gray-800 p-3 text-center">-</td>
-                <td className="border border-gray-800 p-3 text-center font-bold text-lg">{overview.netTotal.toFixed(2)}</td>
+                <td className="border border-gray-800 p-3 text-center font-bold text-lg">AED {overview.netTotal.toFixed(2)}</td>
               </tr>
             </tbody>
           </table>
@@ -249,8 +314,8 @@ const OverviewInvoice = ({ customerid }) => {
 
         {/* Contact Info */}
         <div className="text-center mt-6 pt-6 border-t border-gray-300 text-xs space-y-1">
-          <p>📞 +971 56 800 2250 / +971 55 234 7526 | 📧 burjalsamatransport@gmail.com</p>
-          <p>📍 Office O- Malak Elham Muhammad Amin Mirza Ghafari - Deira - Abu Hail 207</p>
+          <p>📞 +971 56 800 2250 / +971 55 234 7526 | 📧 BURJALSAMATRANSPORT@GMAIL.COM</p>
+          <p>📍 OFFICE O- MALAK ELHAM MUHAMMAD AMIN MIRZA GHAFARI - DEIRA - ABU HAIL 207</p>
         </div>
       </div>
 

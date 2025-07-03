@@ -21,7 +21,9 @@ const addOrder = async (req, res) => {
       remarks,
       orderType,
       total,
-      vat
+      vat,
+      orderDate,
+      extraChargeType
     } = req.body;
 
     const save = await Order.create({
@@ -39,7 +41,9 @@ const addOrder = async (req, res) => {
       remarks,
       type: orderType,
       total,
-      vat
+      vat,
+      date:orderDate,
+      extratype:extraChargeType
     });
 
     if (save) {
@@ -106,7 +110,8 @@ const editorder=async(req,res)=>
         merc,
         extra,
         remarks,
-
+ orderDate,
+      extraChargeType,
         total
     } = req.body;
     console.log(   rate,
@@ -138,7 +143,8 @@ const editorder=async(req,res)=>
         merc,
         extra,
         remarks,
-
+date:orderDate,
+      extratype:extraChargeType,
         total
       },
       {

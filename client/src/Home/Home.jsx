@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import Spinner from "../components/Spinner";
 
 const Home = () => {
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false); 
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true); 
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -106,7 +106,9 @@ const Home = () => {
             setIsSidebarCollapsed={setIsSidebarCollapsed}
           />
 
+          {/* Main Content */}
           <div className="flex-1 lg:ml-16 transition-all duration-300">
+            {/* Mobile Header */}
             <div className="lg:hidden bg-white shadow-sm border-b border-gray-200 p-4">
               <div className="flex items-center justify-between">
                 <button
@@ -115,15 +117,15 @@ const Home = () => {
                 >
                   <span className="text-xl">☰</span>
                 </button>
-                <h1 className="text-lg font-semibold text-gray-900">
-                  Dashboard
-                </h1>
+                <h1 className="text-lg font-semibold text-gray-900">Dashboard</h1>
                 <div className="w-8"></div>
               </div>
             </div>
 
+            {/* Content */}
             <div className="p-3 lg:p-6">
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-6 mb-6 lg:mb-8">
+              {/* Stats Grid - Responsive */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-6 mb-6 lg:mb-8">
                 {statsData.map((stat, index) => (
                   <div
                     key={index}
@@ -153,7 +155,9 @@ const Home = () => {
                 ))}
               </div>
 
+              {/* Content Grid - Responsive */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
+                {/* Latest Orders */}
                 <div className="bg-white rounded-lg lg:rounded-xl shadow-sm border border-gray-200 p-4 lg:p-6">
                   <h3 className="text-base lg:text-lg font-semibold text-gray-900 mb-3 lg:mb-4">
                     Latest Orders
@@ -190,7 +194,7 @@ const Home = () => {
                   </div>
                 </div>
 
-              
+                {/* Recent Expenses */}
                 <div className="bg-white rounded-lg lg:rounded-xl shadow-sm border border-gray-200 p-4 lg:p-6">
                   <h3 className="text-base lg:text-lg font-semibold text-gray-900 mb-3 lg:mb-4">
                     Recent Expenses
@@ -227,14 +231,14 @@ const Home = () => {
                   </div>
                 </div>
 
-           
+                {/* Quick Actions */}
                 <div className="bg-white rounded-lg lg:rounded-xl shadow-sm border border-gray-200 p-4 lg:p-6">
                   <h3 className="text-base lg:text-lg font-semibold text-gray-900 mb-3 lg:mb-4">
                     Quick Actions
                   </h3>
                   <div className="grid grid-cols-2 lg:grid-cols-1 gap-2 lg:gap-3">
                     <button 
-                      onClick={() => navigate('/orders/create')}
+                      onClick={() => navigate('/data')}
                       className="p-2 lg:p-3 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors text-sm font-medium"
                     >
                       New Order
@@ -246,29 +250,29 @@ const Home = () => {
                       Add Customer
                     </button>
                     <button 
-                      onClick={() => navigate('/expenses/create')}
+                      onClick={() => navigate('/expenses')}
                       className="p-2 lg:p-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
                     >
                       Add Expense
                     </button>
                     <button 
-                      onClick={() => navigate('/payments')}
+                      onClick={() => navigate('/payment')}
                       className="p-2 lg:p-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
                     >
-                      Add Payments
+                      Manage Payments
                     </button>
                   </div>
                 </div>
               </div>
 
-         
+              {/* Monthly Trends - Mobile Responsive */}
               {dashboardData?.monthlyTrends && (
                 <div className="mt-6 lg:mt-8">
                   <div className="bg-white rounded-lg lg:rounded-xl shadow-sm border border-gray-200 p-4 lg:p-6">
-                    <h3 className="text-base lg:text-lg font-semibold text-gray-900 mb-3 lg:mb-4">
+                    <h3 className="text-base lg:text-lg font-semibold text-gray-900 mb-4">
                       Monthly Trends
                     </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {/* Revenue Trend */}
                       <div>
                         <h4 className="text-sm font-medium text-gray-700 mb-2">Revenue Trend</h4>
@@ -281,13 +285,11 @@ const Home = () => {
                                   year: 'numeric' 
                                 })}
                               </span>
-                              <div className="text-right">
-                                <div className="text-sm font-semibold text-green-600">
-                                  {formatCurrency(item.revenue)}
-                                </div>
-                                <div className="text-xs text-gray-500">
-                                  {item.orderCount} orders
-                                </div>
+                              <div className="text-sm font-semibold text-green-600">
+                                {formatCurrency(item.revenue)}
+                              </div>
+                              <div className="text-xs text-gray-500">
+                                {item.orderCount} orders
                               </div>
                             </div>
                           ))}

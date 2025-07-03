@@ -56,6 +56,10 @@ const Order = sequelize.define(
       type: DataTypes.DOUBLE,
       allowNull: true,
     },
+    extratype:{
+type:DataTypes.STRING,
+allowNull:true
+    },
     vat:{
 type: DataTypes.DOUBLE,
       allowNull: true,
@@ -78,6 +82,10 @@ type:DataTypes.BOOLEAN,
 defaultValue:false,
 allowNull:true
 
+    },
+    date:{
+type:DataTypes.STRING,
+allowNull:true
     },
     remarks: {
       type: DataTypes.TEXT,

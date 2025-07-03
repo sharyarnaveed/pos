@@ -5,24 +5,21 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import api from "../api";
 import Spinner from "../components/Spinner";
-import DriverReport from "../generatestuff/DriverReport"; // Add this import
+import DriverReport from "../generatestuff/DriverReport";
 
 const Driver = () => {
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
   const [showAddDriver, setShowAddDriver] = useState(false);
   const [showDriverDetail, setShowDriverDetail] = useState(false);
-  const [showDriverReport, setShowDriverReport] = useState(false); // Add this state
+  const [showDriverReport, setShowDriverReport] = useState(false);
   const [selectedDriver, setSelectedDriver] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, SetLoading] = useState(false);
-  const [isAddingDriver, setIsAddingDriver] = useState(false); // Add this state
+  const [isAddingDriver, setIsAddingDriver] = useState(false);
   const navigate = useNavigate();
 
-  // Sample drivers data
-  const [drivers, setDrivers] = useState([
-  ]);
+  const [drivers, setDrivers] = useState([]);
 
-  // New driver form state
   const {
     register,
     handleSubmit,
@@ -31,13 +28,13 @@ const Driver = () => {
   } = useForm({
     mode: "onBlur",
     defaultValues: {
- drivername:"",
- driverphoneno:""
+      drivername: "",
+      driverphoneno: ""
     },
   });
 
-  const handleAddDriver = async(data) => {
-    if (isAddingDriver) return; // Prevent multiple submissions
+  const handleAddDriver = async (data) => {
+    if (isAddingDriver) return;
     
     setIsAddingDriver(true);
     console.log(data);
@@ -51,8 +48,7 @@ const Driver = () => {
         reset()
         setShowAddDriver(false)
         await viewdrivers();
-      }
-      else {
+      } else {
         toast.error(responce.data.message, {
           duration: 2000
         })
@@ -74,7 +70,7 @@ const Driver = () => {
 
   const [customerloading, setcustoemrloading] = useState(false);
 
- const viewdrivers = useCallback(async () => {
+  const viewdrivers = useCallback(async () => {
     setcustoemrloading(true);
     try {
       const responce = await api.get("/api/user/viewdriver");
@@ -94,14 +90,13 @@ const Driver = () => {
     }
   }, []);
 
-const filterData=useMemo(()=>{
-  if (!searchTerm) return drivers
+  const filterData = useMemo(() => {
+    if (!searchTerm) return drivers
 
-  return drivers.filter(item=>
-    item.drivername.toLowerCase().includes(searchTerm.toLowerCase())
-  )
-},[drivers,searchTerm])
-
+    return drivers.filter(item =>
+      item.drivername.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+  }, [drivers, searchTerm])
 
   const checkAccountLogin = async () => {
     SetLoading(true);
@@ -128,9 +123,6 @@ const filterData=useMemo(()=>{
     checkAccountLogin();
   }, []);
 
-
-
-
   return (
     <>
       {loading ? (
@@ -142,24 +134,39 @@ const filterData=useMemo(()=>{
             setIsSidebarCollapsed={setIsSidebarCollapsed}
           />
 
-          <div
-            className={`flex-1 ${
-              isSidebarCollapsed ? "ml-16" : "ml-64"
-            } transition-all duration-300`}
-          >
-           
-            <div className="border-b border-gray-200 bg-white">
-              <div className="px-8 py-6">
-                <div className="flex justify-between items-center">
+          <div className="flex-1 lg:ml-16 transition-all duration-300">
+            {/* Mobile Header */}
+            <div className="lg:hidden bg-white shadow-sm border-b border-gray-200 p-4">
+              <div className="flex items-center justify-between">
+                <button
+                  onClick={() => setIsSidebarCollapsed(false)}
+                  className="p-2 rounded-md hover:bg-gray-100"
+                >
+                  <span className="text-xl">☰</span>
+                </button>
+                <h1 className="text-lg font-semibold text-gray-900">Drivers</h1>
+                <button
+                  onClick={() => setShowAddDriver(true)}
+                  className="bg-black text-white px-3 py-1 text-sm rounded"
+                >
+                  Add
+                </button>
+              </div>
+            </div>
+
+            {/* Desktop Header */}
+            <div className="hidden lg:block border-b border-gray-200 bg-white">
+              <div className="px-4 sm:px-8 py-4 md:py-6">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                   <div>
-                    <h1 className="text-2xl font-bold text-black">Drivers</h1>
-                    <p className="text-gray-600 text-sm mt-1">
+                    <h1 className="text-xl md:text-2xl font-bold text-black">Drivers</h1>
+                    <p className="text-gray-600 text-xs md:text-sm mt-1">
                       Manage your driver database
                     </p>
                   </div>
                   <button
                     onClick={() => setShowAddDriver(true)}
-                    className="bg-black text-white px-6 py-2 text-sm font-medium hover:bg-gray-800 transition-colors"
+                    className="bg-black text-white px-4 md:px-6 py-2 text-xs md:text-sm font-medium hover:bg-gray-800 transition-colors w-full sm:w-auto"
                   >
                     Add Driver
                   </button>
@@ -167,128 +174,179 @@ const filterData=useMemo(()=>{
               </div>
             </div>
 
-            <div className="p-8">
-           
-              <div className="mb-8">
-             
-                <div className="mb-6">
+            <div className="p-3 lg:p-8">
+              {/* Search and Stats Section */}
+              <div className="mb-6 lg:mb-8">
+                {/* Search Bar */}
+                <div className="mb-4 lg:mb-6">
                   <input
                     type="text"
-                    placeholder="Search drivers by name, license, or vehicle..."
+                    placeholder="Search drivers by name or phone..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full max-w-md px-4 py-2 border border-gray-300 focus:border-black focus:outline-none text-sm"
+                    className="w-full px-3 lg:px-4 py-2 lg:py-3 border border-gray-300 rounded-lg focus:border-black focus:outline-none text-sm lg:text-base"
                   />
+                  {searchTerm && (
+                    <p className="text-xs text-gray-500 mt-2">
+                      Showing results for: "{searchTerm}" ({filterData.length} found)
+                    </p>
+                  )}
                 </div>
 
-            {
-              customerloading ? (<Spinner/>): (
-  <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <div className="bg-white border border-gray-200 p-6">
-                  <div className="text-sm text-gray-600">Total Drivers</div>
-                  <div className="text-2xl font-bold text-black mt-2">
-                    {drivers.length}
+                {/* Stats Cards */}
+                {customerloading ? (
+                  <Spinner />
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-6">
+                    <div className="bg-white border border-gray-200 p-4 lg:p-6 rounded-lg shadow-sm">
+                      <div className="text-xs lg:text-sm text-gray-600">Total Drivers</div>
+                      <div className="text-lg lg:text-2xl font-bold text-black mt-2">
+                        {drivers.length}
+                      </div>
+                    </div>
                   </div>
-                </div>
-                
+                )}
               </div>
-            )
-          }
-              
-                </div>
 
-      
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {filterData.map((driver) => (
-                    <div
-                      key={driver.id}
-                      onClick={() => handleDriverClick(driver)}
-                      className="bg-white border border-gray-200 p-6 hover:shadow-lg transition-all duration-200 cursor-pointer hover:border-gray-300"
-                    >
-                      <div className="flex justify-between items-start mb-4">
-                        <div>
-                          <h3 className="text-lg font-semibold text-black">
-                            {driver.drivername}
-                          </h3>
-                          <p className="text-sm text-gray-600">{driver.driverphoneno}</p>
-
+              {/* Drivers Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 lg:gap-6">
+                {filterData.map((driver) => (
+                  <div
+                    key={driver.id}
+                    onClick={() => handleDriverClick(driver)}
+                    className="bg-white border border-gray-200 p-4 lg:p-6 rounded-lg hover:shadow-lg transition-all duration-200 cursor-pointer hover:border-gray-300"
+                  >
+                    <div className="flex flex-col space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="w-10 h-10 lg:w-12 lg:h-12 bg-gray-200 rounded-full flex items-center justify-center">
+                          <span className="text-lg lg:text-xl font-bold text-gray-600">
+                            {driver.drivername.charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      </div>
+                      
+                      <div>
+                        <h3 className="text-base lg:text-lg font-semibold text-black truncate uppercase">
+                          {driver.drivername}
+                        </h3>
+                        <p className="text-xs lg:text-sm text-gray-600 mt-1">
+                          {driver.driverphoneno}
+                        </p>
+                      </div>
+                      
+                      <div className="pt-2 border-t border-gray-100">
+                        <div className="flex items-center justify-between text-xs lg:text-sm">
+                          <span className="text-gray-500">Status</span>
+                          <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">
+                            AVAILABLE
+                          </span>
                         </div>
                       </div>
                     </div>
-                  ))}
-                </div>
+                  </div>
+                ))}
               </div>
-            </div>
 
-
-            {showAddDriver && (
-              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                <form onSubmit={handleSubmit(handleAddDriver)} className="bg-white p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-                  <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-xl font-bold text-black">Add New Driver</h2>
+              {filterData.length === 0 && !customerloading && (
+                <div className="text-center py-12">
+                  <div className="text-4xl lg:text-6xl mb-4">👨‍💼</div>
+                  <h3 className="text-base lg:text-lg font-semibold text-gray-700 mb-2">
+                    No drivers found
+                  </h3>
+                  <p className="text-gray-500 text-sm">
+                    {searchTerm ? `No drivers match "${searchTerm.toUpperCase()}"` : "Start by adding your first driver"}
+                  </p>
+                  {!searchTerm && (
                     <button
+                      onClick={() => setShowAddDriver(true)}
+                      className="mt-4 bg-black text-white px-6 py-2 text-sm font-medium hover:bg-gray-800 transition-colors rounded-lg"
+                    >
+                      Add First Driver
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Add Driver Modal - Enhanced Responsive */}
+          {showAddDriver && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
+              <form 
+                onSubmit={handleSubmit(handleAddDriver)} 
+                className="bg-white w-full max-w-full sm:max-w-2xl max-h-[95vh] overflow-y-auto rounded-lg m-2"
+              >
+                <div className="sticky top-0 bg-white border-b border-gray-200 px-4 sm:px-8 py-4 sm:py-6 rounded-t-lg">
+                  <div className="flex justify-between items-center">
+                    <h2 className="text-lg sm:text-xl font-bold text-black">Add New Driver</h2>
+                    <button
+                      type="button"
                       onClick={() => setShowAddDriver(false)}
-                      className="text-gray-500 hover:text-gray-700"
+                      className="text-gray-500 hover:text-gray-700 text-xl"
                     >
                       ✕
                     </button>
                   </div>
+                </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-<div>
-  <label className="block text-sm font-medium text-black mb-2">
-    Driver Name *
-  </label>
-  <input
-    type="text"
-    {...register("drivername",{
-      required:"Driver Name is required",
-      pattern: {
-        value: /^[a-zA-Z\s]{2,100}$/,
-        message:
-          "Driver name should be 2-100 characters with letters",
-      }
-    })}
-    className="w-full px-3 py-2 border border-gray-300 focus:border-black focus:outline-none text-sm"
-    placeholder="Enter driver's full name"
-  />
-  {errors.drivername && (
-    <p className="text-red-500 text-sm mt-1">{errors.drivername.message}</p>
-  )}
-</div>
+                <div className="p-4 sm:p-8">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                    <div className="sm:col-span-1">
+                      <label className="block text-sm font-medium text-black mb-2">
+                        Driver Name *
+                      </label>
+                      <input
+                        type="text"
+                        {...register("drivername", {
+                          required: "Driver Name is required",
+                          pattern: {
+                            value: /^[a-zA-Z\s]{2,100}$/,
+                            message: "Driver name should be 2-100 characters with letters",
+                          }
+                        })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-black focus:outline-none text-sm uppercase"
+                        placeholder="Enter driver's full name"
+                      />
+                      {errors.drivername && (
+                        <p className="text-red-500 text-xs mt-1">{errors.drivername.message}</p>
+                      )}
+                    </div>
 
-                    <div>
+                    <div className="sm:col-span-1">
                       <label className="block text-sm font-medium text-black mb-2">
                         Phone No *
                       </label>
                       <input
                         type="tel"
-                        {
-                          ...register("driverphoneno",{
-                            required:"Phone Number required",
-                            pattern:{
-                              value: /^[\+]?[0-9][\d]{0,15}$/,
-                                message: "Please enter a valid phone number",
-                            }
-                          })
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 focus:border-black focus:outline-none text-sm"
+                        {...register("driverphoneno", {
+                          required: "Phone Number required",
+                          pattern: {
+                            value: /^[\+]?[0-9][\d]{0,15}$/,
+                            message: "Please enter a valid phone number",
+                          }
+                        })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-black focus:outline-none text-sm"
                         placeholder="Enter Phone No"
                       />
+                      {errors.driverphoneno && (
+                        <p className="text-red-500 text-xs mt-1">{errors.driverphoneno.message}</p>
+                      )}
                     </div>
                   </div>
 
-                  <div className="flex gap-3 mt-8">
+                  <div className="flex flex-col sm:flex-row gap-3 mt-6 sm:mt-8">
                     <button
+                      type="button"
                       onClick={() => setShowAddDriver(false)}
-                      className="flex-1 px-4 py-2 text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
+                      className="w-full sm:flex-1 px-4 py-2 text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors rounded-lg"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
                       disabled={isAddingDriver}
-                      className="flex-1 bg-black text-white px-4 py-2 text-sm font-medium hover:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+                      className="w-full sm:flex-1 bg-black text-white px-4 py-2 text-sm font-medium hover:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2 rounded-lg"
                     >
                       {isAddingDriver ? (
                         <>
@@ -300,47 +358,60 @@ const filterData=useMemo(()=>{
                       )}
                     </button>
                   </div>
-                </form>
-              </div>
-            )}
+                </div>
+              </form>
+            </div>
+          )}
 
-            {/* Driver Detail Modal */}
-            {showDriverDetail && selectedDriver && (
-              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                <div className="bg-white p-8 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-                  <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-xl font-bold text-black">Driver Details</h2>
+          {/* Driver Detail Modal - Enhanced Responsive */}
+          {showDriverDetail && selectedDriver && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
+              <div className="bg-white w-full max-w-full sm:max-w-4xl max-h-[95vh] overflow-y-auto rounded-lg m-2">
+                <div className="sticky top-0 bg-white border-b border-gray-200 px-4 sm:px-8 py-4 sm:py-6 rounded-t-lg">
+                  <div className="flex justify-between items-center">
+                    <h2 className="text-lg sm:text-xl font-bold text-black">Driver Details</h2>
                     <button
                       onClick={() => setShowDriverDetail(false)}
-                      className="text-gray-500 hover:text-gray-700"
+                      className="text-gray-500 hover:text-gray-700 text-xl"
                     >
                       ✕
                     </button>
                   </div>
+                </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="p-4 sm:p-8">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
                     {/* Personal Information */}
                     <div className="space-y-6">
                       <div>
-                        <h3 className="text-lg font-semibold text-black border-b border-gray-200 pb-2 mb-4">
+                        <h3 className="text-base lg:text-lg font-semibold text-black border-b border-gray-200 pb-2 mb-4">
                           Personal Information
                         </h3>
 
                         <div className="space-y-4">
-                          <div>
+                          <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0">
                             <label className="text-sm font-medium text-gray-600">
                               Full Name
                             </label>
-                            <p className="text-black font-medium">
+                            <p className="text-black font-medium break-words uppercase">
                               {selectedDriver.drivername}
                             </p>
                           </div>
 
-                          <div>
+                          <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0">
                             <label className="text-sm font-medium text-gray-600">
                               Phone No
                             </label>
-                            <p className="text-black">{selectedDriver.driverphoneno}</p>
+                            <p className="text-black break-words">{selectedDriver.driverphoneno}</p>
+                          </div>
+
+                          <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0">
+                            <label className="text-sm font-medium text-gray-600">
+                              Status
+                            </label>
+                            <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs w-fit">
+                              AVAILABLE
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -349,52 +420,53 @@ const filterData=useMemo(()=>{
                     {/* Work Information & Statistics */}
                     <div className="space-y-6">
                       <div>
-                       
-
+                        <h3 className="text-base lg:text-lg font-semibold text-black border-b border-gray-200 pb-2 mb-4">
+                          Quick Actions
+                        </h3>
+                        
                         <div className="space-y-3">
-                          <h4 className="text-sm font-medium text-black">
-                            Quick Actions
-                          </h4>
                           <div className="grid grid-cols-1 gap-2">
                             <button
                               onClick={() => setShowDriverReport(true)}
-                              className="px-4 py-2 text-sm bg-black text-white hover:bg-gray-800 transition-colors"
+                              className="w-full px-4 py-2 text-sm bg-black text-white hover:bg-gray-800 transition-colors rounded-lg"
                             >
                               Generate Driver Report
                             </button>
+                            
                           </div>
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  <div className="flex justify-end mt-8">
+                  <div className="flex justify-end mt-6 lg:mt-8 pt-6 border-t border-gray-200">
                     <button
                       onClick={() => setShowDriverDetail(false)}
-                      className="px-6 py-2 text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
+                      className="w-full sm:w-auto px-6 py-2 text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors rounded-lg"
                     >
                       Close
                     </button>
                   </div>
                 </div>
               </div>
-            )}
+            </div>
+          )}
 
-            {/* Driver Report Modal */}
-            {showDriverReport && selectedDriver && (
-              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                <div className="bg-white w-full h-full max-w-6xl max-h-[95vh] overflow-auto relative">
-                  <button
-                    onClick={() => setShowDriverReport(false)}
-                    className="absolute top-4 right-4 z-10 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-colors print:hidden"
-                  >
-                    Close
-                  </button>
-                  <DriverReport driverId={selectedDriver.id} />
-                </div>
+          {/* Driver Report Modal - Enhanced Responsive */}
+          {showDriverReport && selectedDriver && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
+              <div className="bg-white w-full h-full max-w-full sm:max-w-6xl max-h-[95vh] overflow-auto relative rounded-lg">
+                <button
+                  onClick={() => setShowDriverReport(false)}
+                  className="absolute top-2 sm:top-4 right-2 sm:right-4 z-10 bg-red-600 text-white px-3 sm:px-4 py-1 sm:py-2 rounded text-sm hover:bg-red-700 transition-colors print:hidden"
+                >
+                  Close
+                </button>
+                <DriverReport driverId={selectedDriver.id} />
               </div>
-            )}
-          </div>
+            </div>
+          )}
+        </div>
       )}
     </>
   );

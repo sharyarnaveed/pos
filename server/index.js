@@ -10,11 +10,11 @@ async function testConnection() {
     await sequelize.authenticate();
     console.log("✅ Database connected successfully");
 
-    await sequelize.sync(); // Use sync({ alter: true }) if needed
+    await sequelize.sync(); 
     console.log("✅ Database synced");
   } catch (error) {
     console.error("❌ Error connecting or syncing the database:", error);
-    throw error; // So that the server doesn’t start if DB fails
+    throw error; 
   }
 }
 

@@ -13,7 +13,7 @@ const Driver=sequelize.define("driver",{
     allowNull: false,
     },
     driverphoneno:{
-              type: Sequelize.INTEGER(20),
+    type: DataTypes.STRING,
     allowNull: false, 
     }
 },{
