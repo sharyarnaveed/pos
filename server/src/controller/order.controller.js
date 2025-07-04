@@ -174,10 +174,17 @@ const vieworderBycustomerId = async (req, res) => {
     const { customerid } = req.params;
 
     const data = await Order.findAll({
-      where: {
+    include:[
+{
+          model: Customer,
+          as: "CustomerDetails",
+        }
+    ],
+      raw: true,
+    },{
+        where: {
         customer: customerid,
       },
-      raw: true,
     });
 
     if (data) {

@@ -6,7 +6,7 @@ const { requireAuth } = require("../middlewares/auth.middleware");
 const {addDriver, viewDriver, DriverReport, updateDriver} = require("../controller/driver.controller");
 const { addvehicle, viewvehicle, updateVehicle } = require("../controller/vehicle.controller");
 const { addOrder, viewOrder, editorder, vieworderBycustomerId } = require("../controller/order.controller");
-const { addexpences, viewexpences, addExpencebalance, gettotalexpenceandbalance, getbalancehistory } = require("../controller/expences.controller");
+const { addexpences, viewexpences, addExpencebalance, gettotalexpenceandbalance, getbalancehistory, editexpences } = require("../controller/expences.controller");
 const { signup } = require("../controller/signup.controller");
 const { paymentadd } = require("../controller/payment.controller");
 const { getDashboardData } = require("../controller/dashboard.controlleer");
@@ -45,6 +45,7 @@ router.route("/paymentreport/:customerid").get(customerpayment);
 router.route("/updatecustomer/:id").put(requireAuth, updateCustomer);
 router.route("/updatedriver/:id").put(requireAuth, updateDriver);
 router.route("/updatevehicle/:id").put(requireAuth, updateVehicle);
+router.put('/editexpence/:id', editexpences);
 
 
 module.exports=router

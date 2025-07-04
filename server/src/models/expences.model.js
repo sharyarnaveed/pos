@@ -29,6 +29,27 @@ const Expences = sequelize.define(
       type: DataTypes.TEXT,
       allowNull: true,
     },
+    date: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+    // Fuel-specific fields
+    quantity: {
+      type: DataTypes.DOUBLE,
+      allowNull: true,
+    },
+    dhs: {
+      type: DataTypes.DOUBLE,
+      allowNull: true,
+    },
+    fills: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+    fuelStation: {
+      type: DataTypes.STRING(100),
+      allowNull: true,
+    }
   },
   {
     timestamps: true,

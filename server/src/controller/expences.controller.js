@@ -5,7 +5,7 @@ const Vehicle = require("../models/Vehicle.model");
 const { Sequelize } = require("sequelize");
 const addexpences = async (req, res) => {
   try {
-    const { description, amount, category, vehicleId, remarks } = req.body;
+    const { description, amount, category, vehicleId, remarks, date, quantity, dhs, fills, fuelStation } = req.body;
 
     const save = await Expences.create({
       description,
@@ -13,36 +13,38 @@ const addexpences = async (req, res) => {
       category,
       vehicle: vehicleId,
       remarks,
+      date,
+      quantity: category === "Fuel" ? quantity : null,
+      dhs: category === "Fuel" ? dhs : null,
+      fills: category === "Fuel" ? fills : null,
+      fuelStation: category === "Fuel" ? fuelStation : null
     });
 
     if (save) {
-     
-const oldbalance= await Currentbalance.findAll({
-      raw:true
-})
-
-
-const previousbalance=oldbalance[0].balance
-const updatedbalance=previousbalance-amount
-
-const updatebalance = await Currentbalance.update(
-  {
-
-    balance: updatedbalance,
-    
-  },{
-    where: {
-      id: oldbalance[0].id,
-    },
-
-  })
-    if(!updatebalance)
-    {
-      return res.json({
-        message: "Error in updating balance",
-        success: false,
+      const oldbalance = await Currentbalance.findAll({
+        raw: true
       });
-    }
+
+      const previousbalance = oldbalance[0].balance;
+      const updatedbalance = previousbalance - amount;
+
+      const updatebalance = await Currentbalance.update(
+        {
+          balance: updatedbalance,
+        }, {
+          where: {
+            id: oldbalance[0].id,
+          },
+        }
+      );
+
+      if (!updatebalance) {
+        return res.json({
+          message: "Error in updating balance",
+          success: false,
+        });
+      }
+
       return res.json({
         message: "Expense added successfully",
         success: true,
@@ -258,6 +260,103 @@ if(balanceHistory.length === 0)
 }
 
 
+
+const editexpences = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { description, amount, category, vehicleId, remarks, date, quantity, dhs, fills, fuelStation } = req.body;
+
+    // First, get the current expense to calculate balance difference
+    const currentExpense = await Expences.findByPk(id);
+    
+    if (!currentExpense) {
+      return res.json({
+        message: "Expense not found",
+        success: false,
+      });
+    }
+
+    const oldAmount = parseFloat(currentExpense.amount);
+    const newAmount = parseFloat(amount);
+    const amountDifference = newAmount - oldAmount;
+
+    // Update the expense
+    const updateExpense = await Expences.update(
+      {
+        description,
+        amount: newAmount,
+        category,
+        vehicle: vehicleId,
+        remarks,
+        date,
+        quantity: category === "Fuel" ? quantity : null,
+        dhs: category === "Fuel" ? dhs : null,
+        fills: category === "Fuel" ? fills : null,
+        fuelStation: category === "Fuel" ? fuelStation : null
+      },
+      {
+        where: {
+          id: id,
+        },
+      }
+    );
+
+    if (!updateExpense || updateExpense[0] === 0) {
+      return res.json({
+        message: "Error in updating expense",
+        success: false,
+      });
+    }
+
+    // Update balance if amount changed
+    if (amountDifference !== 0) {
+      const currentBalance = await Currentbalance.findAll({
+        raw: true
+      });
+
+      if (currentBalance.length === 0) {
+        return res.json({
+          message: "Balance record not found",
+          success: false,
+        });
+      }
+
+      const previousBalance = parseFloat(currentBalance[0].balance);
+      const updatedBalance = previousBalance - amountDifference;
+
+      const updateBalance = await Currentbalance.update(
+        {
+          balance: updatedBalance,
+        },
+        {
+          where: {
+            id: currentBalance[0].id,
+          },
+        }
+      );
+
+      if (!updateBalance) {
+        return res.json({
+          message: "Error in updating balance",
+          success: false,
+        });
+      }
+    }
+
+    return res.json({
+      message: "Expense updated successfully",
+      success: true,
+    });
+
+  } catch (error) {
+    console.log("error in updating expense", error);
+    return res.json({
+      message: error.errors?.[0]?.message || "Error in updating expense",
+      success: false,
+    });
+  }
+};
+
 module.exports = { addexpences, viewexpences, addExpencebalance, gettotalexpenceandbalance,
-  getbalancehistory
+  getbalancehistory, editexpences
  };
