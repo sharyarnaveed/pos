@@ -15,10 +15,12 @@ const Customers = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
   const [showAddCustomer, setShowAddCustomer] = useState(false);
   const [showCustomerDetail, setShowCustomerDetail] = useState(false);
+  const [showEditCustomer, setShowEditCustomer] = useState(false); // Add this line
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, SetLoading] = useState(false);
   const [customerloading, setcustoemrloading] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false); // Add this line
   
   // Add state for invoice modals
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
@@ -34,7 +36,28 @@ const Customers = () => {
     register,
     handleSubmit,
     reset,
+    setValue, // Add this line
     formState: { errors },
+  } = useForm({
+    mode: "onBlur",
+    defaultValues: {
+      customername: "",
+      companyname: "",
+      phoneno: "",
+      mainowner: "",
+      operator: "",
+      taxnumber: "",
+      address: "",
+    },
+  });
+
+  // Add edit form
+  const {
+    register: registerEdit,
+    handleSubmit: handleSubmitEdit,
+    reset: resetEdit,
+    setValue: setValueEdit,
+    formState: { errors: errorsEdit },
   } = useForm({
     mode: "onBlur",
     defaultValues: {
@@ -136,6 +159,50 @@ const Customers = () => {
   useEffect(() => {
     checkAccountLogin();
   }, []);
+
+  // Add edit customer handler
+  const handleEditCustomer = async (data) => {
+    if (isUpdating) return;
+    
+    setIsUpdating(true);
+    try {
+      const response = await api.put(`/api/user/updatecustomer/${selectedCustomer.id}`, data);
+      console.log(response.data);
+      if (response.data.success) {
+        toast.success(response.data.message, {
+          duration: 2000,
+        });
+        await viewCustomers();
+        setShowEditCustomer(false);
+        setShowCustomerDetail(false);
+        resetEdit();
+      } else {
+        toast.error(response.data.message, {
+          duration: 2000,
+        });
+      }
+    } catch (error) {
+      console.log("error in updating customer", error);
+      toast.error("Error updating customer", {
+        duration: 3000,
+      });
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  // Add function to handle edit button click
+  const handleEditClick = (customer) => {
+    setSelectedCustomer(customer);
+    setValueEdit("customername", customer.customername);
+    setValueEdit("companyname", customer.companyname);
+    setValueEdit("phoneno", customer.phoneno);
+    setValueEdit("mainowner", customer.mainowner);
+    setValueEdit("operator", customer.operator);
+    setValueEdit("taxnumber", customer.taxnumber);
+    setValueEdit("address", customer.address);
+    setShowEditCustomer(true);
+  };
 
   return (
     <>
@@ -614,6 +681,15 @@ const Customers = () => {
                         <div className="space-y-3">
                           <div className="grid grid-cols-1 gap-2">
                             <button
+                              onClick={() => {
+                                setShowCustomerDetail(false);
+                                handleEditClick(selectedCustomer);
+                              }}
+                              className="w-full px-4 py-2 text-sm bg-blue-600 text-white hover:bg-blue-700 transition-colors rounded-lg"
+                            >
+                              Edit Customer Details
+                            </button>
+                            <button
                               onClick={() => navigate("/data")}
                               className="w-full px-4 py-2 text-sm bg-black text-white hover:bg-gray-800 transition-colors rounded-lg"
                             >
@@ -659,6 +735,229 @@ const Customers = () => {
                   </div>
                 </div>
               </div>
+            </div>
+          )}
+
+          {/* Edit Customer Modal */}
+          {showEditCustomer && selectedCustomer && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
+              <form
+                onSubmit={handleSubmitEdit(handleEditCustomer)}
+                className="bg-white w-full max-w-full sm:max-w-2xl max-h-[95vh] overflow-y-auto rounded-lg m-2"
+              >
+                <div className="sticky top-0 bg-white border-b border-gray-200 px-4 sm:px-6 py-3 sm:py-4 rounded-t-lg">
+                  <div className="flex justify-between items-center">
+                    <h2 className="text-lg sm:text-xl font-bold text-black">
+                      Edit Customer Details
+                    </h2>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowEditCustomer(false);
+                        resetEdit();
+                      }}
+                      className="text-gray-500 hover:text-gray-700 text-xl"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                </div>
+
+                <div className="p-4 sm:p-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-black mb-2">
+                        Customer Name *
+                      </label>
+                      <input
+                        type="text"
+                        {...registerEdit("customername", {
+                          required: "Customer Name is required",
+                          pattern: {
+                            value: /^[a-zA-Z\s]{2,70}$/,
+                            message:
+                              "Name should only contain letters and spaces (2-70 characters)",
+                          },
+                        })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-black focus:outline-none text-sm uppercase"
+                        placeholder="Enter customer name"
+                      />
+                      {errorsEdit.customername && (
+                        <p className="text-red-500 text-xs mt-1">
+                          {errorsEdit.customername.message}
+                        </p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-black mb-2">
+                        Company Name *
+                      </label>
+                      <input
+                        type="text"
+                        {...registerEdit("companyname", {
+                          required: "Company Name is required",
+                          pattern: {
+                            value: /^[a-zA-Z0-9\s&.,'-]{2,100}$/,
+                            message:
+                              "Company name should be 2-100 characters with letters, numbers, and basic punctuation",
+                          },
+                        })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-black focus:outline-none text-sm uppercase"
+                        placeholder="Enter company name"
+                      />
+                      {errorsEdit.companyname && (
+                        <p className="text-red-500 text-xs mt-1">
+                          {errorsEdit.companyname.message}
+                        </p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-black mb-2">
+                        Phone *
+                      </label>
+                      <input
+                        type="tel"
+                        {...registerEdit("phoneno", {
+                          required: "Phone number is required",
+                          pattern: {
+                            value: /^[\+]?[0-9][\d]{0,15}$/,
+                            message: "Please enter a valid phone number",
+                          },
+                        })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-black focus:outline-none text-sm"
+                        placeholder="Enter phone number"
+                      />
+                      {errorsEdit.phoneno && (
+                        <p className="text-red-500 text-xs mt-1">
+                          {errorsEdit.phoneno.message}
+                        </p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-black mb-2">
+                        Main Owner Name *
+                      </label>
+                      <input
+                        type="text"
+                        {...registerEdit("mainowner", {
+                          required: "Main Owner Name is required",
+                          pattern: {
+                            value: /^[a-zA-Z\s]{2,50}$/,
+                            message:
+                              "Name should only contain letters and spaces (2-50 characters)",
+                          },
+                        })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-black focus:outline-none text-sm uppercase"
+                        placeholder="Enter main owner name"
+                      />
+                      {errorsEdit.mainowner && (
+                        <p className="text-red-500 text-xs mt-1">
+                          {errorsEdit.mainowner.message}
+                        </p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-black mb-2">
+                        Operator Name *
+                      </label>
+                      <input
+                        type="text"
+                        {...registerEdit("operator", {
+                          required: "Operator Name is required",
+                          pattern: {
+                            value: /^[a-zA-Z\s]{2,50}$/,
+                            message:
+                              "Name should only contain letters and spaces (2-50 characters)",
+                          },
+                        })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-black focus:outline-none text-sm uppercase"
+                        placeholder="Enter operator name"
+                      />
+                      {errorsEdit.operator && (
+                        <p className="text-red-500 text-xs mt-1">
+                          {errorsEdit.operator.message}
+                        </p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-black mb-2">
+                        Tax Number *
+                      </label>
+                      <input
+                        type="text"
+                        {...registerEdit("taxnumber", {
+                          required: "Tax Number is required",
+                          pattern: {
+                            value: /^[0-9]{8,30}$/,
+                            message: "Tax number should be 8-30 digits only",
+                          },
+                        })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-black focus:outline-none text-sm"
+                        placeholder="Enter tax number"
+                      />
+                      {errorsEdit.taxnumber && (
+                        <p className="text-red-500 text-xs mt-1">
+                          {errorsEdit.taxnumber.message}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="sm:col-span-2">
+                      <label className="block text-sm font-medium text-black mb-2">
+                        Address
+                      </label>
+                      <textarea
+                        {...registerEdit("address", {
+                          pattern: {
+                            value: /^[a-zA-Z0-9\s,.-]{0,200}$/,
+                            message:
+                              "Address should contain only letters, numbers, spaces, and basic punctuation (max 200 characters)",
+                          },
+                        })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-black focus:outline-none text-sm h-20 resize-none uppercase"
+                        placeholder="Enter address"
+                      />
+                      {errorsEdit.address && (
+                        <p className="text-red-500 text-xs mt-1">
+                          {errorsEdit.address.message}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mt-6 pt-6 border-t border-gray-200">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowEditCustomer(false);
+                        resetEdit();
+                      }}
+                      className="w-full sm:w-auto px-4 py-2 text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors rounded-lg"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isUpdating}
+                      className="w-full sm:w-auto bg-blue-600 text-white px-4 py-2 text-sm font-medium hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2 rounded-lg"
+                    >
+                      {isUpdating ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                          Updating...
+                        </>
+                      ) : (
+                        "Update Customer"
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </form>
             </div>
           )}
 

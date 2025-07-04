@@ -1,10 +1,10 @@
 const {Router}=require("express");
 const { health, authcheck, logout } = require("../controller/health.controller");
 const { signin } = require("../controller/signin.controller");
-const { AddCustomers, viewCustomers, customerpayment } = require("../controller/customer.controller");
+const { AddCustomers, viewCustomers, customerpayment, updateCustomer } = require("../controller/customer.controller");
 const { requireAuth } = require("../middlewares/auth.middleware");
-const {addDriver, viewDriver, DriverReport} = require("../controller/driver.controller");
-const { addvehicle, viewvehicle } = require("../controller/vehicle.controller");
+const {addDriver, viewDriver, DriverReport, updateDriver} = require("../controller/driver.controller");
+const { addvehicle, viewvehicle, updateVehicle } = require("../controller/vehicle.controller");
 const { addOrder, viewOrder, editorder, vieworderBycustomerId } = require("../controller/order.controller");
 const { addexpences, viewexpences, addExpencebalance, gettotalexpenceandbalance, getbalancehistory } = require("../controller/expences.controller");
 const { signup } = require("../controller/signup.controller");
@@ -42,12 +42,9 @@ router.route("/customerdata/:customerid").get(requireAuth,vieworderBycustomerId)
 router.route("/dashboard").get(requireAuth,getDashboardData);
 router.route("/driverreport/:id").get(requireAuth,DriverReport);
 router.route("/paymentreport/:customerid").get(customerpayment);
-
-
-
-
-
-
+router.route("/updatecustomer/:id").put(requireAuth, updateCustomer);
+router.route("/updatedriver/:id").put(requireAuth, updateDriver);
+router.route("/updatevehicle/:id").put(requireAuth, updateVehicle);
 
 
 module.exports=router

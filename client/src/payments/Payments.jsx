@@ -112,9 +112,9 @@ const Payments = () => {
 
     const matchesDate =
       (!filters.startDate ||
-        new Date(order.createdAt) >= new Date(filters.startDate)) &&
+        new Date(order.date) >= new Date(filters.startDate)) &&
       (!filters.endDate ||
-        new Date(order.createdAt) <= new Date(filters.endDate));
+        new Date(order.date) <= new Date(filters.endDate));
 
     return matchesSearch && matchesStatus && matchesDate;
   });
@@ -369,7 +369,7 @@ const Payments = () => {
                             {getPaymentStatus(order).toUpperCase()}
                           </span>
                           <p className="text-xs lg:text-sm text-gray-500">
-                            {new Date(order.createdAt).toLocaleDateString()}
+                            {new Date(order.date).toLocaleDateString()}
                           </p>
                         </div>
                       </div>

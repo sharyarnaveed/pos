@@ -11,11 +11,13 @@ const Driver = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
   const [showAddDriver, setShowAddDriver] = useState(false);
   const [showDriverDetail, setShowDriverDetail] = useState(false);
+  const [showEditDriver, setShowEditDriver] = useState(false); // Add this line
   const [showDriverReport, setShowDriverReport] = useState(false);
   const [selectedDriver, setSelectedDriver] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, SetLoading] = useState(false);
   const [isAddingDriver, setIsAddingDriver] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false); // Add this line
   const navigate = useNavigate();
 
   const [drivers, setDrivers] = useState([]);
@@ -25,6 +27,21 @@ const Driver = () => {
     handleSubmit,
     reset,
     formState: { errors },
+  } = useForm({
+    mode: "onBlur",
+    defaultValues: {
+      drivername: "",
+      driverphoneno: ""
+    },
+  });
+
+  // Add edit form
+  const {
+    register: registerEdit,
+    handleSubmit: handleSubmitEdit,
+    reset: resetEdit,
+    setValue: setValueEdit,
+    formState: { errors: errorsEdit },
   } = useForm({
     mode: "onBlur",
     defaultValues: {
@@ -61,6 +78,45 @@ const Driver = () => {
     } finally {
       setIsAddingDriver(false);
     }
+  };
+
+  // Add edit driver handler
+  const handleEditDriver = async (data) => {
+    if (isUpdating) return;
+    
+    setIsUpdating(true);
+    try {
+      const response = await api.put(`/api/user/updatedriver/${selectedDriver.id}`, data);
+      console.log(response.data);
+      if (response.data.success) {
+        toast.success(response.data.message, {
+          duration: 2000,
+        });
+        await viewdrivers();
+        setShowEditDriver(false);
+        setShowDriverDetail(false);
+        resetEdit();
+      } else {
+        toast.error(response.data.message, {
+          duration: 2000,
+        });
+      }
+    } catch (error) {
+      console.log("error in updating driver", error);
+      toast.error("Error updating driver", {
+        duration: 3000,
+      });
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  // Add function to handle edit button click
+  const handleEditClick = (driver) => {
+    setSelectedDriver(driver);
+    setValueEdit("drivername", driver.drivername);
+    setValueEdit("driverphoneno", driver.driverphoneno);
+    setShowEditDriver(true);
   };
 
   const handleDriverClick = (driver) => {
@@ -427,12 +483,20 @@ const Driver = () => {
                         <div className="space-y-3">
                           <div className="grid grid-cols-1 gap-2">
                             <button
+                              onClick={() => {
+                                setShowDriverDetail(false);
+                                handleEditClick(selectedDriver);
+                              }}
+                              className="w-full px-4 py-2 text-sm bg-blue-600 text-white hover:bg-blue-700 transition-colors rounded-lg"
+                            >
+                              Edit Driver Details
+                            </button>
+                            <button
                               onClick={() => setShowDriverReport(true)}
                               className="w-full px-4 py-2 text-sm bg-black text-white hover:bg-gray-800 transition-colors rounded-lg"
                             >
                               Generate Driver Report
                             </button>
-                            
                           </div>
                         </div>
                       </div>
@@ -449,6 +513,107 @@ const Driver = () => {
                   </div>
                 </div>
               </div>
+            </div>
+          )}
+
+          {/* Edit Driver Modal */}
+          {showEditDriver && selectedDriver && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
+              <form
+                onSubmit={handleSubmitEdit(handleEditDriver)}
+                className="bg-white w-full max-w-full sm:max-w-2xl max-h-[95vh] overflow-y-auto rounded-lg m-2"
+              >
+                <div className="sticky top-0 bg-white border-b border-gray-200 px-4 sm:px-8 py-4 sm:py-6 rounded-t-lg">
+                  <div className="flex justify-between items-center">
+                    <h2 className="text-lg sm:text-xl font-bold text-black">
+                      Edit Driver Details
+                    </h2>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowEditDriver(false);
+                        resetEdit();
+                      }}
+                      className="text-gray-500 hover:text-gray-700 text-xl"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                </div>
+
+                <div className="p-4 sm:p-8">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                    <div className="sm:col-span-1">
+                      <label className="block text-sm font-medium text-black mb-2">
+                        Driver Name *
+                      </label>
+                      <input
+                        type="text"
+                        {...registerEdit("drivername", {
+                          required: "Driver Name is required",
+                          pattern: {
+                            value: /^[a-zA-Z\s]{2,100}$/,
+                            message: "Driver name should be 2-100 characters with letters",
+                          }
+                        })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-black focus:outline-none text-sm uppercase"
+                        placeholder="Enter driver's full name"
+                      />
+                      {errorsEdit.drivername && (
+                        <p className="text-red-500 text-xs mt-1">{errorsEdit.drivername.message}</p>
+                      )}
+                    </div>
+
+                    <div className="sm:col-span-1">
+                      <label className="block text-sm font-medium text-black mb-2">
+                        Phone No *
+                      </label>
+                      <input
+                        type="tel"
+                        {...registerEdit("driverphoneno", {
+                          required: "Phone Number required",
+                          pattern: {
+                            value: /^[\+]?[0-9][\d]{0,15}$/,
+                            message: "Please enter a valid phone number",
+                          }
+                        })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-black focus:outline-none text-sm"
+                        placeholder="Enter Phone No"
+                      />
+                      {errorsEdit.driverphoneno && (
+                        <p className="text-red-500 text-xs mt-1">{errorsEdit.driverphoneno.message}</p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row gap-3 mt-6 sm:mt-8">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowEditDriver(false);
+                        resetEdit();
+                      }}
+                      className="w-full sm:flex-1 px-4 py-2 text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors rounded-lg"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isUpdating}
+                      className="w-full sm:flex-1 bg-blue-600 text-white px-4 py-2 text-sm font-medium hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2 rounded-lg"
+                    >
+                      {isUpdating ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                          Updating...
+                        </>
+                      ) : (
+                        "Update Driver"
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </form>
             </div>
           )}
 

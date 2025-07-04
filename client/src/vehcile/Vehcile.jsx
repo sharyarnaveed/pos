@@ -10,10 +10,12 @@ const Vehcile = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
   const [showAddVehicle, setShowAddVehicle] = useState(false);
   const [showVehicleDetail, setShowVehicleDetail] = useState(false);
+  const [showEditVehicle, setShowEditVehicle] = useState(false); // Add this line
   const [selectedVehicle, setSelectedVehicle] = useState(null);
   const [loading, SetLoading] = useState(false);
   const [vehicles, setVehicles] = useState([]);
   const [isAddingVehicle, setIsAddingVehicle] = useState(false);
+  const [isUpdatingVehicle, setIsUpdatingVehicle] = useState(false); // Add this line
   const navigate = useNavigate();
 
   const {
@@ -26,6 +28,22 @@ const Vehcile = () => {
       plateNumber: "",
       type: "Truck",
       fuelType: "Diesel",
+    },
+  });
+
+  // Add edit form
+  const {
+    register: registerEdit,
+    handleSubmit: handleSubmitEdit,
+    reset: resetEdit,
+    setValue: setValueEdit,
+    formState: { errors: errorsEdit },
+  } = useForm({
+    defaultValues: {
+      plateNumber: "",
+      type: "Truck",
+      fuelType: "Diesel",
+      status: "Active",
     },
   });
 
@@ -71,6 +89,47 @@ const Vehcile = () => {
     }
   };
 
+  // Add edit vehicle handler
+  const handleEditVehicle = async (data) => {
+    if (isUpdatingVehicle) return;
+    
+    setIsUpdatingVehicle(true);
+    try {
+      const response = await api.put(`/api/user/updatevehicle/${selectedVehicle.id}`, data);
+      console.log(response.data);
+      if (response.data.success) {
+        toast.success(response.data.message, {
+          duration: 2000,
+        });
+        await getvehicledata();
+        setShowEditVehicle(false);
+        setShowVehicleDetail(false);
+        resetEdit();
+      } else {
+        toast.error(response.data.message, {
+          duration: 2000,
+        });
+      }
+    } catch (error) {
+      console.log("error in updating vehicle", error);
+      toast.error("Error updating vehicle", {
+        duration: 3000,
+      });
+    } finally {
+      setIsUpdatingVehicle(false);
+    }
+  };
+
+  // Add function to handle edit button click
+  const handleEditClick = (vehicle) => {
+    setSelectedVehicle(vehicle);
+    setValueEdit("plateNumber", vehicle.plateNumber);
+    setValueEdit("type", vehicle.type);
+    setValueEdit("fuelType", vehicle.fuelType);
+    setValueEdit("status", vehicle.status || "Active");
+    setShowEditVehicle(true);
+  };
+
   const handleVehicleClick = (vehicle) => {
     setSelectedVehicle(vehicle);
     setShowVehicleDetail(true);
@@ -98,6 +157,8 @@ const Vehcile = () => {
         return "🚐";
       case "car":
         return "🚗";
+      case "motorcycle":
+        return "🏍️";
       default:
         return "🚛";
     }
@@ -527,6 +588,15 @@ const Vehcile = () => {
                           <div className="grid grid-cols-1 gap-2">
                             <button
                               onClick={() => {
+                                setShowVehicleDetail(false);
+                                handleEditClick(selectedVehicle);
+                              }}
+                              className="w-full px-4 py-2 text-sm bg-blue-600 text-white hover:bg-blue-700 transition-colors rounded-lg"
+                            >
+                              EDIT VEHICLE DETAILS
+                            </button>
+                            <button
+                              onClick={() => {
                                 // Navigate to create order with this vehicle
                                 navigate("/data");
                                 setShowVehicleDetail(false);
@@ -569,6 +639,125 @@ const Vehcile = () => {
                   </div>
                 </div>
               </div>
+            </div>
+          )}
+
+          {/* Edit Vehicle Modal */}
+          {showEditVehicle && selectedVehicle && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
+              <form
+                onSubmit={handleSubmitEdit(handleEditVehicle)}
+                className="bg-white w-full max-w-full sm:max-w-2xl max-h-[95vh] overflow-y-auto rounded-lg m-2"
+              >
+                <div className="sticky top-0 bg-white border-b border-gray-200 px-4 sm:px-6 py-3 sm:py-4 rounded-t-lg">
+                  <div className="flex justify-between items-center">
+                    <h2 className="text-lg sm:text-xl font-bold text-black">
+                      EDIT VEHICLE DETAILS
+                    </h2>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowEditVehicle(false);
+                        resetEdit();
+                      }}
+                      className="text-gray-500 hover:text-gray-700 text-xl"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                </div>
+
+                <div className="p-4 sm:p-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                    <div className="sm:col-span-2">
+                      <label className="block text-sm font-medium text-black mb-2">
+                        Plate Number *
+                      </label>
+                      <input
+                        type="text"
+                        {...registerEdit("plateNumber", {
+                          required: "Plate number is required",
+                          pattern: {
+                            value: /^[A-Za-z0-9\-\s]{2,15}$/,
+                            message: "Please enter a valid plate number",
+                          },
+                        })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-black focus:outline-none text-sm uppercase"
+                        placeholder="e.g., ABC-1234"
+                      />
+                      {errorsEdit.plateNumber && (
+                        <p className="text-red-500 text-xs mt-1">
+                          {errorsEdit.plateNumber.message}
+                        </p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-black mb-2">
+                        Vehicle Type *
+                      </label>
+                      <select
+                        {...registerEdit("type", { required: "Vehicle type is required" })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-black focus:outline-none text-sm"
+                      >
+                        <option value="Truck">Truck</option>
+                        <option value="Van">Van</option>
+                        <option value="Car">Car</option>
+                        <option value="Motorcycle">Motorcycle</option>
+                      </select>
+                      {errorsEdit.type && (
+                        <p className="text-red-500 text-xs mt-1">
+                          {errorsEdit.type.message}
+                        </p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-black mb-2">
+                        Fuel Type *
+                      </label>
+                      <select
+                        {...registerEdit("fuelType", { required: "Fuel type is required" })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-black focus:outline-none text-sm"
+                      >
+                        <option value="Diesel">Diesel</option>
+                        <option value="Petrol">Petrol</option>
+                        <option value="Electric">Electric</option>
+                        <option value="Hybrid">Hybrid</option>
+                      </select>
+                      {errorsEdit.fuelType && (
+                        <p className="text-red-500 text-xs mt-1">
+                          {errorsEdit.fuelType.message}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mt-6 pt-6 border-t border-gray-200">
+                    <button
+                      type="button"
+                      onClick={() => setShowEditVehicle(false)}
+                      className="w-full sm:w-auto px-4 py-2 text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors rounded-lg"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isUpdatingVehicle}
+                      className="w-full sm:w-auto bg-black text-white px-4 py-2 text-sm font-medium hover:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2 rounded-lg"
+                    >
+                      {isUpdatingVehicle ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                          Updating...
+                        </>
+                      ) : (
+                        "Update Vehicle"
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </form>
             </div>
           )}
         </div>
