@@ -120,7 +120,7 @@ const addExpencebalance =async (req,res)=>
 {
   try {
     
-const {amount,description}=req.body
+const {amount,description,vehicleId}=req.body
 console.log(amount,description);
 
 const getamount=await Currentbalance.findAll({

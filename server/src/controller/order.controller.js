@@ -99,17 +99,20 @@ const editorder = async (req, res) => {
   try {
     const { id } = req.params;
     const {
+      customerId,
       rate,
       token,
       custWash,
       merc,
       extra,
+      driverId,
+      vehicleId,
       remarks,
-      orderDate,
-      extraChargeType,
+      orderType,
       total,
       vat,
-      orderType
+      orderDate,
+      extraChargeType,
     } = req.body;
     console.log(
       rate,
@@ -132,18 +135,21 @@ const editorder = async (req, res) => {
 
     const [updateorder] = await Order.update(
       {
-        rate,
-        token,
-        custWash,
-        merc,
-        extra,
-      type: orderType,
 
-        remarks,
-        date: orderDate,
-        extratype: extraChargeType,
-        total,
-       vat
+      customer: customerId,
+      rate,
+      token,
+      custWash,
+      merc,
+      extra,
+      driver: driverId,
+      vehicle: vehicleId,
+      remarks,
+      type: orderType,
+      total,
+      vat,
+      date: orderDate,
+      extratype: extraChargeType,
       },
       {
         where: {
