@@ -2,7 +2,7 @@ import axios from 'axios';
 
 
 const api = axios.create({
-    baseURL: 'https://admin.burjalsama.site',
+    baseURL: 'http://localhost:3000',
     withCredentials: true // Enable sending credentials by default
   });
 

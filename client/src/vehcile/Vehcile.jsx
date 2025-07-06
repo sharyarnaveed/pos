@@ -96,7 +96,7 @@ const Vehcile = () => {
     setIsUpdatingVehicle(true);
     try {
       const response = await api.put(`/api/user/updatevehicle/${selectedVehicle.id}`, data);
-      console.log(response.data);
+    
       if (response.data.success) {
         toast.success(response.data.message, {
           duration: 2000,
@@ -179,7 +179,7 @@ const Vehcile = () => {
     SetLoading(true);
     try {
       const responce = await api.get("/api/user/authcheck");
-      console.log(responce.data);
+    
       if (responce.data.authenticated == true) {
         SetLoading(false);
         await getvehicledata();

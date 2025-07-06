@@ -12,7 +12,7 @@ const OverviewInvoice = ({ customerid }) => {
     try {
       setLoading(true);
       const response = await api.get(`/api/user/customerdata/${customerid}`);
-      console.log(response.data);
+  
       
       if (response.data.success && response.data.customerData) {
         setCustomerData(response.data.customerData);
@@ -132,17 +132,24 @@ const OverviewInvoice = ({ customerid }) => {
   }
 
   const companyInfo = { trn: '104235363900003' };
-  const invoiceDetails = {
-    clientName: String(customerInfo?.customername || 'CLIENT NAME').toUpperCase(),
-    clientAddress: String(customerInfo?.address || 'CLIENT ADDRESS').toUpperCase(),
-    clientTrn: String(customerInfo?.taxnumber || '100601837600003'),
-    companyName: String(customerInfo?.companyname || 'COMPANY NAME').toUpperCase(),
-    mainOwner: String(customerInfo?.mainowner || 'MAIN OWNER').toUpperCase(),
-    operator: String(customerInfo?.operator || 'OPERATOR').toUpperCase(),
-    phoneNo: String(customerInfo?.phoneno || 'PHONE NUMBER'),
-    invoiceNo: `BAST-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`,
-    date: new Date().toLocaleDateString('en-GB')
-  };
+const invoiceDetails = {
+  clientName: String(customerInfo?.customername || 'CLIENT NAME').toUpperCase(),
+  clientAddress: String(customerInfo?.address || 'CLIENT ADDRESS').toUpperCase(),
+  clientTrn: String(customerInfo?.taxnumber || '100601837600003'),
+  companyName: String(customerInfo?.companyname || 'COMPANY NAME').toUpperCase(),
+  mainOwner: String(customerInfo?.mainowner || 'MAIN OWNER').toUpperCase(),
+  operator: String(customerInfo?.operator || 'OPERATOR').toUpperCase(),
+  phoneNo: String(customerInfo?.phoneno || 'PHONE NUMBER'),
+  invoiceNo: `BAST-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`,
+  date: (() => {
+    const date = new Date();
+    const day = date.getDate().toString().padStart(2, '0');
+    const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+    const month = months[date.getMonth()];
+    const year = date.getFullYear();
+    return `${day} ${month} ${year}`;
+  })()
+};
 
   return (
     <div className="min-h-screen bg-white p-4">

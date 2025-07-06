@@ -83,11 +83,11 @@ const Customers = () => {
     setcustoemrloading(true);
     try {
       const responce = await api.get("/api/user/viewcustomer");
-      console.log(responce.data);
+     
       if (responce.data.success) {
         setcustoemrloading(false);
         setCustomers(responce.data.customerData);
-        console.log(customers);
+    
       } else {
         toast.error("error in getting data", {
           duration: 3000,
@@ -106,7 +106,7 @@ const Customers = () => {
     setIsSaving(true);
     try {
       const responce = await api.post("/api/user/addcustomer", data);
-      console.log(responce.data);
+     
       if (responce.data.success == true) {
         toast.success(responce.data.message, {
           duration: 2000,
@@ -139,7 +139,7 @@ const Customers = () => {
     SetLoading(true);
     try {
       const responce = await api.get("/api/user/authcheck");
-      console.log(responce.data);
+      
       if (responce.data.authenticated == true) {
         SetLoading(false);
         await viewCustomers();
@@ -167,7 +167,7 @@ const Customers = () => {
     setIsUpdating(true);
     try {
       const response = await api.put(`/api/user/updatecustomer/${selectedCustomer.id}`, data);
-      console.log(response.data);
+  
       if (response.data.success) {
         toast.success(response.data.message, {
           duration: 2000,

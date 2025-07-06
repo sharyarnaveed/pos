@@ -175,7 +175,7 @@ const Data = () => {
     try {
       const response = await api.get("/api/user/vieworders");
       if (response.data.success) {
-        console.log(response.data.OrderData);
+        
 
         setOrders(response.data.OrderData);
       }
@@ -242,7 +242,7 @@ const Data = () => {
         vat: vat.toFixed(2),
         total: total.toFixed(2),
       };
-      console.log(orderData);
+      
 
       const response = await api.post("/api/user/addorder", orderData);
       if (response.data.success) {
@@ -300,7 +300,7 @@ const Data = () => {
         total: total.toFixed(2),
         id: editOrderData.id,
       };
-      console.log(updatedOrder);
+ 
       
       const response = await api.put(
         `/api/user/updateorder/${editOrderData.id}`,
@@ -730,7 +730,7 @@ const Data = () => {
                   )}
                 </div>
 
-                {/* Vehicle Search & Select */}
+                
                 <div className="relative vehicle-dropdown">
                   <label className="block text-sm font-medium text-black mb-2">
                     Vehicle *
@@ -741,7 +741,7 @@ const Data = () => {
                     onChange={(e) => {
                       setVehicleSearch(e.target.value);
                       setShowVehicleDropdown(true);
-                      setValue("vehicleId", ""); // Clear selection when typing
+                      setValue("vehicleId", ""); 
                     }}
                     onFocus={() => setShowVehicleDropdown(true)}
                     className="w-full px-3 py-2 border border-gray-300 focus:border-black focus:outline-none text-sm uppercase"
@@ -779,7 +779,7 @@ const Data = () => {
                   )}
                 </div>
 
-                {/* Financial Fields */}
+            
                 <div>
                   <label className="block text-sm font-medium text-black mb-2">
                     Rate
@@ -844,7 +844,7 @@ const Data = () => {
                     placeholder="0.00"
                   />
                   
-                  {/* Extra Charge Type Radio Buttons - Show only when extra amount is entered */}
+                 
                   {extra && parseFloat(extra) > 0 && (
                     <div className="mt-3">
                       <label className="block text-sm font-medium text-black mb-2">
@@ -868,7 +868,7 @@ const Data = () => {
                         <div className="flex items-center">
                           <input
                             type="radio"
-                            id="waiting-charges"
+                            id="municipality-inspection"
                             value="municipality-inspection"
                             {...register("extraChargeType", {
                               required: extra && parseFloat(extra) > 0 ? "Please select extra charge type" : false,
@@ -877,6 +877,20 @@ const Data = () => {
                           />
                           <label htmlFor="municipality-inspection" className="text-sm text-gray-700">
                             Municipality Inspection
+                          </label>
+                        </div>
+                        <div className="flex items-center">
+                          <input
+                            type="radio"
+                            id="waiting-charges"
+                            value="waiting-charges"
+                            {...register("extraChargeType", {
+                              required: extra && parseFloat(extra) > 0 ? "Please select extra charge type" : false,
+                            })}
+                            className="mr-2"
+                          />
+                          <label htmlFor="waiting-charges" className="text-sm text-gray-700">
+                            Waiting Charges
                           </label>
                         </div>
                       </div>
@@ -925,7 +939,7 @@ const Data = () => {
                   />
                 </div>
 
-                {/* Order Type */}
+                {/* Order Type - MAKE EDITABLE */}
                 <div>
                   <label className="block text-sm font-medium text-black mb-2">
                     Order Type *
@@ -939,6 +953,11 @@ const Data = () => {
                     <option value="import">Import</option>
                     <option value="export">Export</option>
                   </select>
+                  {errors.orderType && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.orderType.message}
+                    </p>
+                  )}
                 </div>
 
                 {/* Order Date */}
@@ -1027,7 +1046,7 @@ const Data = () => {
             {/* Modal Body */}
             <form onSubmit={handleSubmit(handleEditOrder)} className="p-6">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {/* Route Information - READ ONLY */}
+          
                 <div>
                   <label className="block text-sm font-medium text-black mb-2">
                     From (Read Only)
@@ -1067,61 +1086,154 @@ const Data = () => {
                   />
                 </div>
 
-                {/* Customer - READ ONLY */}
-                <div>
+             
+                <div className="relative customer-dropdown">
                   <label className="block text-sm font-medium text-black mb-2">
-                    Customer (Read Only)
+                    Customer *
                   </label>
                   <input
                     type="text"
                     value={customerSearch}
-                    className="w-full px-3 py-2 border border-gray-300 bg-gray-100 text-gray-600 text-sm cursor-not-allowed"
-                    placeholder="Customer name"
-                    readOnly
+                    onChange={(e) => {
+                      setCustomerSearch(e.target.value);
+                      setShowCustomerDropdown(true);
+                      setValue("customerId", ""); // Clear selection when typing
+                    }}
+                    onFocus={() => setShowCustomerDropdown(true)}
+                    className="w-full px-3 py-2 border border-gray-300 focus:border-black focus:outline-none text-sm uppercase"
+                    placeholder="Search customer..."
                   />
+                  {showCustomerDropdown && (
+                    <div className="absolute z-10 w-full bg-white border border-gray-300 mt-1 max-h-48 overflow-y-auto shadow-lg">
+                      {filteredCustomers.length > 0 ? (
+                        filteredCustomers.map((customer) => (
+                          <div
+                            key={customer.id}
+                            onClick={() => handleCustomerSelect(customer)}
+                            className="px-3 py-2 cursor-pointer hover:bg-gray-100 text-sm uppercase"
+                          >
+                            {customer.customername}
+                          </div>
+                        ))
+                      ) : (
+                        <div className="px-3 py-2 text-sm text-gray-500">
+                          No customers found
+                        </div>
+                      )}
+                    </div>
+                  )}
                   <input
                     type="hidden"
-                    {...register("customerId")}
+                    {...register("customerId", {
+                      required: "Customer is required",
+                    })}
                   />
+                  {errors.customerId && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.customerId.message}
+                    </p>
+                  )}
                 </div>
 
-                {/* Driver - READ ONLY */}
-                <div>
+             
+                <div className="relative driver-dropdown">
                   <label className="block text-sm font-medium text-black mb-2">
-                    Driver (Read Only)
+                    Driver *
                   </label>
                   <input
                     type="text"
                     value={driverSearch}
-                    className="w-full px-3 py-2 border border-gray-300 bg-gray-100 text-gray-600 text-sm cursor-not-allowed"
-                    placeholder="Driver name"
-                    readOnly
+                    onChange={(e) => {
+                      setDriverSearch(e.target.value);
+                      setShowDriverDropdown(true);
+                      setValue("driverId", ""); // Clear selection when typing
+                    }}
+                    onFocus={() => setShowDriverDropdown(true)}
+                    className="w-full px-3 py-2 border border-gray-300 focus:border-black focus:outline-none text-sm uppercase"
+                    placeholder="Search driver..."
                   />
+                  {showDriverDropdown && (
+                    <div className="absolute z-10 w-full bg-white border border-gray-300 mt-1 max-h-48 overflow-y-auto shadow-lg">
+                      {filteredDrivers.length > 0 ? (
+                        filteredDrivers.map((driver) => (
+                          <div
+                            key={driver.id}
+                            onClick={() => handleDriverSelect(driver)}
+                            className="px-3 py-2 cursor-pointer hover:bg-gray-100 text-sm"
+                          >
+                            {driver.drivername}
+                          </div>
+                        ))
+                      ) : (
+                        <div className="px-3 py-2 text-sm text-gray-500">
+                          No drivers found
+                        </div>
+                      )}
+                    </div>
+                  )}
                   <input
                     type="hidden"
-                    {...register("driverId")}
+                    {...register("driverId", {
+                      required: "Driver is required",
+                    })}
                   />
+                  {errors.driverId && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.driverId.message}
+                    </p>
+                  )}
                 </div>
 
-                {/* Vehicle - READ ONLY */}
-                <div>
+               
+                <div className="relative vehicle-dropdown">
                   <label className="block text-sm font-medium text-black mb-2">
-                    Vehicle (Read Only)
+                    Vehicle *
                   </label>
                   <input
                     type="text"
                     value={vehicleSearch}
-                    className="w-full px-3 py-2 border border-gray-300 bg-gray-100 text-gray-600 text-sm cursor-not-allowed"
-                    placeholder="Vehicle plate number"
-                    readOnly
+                    onChange={(e) => {
+                      setVehicleSearch(e.target.value);
+                      setShowVehicleDropdown(true);
+                      setValue("vehicleId", ""); // Clear selection when typing
+                    }}
+                    onFocus={() => setShowVehicleDropdown(true)}
+                    className="w-full px-3 py-2 border border-gray-300 focus:border-black focus:outline-none text-sm uppercase"
+                    placeholder="Search vehicle..."
                   />
+                  {showVehicleDropdown && (
+                    <div className="absolute z-10 w-full bg-white border border-gray-300 mt-1 max-h-48 overflow-y-auto shadow-lg">
+                      {filteredVehicles.length > 0 ? (
+                        filteredVehicles.map((vehicle) => (
+                          <div
+                            key={vehicle.id}
+                            onClick={() => handleVehicleSelect(vehicle)}
+                            className="px-3 py-2 cursor-pointer hover:bg-gray-100 text-sm"
+                          >
+                            {vehicle.plateNumber}
+                          </div>
+                        ))
+                      ) : (
+                        <div className="px-3 py-2 text-sm text-gray-500">
+                          No vehicles found
+                        </div>
+                      )}
+                    </div>
+                  )}
                   <input
                     type="hidden"
-                    {...register("vehicleId")}
+                    {...register("vehicleId", {
+                      required: "Vehicle is required",
+                    })}
                   />
+                  {errors.vehicleId && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.vehicleId.message}
+                    </p>
+                  )}
                 </div>
 
-                {/* Financial Fields - EDITABLE */}
+             
                 <div>
                   <label className="block text-sm font-medium text-black mb-2">
                     Rate
@@ -1186,7 +1298,7 @@ const Data = () => {
                     placeholder="0.00"
                   />
                   
-                  {/* Extra Charge Type Radio Buttons - Show only when extra amount is entered */}
+                 
                   {extra && parseFloat(extra) > 0 && (
                     <div className="mt-3">
                       <label className="block text-sm font-medium text-black mb-2">
@@ -1196,43 +1308,43 @@ const Data = () => {
                         <div className="flex items-center">
                           <input
                             type="radio"
-                            id="edit-custom-inspection"
+                            id="custom-inspection"
                             value="custom-inspection"
                             {...register("extraChargeType", {
                               required: extra && parseFloat(extra) > 0 ? "Please select extra charge type" : false,
                             })}
                             className="mr-2"
                           />
-                          <label htmlFor="edit-custom-inspection" className="text-sm text-gray-700">
+                          <label htmlFor="custom-inspection" className="text-sm text-gray-700">
                             Custom Inspection
                           </label>
                         </div>
                         <div className="flex items-center">
                           <input
                             type="radio"
-                            id="edit-waiting-charges"
-                            value="waiting-charges"
-                            {...register("extraChargeType", {
-                              required: extra && parseFloat(extra) > 0 ? "Please select extra charge type" : false,
-                            })}
-                            className="mr-2"
-                          />
-                          <label htmlFor="edit-waiting-charges" className="text-sm text-gray-700">
-                            Waiting Charges
-                          </label>
-                        </div>
-                        <div className="flex items-center">
-                          <input
-                            type="radio"
-                            id="edit-municipality-inspection"
+                            id="municipality-inspection"
                             value="municipality-inspection"
                             {...register("extraChargeType", {
                               required: extra && parseFloat(extra) > 0 ? "Please select extra charge type" : false,
                             })}
                             className="mr-2"
                           />
-                          <label htmlFor="edit-municipality-inspection" className="text-sm text-gray-700">
+                          <label htmlFor="municipality-inspection" className="text-sm text-gray-700">
                             Municipality Inspection
+                          </label>
+                        </div>
+                        <div className="flex items-center">
+                          <input
+                            type="radio"
+                            id="waiting-charges"
+                            value="waiting-charges"
+                            {...register("extraChargeType", {
+                              required: extra && parseFloat(extra) > 0 ? "Please select extra charge type" : false,
+                            })}
+                            className="mr-2"
+                          />
+                          <label htmlFor="waiting-charges" className="text-sm text-gray-700">
+                            Waiting Charges
                           </label>
                         </div>
                       </div>
@@ -1281,17 +1393,25 @@ const Data = () => {
                   />
                 </div>
 
-                {/* Order Type - READ ONLY */}
+                {/* Order Type - MAKE EDITABLE */}
                 <div>
                   <label className="block text-sm font-medium text-black mb-2">
-                    Order Type (Read Only)
+                    Order Type *
                   </label>
-                  <input
-                    type="text"
-                    {...register("orderType")}
-                    className="w-full px-3 py-2 border border-gray-300 bg-gray-100 text-gray-600 text-sm cursor-not-allowed"
-                    readOnly
-                  />
+                  <select
+                    {...register("orderType", {
+                      required: "Order type is required",
+                    })}
+                    className="w-full px-3 py-2 border border-gray-300 focus:border-black focus:outline-none text-sm"
+                  >
+                    <option value="import">Import</option>
+                    <option value="export">Export</option>
+                  </select>
+                  {errors.orderType && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.orderType.message}
+                    </p>
+                  )}
                 </div>
 
                 {/* Order Date */}

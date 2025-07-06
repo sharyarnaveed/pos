@@ -43,8 +43,10 @@ const PaymentInvoice = ({ customerid }) => {
       bills: "",
       extra: String(item.extra || "").toUpperCase(),
       amount: (item.total - (item.vat || 0)).toFixed(2),
-      status: isPaid ? 'PAID' : 'UNPAID',
-      paidAmount: isPaid ? item.paidamount : 0
+      totalAmount: item.total.toFixed(2),
+      paidAmount: (item.paidamount || 0).toFixed(2),
+      remainingAmount: (item.remainingAmount || 0).toFixed(2),
+      status: item.status || (isPaid ? 'PAID' : 'UNPAID')
     }));
   };
 
@@ -60,7 +62,7 @@ const PaymentInvoice = ({ customerid }) => {
   }));
 
   // Calculate totals
-  const subtotal = invoiceData.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
+  const subtotal = invoiceData.reduce((sum, item) => sum + (parseFloat(item.totalAmount) || 0), 0);
   const vat = subtotal * 0.05;
   const total = subtotal + vat;
 
@@ -125,7 +127,7 @@ const PaymentInvoice = ({ customerid }) => {
     try {
       setLoading(true);
       const response = await api.get(`/api/user/paymentreport/${customerid}`);
-      console.log(response.data);
+    
       
       if (response.data.success) {
         setPaymentData({
@@ -212,7 +214,14 @@ const PaymentInvoice = ({ customerid }) => {
             <p><strong>CONTACT PERSON:</strong> {customername?.toUpperCase()}</p>
           </div>
           <div className="flex-1 p-3 text-right">
-            <p><strong>DATE:</strong> {new Date().toLocaleDateString()}</p>
+            <p><strong>DATE:</strong> {(() => {
+              const date = new Date();
+              const day = date.getDate().toString().padStart(2, '0');
+              const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+              const month = months[date.getMonth()];
+              const year = date.getFullYear();
+              return `${day} ${month} ${year}`;
+            })()}</p>
           </div>
         </div>
 
@@ -247,7 +256,9 @@ const PaymentInvoice = ({ customerid }) => {
               <th className="border border-black px-1 py-1 w-12">INSP</th>
               <th className="border border-black px-1 py-1 w-12">BILLS</th>
               <th className="border border-black px-1 py-1 w-12">EXTRA</th>
-              <th className="border border-black px-1 py-1 w-16">AMOUNT</th>
+              <th className="border border-black px-1 py-1 w-16">TOTAL AMT</th>
+              <th className="border border-black px-1 py-1 w-16">PAID AMT</th>
+              <th className="border border-black px-1 py-1 w-16">REMAINING</th>
               <th className="border border-black px-1 py-1 w-16">STATUS</th>
             </tr>
           </thead>
@@ -264,7 +275,13 @@ const PaymentInvoice = ({ customerid }) => {
                 <td className="border border-black px-1 py-1 text-center">{item.insp}</td>
                 <td className="border border-black px-1 py-1 text-center">{item.bills}</td>
                 <td className="border border-black px-1 py-1 text-center">{item.extra}</td>
-                <td className="border border-black px-1 py-1 text-center">AED {item.amount}</td>
+                <td className="border border-black px-1 py-1 text-center">AED {item.totalAmount}</td>
+                <td className="border border-black px-1 py-1 text-center text-green-600 font-semibold">
+                  AED {item.paidAmount}
+                </td>
+                <td className="border border-black px-1 py-1 text-center text-red-600 font-semibold">
+                  AED {item.remainingAmount}
+                </td>
                 <td className={`border border-black px-1 py-1 text-center font-bold ${item.status === 'PAID' ? 'text-green-600' : 'text-red-600'}`}>
                   {item.status}
                 </td>

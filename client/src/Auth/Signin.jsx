@@ -20,12 +20,12 @@ const Signin = () => {
 
   const usersignin = async (data) => {
     try {
-      console.log(data);
+   
 
       const responce = await axios.post("/api/user/signin", data);
-      console.log(responce.data);
+   
       if (responce.data.success) {
-        console.log("inside this");
+       
         toast.success("Login successful", {
           duration: 2000,
         });

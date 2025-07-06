@@ -99,10 +99,8 @@ const Expence = () => {
   // Handle Add Expense Form Submission
   const onSubmitExpense = async (data) => {
     try {
-      console.log("Expense Data:", data);
-
       const responce = await api.post("/api/user/addexpence", data);
-      console.log(responce.data);
+
       viewExpences();
       toast.success("Expense added successfully!", { duration: 2000 });
       resetExpense();
@@ -119,8 +117,6 @@ const Expence = () => {
   // Handle Edit Expense Form Submission
   const onSubmitEditExpense = async (data) => {
     try {
-      console.log("Edit Expense Data:", data);
-
       const response = await api.put(
         `/api/user/editexpence/${editingExpense.id}`,
         data
@@ -150,7 +146,7 @@ const Expence = () => {
   // Handle Edit Expense Click
   const handleEditExpense = (expense) => {
     setEditingExpense(expense);
-    
+
     // Pre-populate form with expense data
     setEditValue("description", expense.description || "");
     setEditValue("amount", expense.amount || "");
@@ -158,26 +154,26 @@ const Expence = () => {
     setEditValue("vehicleId", expense.vehicle || expense.vehicleId || ""); // Use the vehicle field from expense
     setEditValue(
       "date",
-      expense.date ? expense.date.split("T")[0] : 
-      expense.createdAt ? expense.createdAt.split("T")[0] : 
-      new Date().toISOString().split("T")[0]
+      expense.date
+        ? expense.date.split("T")[0]
+        : expense.createdAt
+        ? expense.createdAt.split("T")[0]
+        : new Date().toISOString().split("T")[0]
     );
     setEditValue("remarks", expense.remarks || "");
-    
+
     // Add fuel-specific fields
     setEditValue("quantity", expense.quantity || "");
     setEditValue("dhs", expense.dhs || "");
     setEditValue("fills", expense.fills || "");
     setEditValue("fuelStation", expense.fuelStation || "");
-    
+
     setIsEditExpenseModalOpen(true);
   };
 
   // Handle Add Amount Form Submission
   const onSubmitAmount = async (data) => {
     try {
-      console.log("Amount Data:", data);
-
       // API call example (uncomment when backend is ready)
       const response = await api.post("/api/user/addamount", data);
       if (response.data.success) {
@@ -201,7 +197,6 @@ const Expence = () => {
   const viewExpences = useCallback(async () => {
     try {
       const response = await api.get("/api/user/viewexpences");
-      console.log(response.data);
 
       // Add proper error handling
       if (response.data.success && response.data.expenceData) {
@@ -229,7 +224,7 @@ const Expence = () => {
   const getVechilesData = useCallback(async () => {
     try {
       const responce = await api.get("/api/user/viewvehicle");
-      console.log(responce.data);
+
       SetVehicles(responce.data.VehicleData);
     } catch (error) {
       console.log("error in getting vehicle data", error);
@@ -241,7 +236,7 @@ const Expence = () => {
   const getbalancehistory = useCallback(async () => {
     try {
       const responce = await api.get("/api/user/getbalancehistory");
-      console.log(responce.data);
+
       if (responce.data.success) {
         setBalanceHistory(responce.data.balanceHistory || []);
       }
@@ -581,6 +576,18 @@ const Expence = () => {
     );
   };
 
+  // Add conversion constant at the top of the component
+  const GALLON_TO_LITER = 3.78541; // 1 gallon = 3.78541 liters
+
+  // Add helper functions for conversion
+  const gallonsToLiters = (gallons) => {
+    return gallons ? (parseFloat(gallons) * GALLON_TO_LITER).toFixed(2) : '0.00';
+  };
+
+  const litersToGallons = (liters) => {
+    return liters ? (parseFloat(liters) / GALLON_TO_LITER).toFixed(2) : '0.00';
+  };
+
   // Add this filtering logic before the return statement
   const filteredExpenses = (sampleExpenses || []).filter((expense) => {
     if (!searchTerm.trim()) return true;
@@ -599,7 +606,7 @@ const Expence = () => {
     setLoading(true);
     try {
       const response = await api.get("/api/user/authcheck");
-      console.log(response.data);
+
       if (response.data.authenticated === true) {
         setLoading(false);
         // Load all data after authentication check
@@ -653,12 +660,12 @@ const Expence = () => {
 
                 {/* Mobile Action Buttons */}
                 <div className="flex gap-2">
-                  <button
+                  {/* <button
                     onClick={() => setIsAddAmountModalOpen(true)}
                     className="bg-gray-800 text-white px-2 py-1 text-xs rounded"
                   >
                     Amount
-                  </button>
+                  </button> */}
                   <button
                     onClick={() => setIsAddExpenseModalOpen(true)}
                     className="bg-black text-white px-2 py-1 text-xs rounded"
@@ -682,12 +689,12 @@ const Expence = () => {
                     </p>
                   </div>
                   <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
-                    <button
+                    {/* <button
                       onClick={() => setIsAddAmountModalOpen(true)}
                       className="bg-gray-800 text-white px-4 py-2 text-xs md:text-sm font-medium hover:bg-gray-700 transition-colors w-full sm:w-auto"
                     >
                       Add Amount
-                    </button>
+                    </button> */}
                     <button
                       onClick={() => setIsAddExpenseModalOpen(true)}
                       className="bg-black text-white px-4 py-2 text-xs md:text-sm font-medium hover:bg-gray-800 transition-colors w-full sm:w-auto"
@@ -743,7 +750,7 @@ const Expence = () => {
                     >
                       View by Vehicle
                     </button>
-                    <button
+                    {/* <button
                       onClick={() => setActiveTab("history")}
                       className={`px-4 lg:px-6 py-2 lg:py-3 text-sm lg:text-base font-medium border-b-2 transition-colors whitespace-nowrap ${
                         activeTab === "history"
@@ -752,7 +759,7 @@ const Expence = () => {
                       }`}
                     >
                       Balance History
-                    </button>
+                    </button> */}
                   </div>
                 </div>
               </div>
@@ -767,14 +774,14 @@ const Expence = () => {
                     AED {totalExpence}
                   </div>
                 </div>
-                <div className="bg-white border border-gray-200 p-4 lg:p-6 rounded-lg shadow-sm">
+                {/* <div className="bg-white border border-gray-200 p-4 lg:p-6 rounded-lg shadow-sm">
                   <div className="text-xs lg:text-sm text-gray-600">
                     Current Balance
                   </div>
                   <div className="text-lg lg:text-2xl font-bold text-blue-600 mt-2">
                     AED {currentbalance}
                   </div>
-                </div>
+                </div> */}
               </div>
 
               {/* Conditional Content Based on Active Tab */}
@@ -826,7 +833,7 @@ const Expence = () => {
                               {expense["vehicleDetails.plateNumber"] || "N/A"}
                             </div>
                             <div className="text-gray-600">
-                              {expense.createdAt.split("T")[0]}
+                              {expense.date.split("T")[0]}
                             </div>
                             <div>
                               <span
@@ -894,7 +901,7 @@ const Expence = () => {
                                 AED {expense.amount.toFixed(2)}
                               </div>
                               <div className="text-xs text-gray-500">
-                                {expense.createdAt.split("T")[0]}
+                                {expense.date.split("T")[0]}
                               </div>
                             </div>
                           </div>
@@ -1114,7 +1121,10 @@ const Expence = () => {
                           <input
                             type="text"
                             {...registerExpense("fuelStation", {
-                              required: selectedCategory === "Fuel" ? "Fuel station is required for fuel expenses" : false,
+                              required:
+                                selectedCategory === "Fuel"
+                                  ? "Fuel station is required for fuel expenses"
+                                  : false,
                             })}
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-black focus:outline-none text-sm uppercase"
                             placeholder="Enter fuel station name (e.g., ADNOC, ENOC, EPPCO)"
@@ -1128,24 +1138,35 @@ const Expence = () => {
 
                         <div>
                           <label className="block text-sm font-medium text-black mb-2">
-                            Quantity (Liters) *
+                            Quantity (Gallons) *
                           </label>
                           <div className="relative">
                             <input
                               type="number"
                               step="0.01"
                               {...registerExpense("quantity", {
-                                required: selectedCategory === "Fuel" ? "Quantity is required for fuel expenses" : false,
+                                required:
+                                  selectedCategory === "Fuel"
+                                    ? "Quantity is required for fuel expenses"
+                                    : false,
                                 min: {
                                   value: 0.01,
                                   message: "Quantity must be greater than 0",
                                 },
                               })}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-black focus:outline-none text-sm pr-8"
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-black focus:outline-none text-sm pr-12"
                               placeholder="0.00"
                             />
-                            <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm">L</span>
+                            <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm">
+                              Gal
+                            </span>
                           </div>
+                          {/* Display conversion to liters */}
+                          {watchExpense("quantity") && (
+                            <div className="mt-1 text-xs text-blue-600">
+                              ≈ {gallonsToLiters(watchExpense("quantity"))} Liters
+                            </div>
+                          )}
                           {expenseErrors.quantity && (
                             <p className="text-red-500 text-xs mt-1">
                               {expenseErrors.quantity.message}
@@ -1155,15 +1176,20 @@ const Expence = () => {
 
                         <div>
                           <label className="block text-sm font-medium text-black mb-2">
-                            Price per Liter (AED) *
+                            Price per Gallon (AED) *
                           </label>
                           <div className="relative">
-                            <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm">AED</span>
+                            <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm">
+                              AED
+                            </span>
                             <input
                               type="number"
                               step="0.01"
                               {...registerExpense("dhs", {
-                                required: selectedCategory === "Fuel" ? "Price per liter is required for fuel expenses" : false,
+                                required:
+                                  selectedCategory === "Fuel"
+                                    ? "Price per gallon is required for fuel expenses"
+                                    : false,
                                 min: {
                                   value: 0.01,
                                   message: "Price must be greater than 0",
@@ -1173,9 +1199,9 @@ const Expence = () => {
                               placeholder="0.00"
                             />
                           </div>
-                          {expenseErrors.dhs && (
+                          {editExpenseErrors.dhs && (
                             <p className="text-red-500 text-xs mt-1">
-                              {expenseErrors.dhs.message}
+                              {editExpenseErrors.dhs.message}
                             </p>
                           )}
                         </div>
@@ -1187,7 +1213,10 @@ const Expence = () => {
                           <input
                             type="number"
                             {...registerExpense("fills", {
-                              required: selectedCategory === "Fuel" ? "Number of fills is required for fuel expenses" : false,
+                              required:
+                                selectedCategory === "Fuel"
+                                  ? "Number of fills is required for fuel expenses"
+                                  : false,
                               min: {
                                 value: 1,
                                 message: "Number of fills must be at least 1",
@@ -1211,32 +1240,48 @@ const Expence = () => {
                             </h5>
                             <div className="grid grid-cols-2 gap-4 text-sm">
                               <div>
-                                <span className="text-blue-700">Total Quantity:</span>
-                                <span className="font-medium text-blue-900 ml-2">
-                                  {watchExpense("quantity") || "0"} L
+                                <span className="text-blue-700">
+                                  Total Quantity:
                                 </span>
+                                <span className="font-medium text-blue-900 ml-2">
+                                  {watchExpense("quantity") || "0"} Gal
+                                </span>
+                                <div className="text-xs text-blue-600">
+                                  (≈ {gallonsToLiters(watchExpense("quantity"))} L)
+                                </div>
                               </div>
                               <div>
-                                <span className="text-blue-700">Rate per Liter:</span>
+                                <span className="text-blue-700">
+                                  Rate per Gallon:
+                                </span>
                                 <span className="font-medium text-blue-900 ml-2">
                                   AED {watchExpense("dhs") || "0.00"}
                                 </span>
                               </div>
                               <div>
-                                <span className="text-blue-700">Number of Fills:</span>
+                                <span className="text-blue-700">
+                                  Number of Fills:
+                                </span>
                                 <span className="font-medium text-blue-900 ml-2">
                                   {watchExpense("fills") || "0"}
                                 </span>
                               </div>
                               <div>
-                                <span className="text-blue-700">Calculated Total:</span>
+                                <span className="text-blue-700">
+                                  Calculated Total:
+                                </span>
                                 <span className="font-bold text-blue-900 ml-2">
-                                  AED {((parseFloat(watchExpense("quantity")) || 0) * (parseFloat(watchExpense("dhs")) || 0)).toFixed(2)}
+                                  AED{" "}
+                                  {(
+                                    (parseFloat(watchExpense("quantity")) ||
+                                      0) *
+                                    (parseFloat(watchExpense("dhs")) || 0)
+                                  ).toFixed(2)}
                                 </span>
                               </div>
                             </div>
                             <div className="mt-2 text-xs text-blue-600">
-                              💡 Tip: The calculated total should match your entered amount above
+                              💡 Tip: Enter quantity in gallons, price per gallon in AED
                             </div>
                           </div>
                         </div>
@@ -1368,8 +1413,7 @@ const Expence = () => {
                         {...registerEditExpense("vehicleId", {
                           required: "Vehicle is required",
                         })}
-                        disabled={true} // Disable the vehicle selection
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-600 cursor-not-allowed text-sm"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-black focus:outline-none text-sm"
                       >
                         <option value="">Select Vehicle</option>
                         {Vehicles.map((item) => (
@@ -1382,9 +1426,11 @@ const Expence = () => {
                           </option>
                         ))}
                       </select>
-                      <p className="text-xs text-gray-500 mt-1">
-                        Vehicle cannot be changed for existing expenses
-                      </p>
+                      {editExpenseErrors.vehicleId && (
+                        <p className="text-red-500 text-xs mt-1">
+                          {editExpenseErrors.vehicleId.message}
+                        </p>
+                      )}
                     </div>
 
                     <div>
@@ -1439,7 +1485,10 @@ const Expence = () => {
                           <input
                             type="text"
                             {...registerEditExpense("fuelStation", {
-                              required: selectedEditCategory === "Fuel" ? "Fuel station is required for fuel expenses" : false,
+                              required:
+                                selectedEditCategory === "Fuel"
+                                  ? "Fuel station is required for fuel expenses"
+                                  : false,
                             })}
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-black focus:outline-none text-sm uppercase"
                             placeholder="Enter fuel station name (e.g., ADNOC, ENOC, EPPCO)"
@@ -1453,24 +1502,35 @@ const Expence = () => {
 
                         <div>
                           <label className="block text-sm font-medium text-black mb-2">
-                            Quantity (Liters) *
+                            Quantity (Gallons) *
                           </label>
                           <div className="relative">
                             <input
                               type="number"
                               step="0.01"
                               {...registerEditExpense("quantity", {
-                                required: selectedEditCategory === "Fuel" ? "Quantity is required for fuel expenses" : false,
+                                required:
+                                  selectedEditCategory === "Fuel"
+                                    ? "Quantity is required for fuel expenses"
+                                    : false,
                                 min: {
                                   value: 0.01,
                                   message: "Quantity must be greater than 0",
                                 },
                               })}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-black focus:outline-none text-sm pr-8"
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-black focus:outline-none text-sm pr-12"
                               placeholder="0.00"
                             />
-                            <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm">L</span>
+                            <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm">
+                              Gal
+                            </span>
                           </div>
+                          {/* Display conversion to liters */}
+                          {watchEditExpense("quantity") && (
+                            <div className="mt-1 text-xs text-blue-600">
+                              ≈ {gallonsToLiters(watchEditExpense("quantity"))} Liters
+                            </div>
+                          )}
                           {editExpenseErrors.quantity && (
                             <p className="text-red-500 text-xs mt-1">
                               {editExpenseErrors.quantity.message}
@@ -1480,15 +1540,20 @@ const Expence = () => {
 
                         <div>
                           <label className="block text-sm font-medium text-black mb-2">
-                            Price per Liter (AED) *
+                            Price per Gallon (AED) *
                           </label>
                           <div className="relative">
-                            <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm">AED</span>
+                            <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm">
+                              AED
+                            </span>
                             <input
                               type="number"
                               step="0.01"
                               {...registerEditExpense("dhs", {
-                                required: selectedEditCategory === "Fuel" ? "Price per liter is required for fuel expenses" : false,
+                                required:
+                                  selectedEditCategory === "Fuel"
+                                    ? "Price per gallon is required for fuel expenses"
+                                    : false,
                                 min: {
                                   value: 0.01,
                                   message: "Price must be greater than 0",
@@ -1512,7 +1577,10 @@ const Expence = () => {
                           <input
                             type="number"
                             {...registerEditExpense("fills", {
-                              required: selectedEditCategory === "Fuel" ? "Number of fills is required for fuel expenses" : false,
+                              required:
+                                selectedEditCategory === "Fuel"
+                                  ? "Number of fills is required for fuel expenses"
+                                  : false,
                               min: {
                                 value: 1,
                                 message: "Number of fills must be at least 1",
@@ -1536,32 +1604,48 @@ const Expence = () => {
                             </h5>
                             <div className="grid grid-cols-2 gap-4 text-sm">
                               <div>
-                                <span className="text-blue-700">Total Quantity:</span>
-                                <span className="font-medium text-blue-900 ml-2">
-                                  {watchEditExpense("quantity") || "0"} L
+                                <span className="text-blue-700">
+                                  Total Quantity:
                                 </span>
+                                <span className="font-medium text-blue-900 ml-2">
+                                  {watchEditExpense("quantity") || "0"} Gal
+                                </span>
+                                <div className="text-xs text-blue-600">
+                                  (≈ {gallonsToLiters(watchEditExpense("quantity"))} L)
+                                </div>
                               </div>
                               <div>
-                                <span className="text-blue-700">Rate per Liter:</span>
+                                <span className="text-blue-700">
+                                  Rate per Gallon:
+                                </span>
                                 <span className="font-medium text-blue-900 ml-2">
                                   AED {watchEditExpense("dhs") || "0.00"}
                                 </span>
                               </div>
                               <div>
-                                <span className="text-blue-700">Number of Fills:</span>
+                                <span className="text-blue-700">
+                                  Number of Fills:
+                                </span>
                                 <span className="font-medium text-blue-900 ml-2">
                                   {watchEditExpense("fills") || "0"}
                                 </span>
                               </div>
                               <div>
-                                <span className="text-blue-700">Calculated Total:</span>
+                                <span className="text-blue-700">
+                                  Calculated Total:
+                                </span>
                                 <span className="font-bold text-blue-900 ml-2">
-                                  AED {((parseFloat(watchEditExpense("quantity")) || 0) * (parseFloat(watchEditExpense("dhs")) || 0)).toFixed(2)}
+                                  AED{" "}
+                                  {(
+                                    (parseFloat(watchEditExpense("quantity")) ||
+                                      0) *
+                                    (parseFloat(watchEditExpense("dhs")) || 0)
+                                  ).toFixed(2)}
                                 </span>
                               </div>
                             </div>
                             <div className="mt-2 text-xs text-blue-600">
-                              💡 Tip: The calculated total should match your entered amount above
+                              💡 Tip: Enter quantity in gallons, price per gallon in AED
                             </div>
                           </div>
                         </div>
@@ -1743,7 +1827,7 @@ const Expence = () => {
                         <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0">
                           <span className="text-gray-600 text-sm">Date:</span>
                           <span className="font-medium text-sm">
-                            {expencedetail.createdAt.split("T")[0]}
+                            {expencedetail.date.split("T")[0]}
                           </span>
                         </div>
                         <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0">
@@ -1785,12 +1869,14 @@ const Expence = () => {
                             Fuel Details
                           </h4>
                         </div>
-                        
+
                         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             {expencedetail.fuelStation && (
                               <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0">
-                                <span className="text-blue-700 text-sm font-medium">Fuel Station:</span>
+                                <span className="text-blue-700 text-sm font-medium">
+                                  Fuel Station:
+                                </span>
                                 <span className="font-semibold text-blue-900 uppercase">
                                   {expencedetail.fuelStation}
                                 </span>
@@ -1798,15 +1884,22 @@ const Expence = () => {
                             )}
                             {expencedetail.quantity && (
                               <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0">
-                                <span className="text-blue-700 text-sm font-medium">Quantity:</span>
+                                <span className="text-blue-700 text-sm font-medium">
+                                  Quantity:
+                                </span>
                                 <span className="font-semibold text-blue-900">
-                                  {expencedetail.quantity} Liters
+                                  {expencedetail.quantity} Gallons
+                                  <div className="text-xs text-blue-600">
+                                    (≈ {gallonsToLiters(expencedetail.quantity)} Liters)
+                                  </div>
                                 </span>
                               </div>
                             )}
                             {expencedetail.dhs && (
                               <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0">
-                                <span className="text-blue-700 text-sm font-medium">Price per Liter:</span>
+                                <span className="text-blue-700 text-sm font-medium">
+                                  Price per Gallon:
+                                </span>
                                 <span className="font-semibold text-blue-900">
                                   AED {expencedetail.dhs}
                                 </span>
@@ -1814,34 +1907,65 @@ const Expence = () => {
                             )}
                             {expencedetail.fills && (
                               <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0">
-                                <span className="text-blue-700 text-sm font-medium">Number of Fills:</span>
+                                <span className="text-blue-700 text-sm font-medium">
+                                  Number of Fills:
+                                </span>
                                 <span className="font-semibold text-blue-900">
                                   {expencedetail.fills}
                                 </span>
                               </div>
                             )}
                           </div>
-                          
+
                           {/* Calculation Summary */}
                           {expencedetail.quantity && expencedetail.dhs && (
                             <div className="mt-4 pt-4 border-t border-blue-200">
                               <div className="flex justify-between items-center">
-                                <span className="text-blue-700 text-sm font-medium">Calculated Total:</span>
+                                <span className="text-blue-700 text-sm font-medium">
+                                  Calculated Total:
+                                </span>
                                 <span className="font-bold text-blue-900 text-lg">
-                                  AED {(parseFloat(expencedetail.quantity) * parseFloat(expencedetail.dhs)).toFixed(2)}
+                                  AED{" "}
+                                  {(
+                                    parseFloat(expencedetail.quantity) *
+                                    parseFloat(expencedetail.dhs)
+                                  ).toFixed(2)}
                                 </span>
                               </div>
                               <div className="text-xs text-blue-600 mt-1">
-                                {expencedetail.quantity} L × AED {expencedetail.dhs} = AED {(parseFloat(expencedetail.quantity) * parseFloat(expencedetail.dhs)).toFixed(2)}
+                                {expencedetail.quantity} Gal × AED{" "}
+                                {expencedetail.dhs} = AED{" "}
+                                {(
+                                  parseFloat(expencedetail.quantity) *
+                                  parseFloat(expencedetail.dhs)
+                                ).toFixed(2)}
+                                <br />
+                                Equivalent: {gallonsToLiters(expencedetail.quantity)} L × AED{" "}
+                                {(parseFloat(expencedetail.dhs) / GALLON_TO_LITER).toFixed(3)} per L
                               </div>
-                              
+
                               {/* Show variance if calculated total differs from actual amount */}
-                              {(parseFloat(expencedetail.quantity) * parseFloat(expencedetail.dhs)).toFixed(2) !== parseFloat(expencedetail.amount).toFixed(2) && (
+                              {(
+                                parseFloat(expencedetail.quantity) *
+                                parseFloat(expencedetail.dhs)
+                              ).toFixed(2) !==
+                                parseFloat(expencedetail.amount).toFixed(2) && (
                                 <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded">
                                   <div className="flex items-center gap-2">
-                                    <span className="text-yellow-600 text-sm">⚠️</span>
+                                    <span className="text-yellow-600 text-sm">
+                                      ⚠️
+                                    </span>
                                     <span className="text-yellow-800 text-xs font-medium">
-                                      Note: Calculated total (AED {(parseFloat(expencedetail.quantity) * parseFloat(expencedetail.dhs)).toFixed(2)}) differs from actual amount (AED {parseFloat(expencedetail.amount).toFixed(2)})
+                                      Note: Calculated total (AED{" "}
+                                      {(
+                                        parseFloat(expencedetail.quantity) *
+                                        parseFloat(expencedetail.dhs)
+                                      ).toFixed(2)}
+                                      ) differs from actual amount (AED{" "}
+                                      {parseFloat(expencedetail.amount).toFixed(
+                                        2
+                                      )}
+                                      )
                                     </span>
                                   </div>
                                 </div>
@@ -1854,15 +1978,33 @@ const Expence = () => {
                             <div className="mt-4 pt-4 border-t border-blue-200">
                               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                                 <div className="flex justify-between">
-                                  <span className="text-blue-700">Avg per Fill:</span>
+                                  <span className="text-blue-700">
+                                    Avg per Fill:
+                                  </span>
                                   <span className="font-medium text-blue-900">
-                                    {(parseFloat(expencedetail.quantity) / parseFloat(expencedetail.fills)).toFixed(2)} L
+                                    {(
+                                      parseFloat(expencedetail.quantity) /
+                                      parseFloat(expencedetail.fills)
+                                    ).toFixed(2)}{" "}
+                                    Gal
+                                    <div className="text-xs text-blue-600">
+                                      (≈ {gallonsToLiters(
+                                        parseFloat(expencedetail.quantity) /
+                                        parseFloat(expencedetail.fills)
+                                      )} L)
+                                    </div>
                                   </span>
                                 </div>
                                 <div className="flex justify-between">
-                                  <span className="text-blue-700">Cost per Fill:</span>
+                                  <span className="text-blue-700">
+                                    Cost per Fill:
+                                  </span>
                                   <span className="font-medium text-blue-900">
-                                    AED {(parseFloat(expencedetail.amount) / parseFloat(expencedetail.fills)).toFixed(2)}
+                                    AED{" "}
+                                    {(
+                                      parseFloat(expencedetail.amount) /
+                                      parseFloat(expencedetail.fills)
+                                    ).toFixed(2)}
                                   </span>
                                 </div>
                               </div>
@@ -1907,7 +2049,7 @@ const Expence = () => {
         </div>
       )}
     </>
-  );
+   );
 };
 
 export default Expence;

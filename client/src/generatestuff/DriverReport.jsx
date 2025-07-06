@@ -12,7 +12,7 @@ const DriverReport = ({ driverId }) => {
       setLoading(true);
       setError(null);
       const response = await api(`/api/user/driverreport/${driverId}`);
-      console.log(response.data);
+      
       
       if (response.data.success) {
         setReportData(response.data.OrderData);

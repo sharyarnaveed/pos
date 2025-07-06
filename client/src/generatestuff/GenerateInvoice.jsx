@@ -26,7 +26,7 @@ const GenerateInvoice = ({ customerid }) => {
   const transformDataToInvoiceFormat = (data) => {
     return data.map((item, index) => ({
       sno: index + 1,
-      date: formatDate(item.createdAt),
+      date: formatDate(item.date),
       from: String(item.from || "").toUpperCase(),
       to: String(item.to || "").toUpperCase(),
       container: String(item.containerNumber || "").toUpperCase(),
@@ -109,16 +109,26 @@ const GenerateInvoice = ({ customerid }) => {
   };
 
   const [customername, SetCustomerName] = useState();
+  const [customerAddress, setCustomerAddress] = useState();
+  const [customerPhone, setCustomerPhone] = useState();
+  const [customerTaxNumber, setCustomerTaxNumber] = useState();
+  const [invoiceNumber, setInvoiceNumber] = useState();
 
   const getCustomerData = async () => {
     try {
       setLoading(true);
       const response = await api.get(`/api/user/customerdata/${customerid}`);
-      console.log(response.data);
+
       
       if (response.data.success && response.data.customerData) {
         setCustomerData(response.data.customerData);
-        SetCustomerName(response.data.customerInfo.customername)
+        SetCustomerName(response.data.customerInfo.customername);
+        setCustomerAddress(response.data.customerInfo.address);
+        setCustomerPhone(response.data.customerInfo.phoneno);
+        setCustomerTaxNumber(response.data.customerInfo.taxnumber);
+        // Generate random invoice number (5-6 digits)
+        const randomInvoiceNumber = Math.floor(Math.random() * 900000) + 100000;
+        setInvoiceNumber(randomInvoiceNumber);
       } else {
         toast.error("No customer data found", {
           duration: 3000
@@ -178,6 +188,7 @@ const GenerateInvoice = ({ customerid }) => {
             <div className="text-center">
               <h1 className="text-2xl font-bold">BURJ AL SAMA TRANSPORT LLC</h1>
               <p className="text-sm">CONTACT NO: 055-2347526, P.O.BOX 76498, DUBAI, UAE, E-MAIL: ABID.DAUD@GMAIL.COM</p>
+              <p className="text-sm font-bold">TRN: 104235363900003</p>
             </div>
           </div>
           
@@ -190,11 +201,21 @@ const GenerateInvoice = ({ customerid }) => {
         {/* Company and Invoice Details */}
         <div className="flex border-b border-black">
           <div className="flex-1 p-3 border-r border-black">
-            <p><strong>COMPANY NAME:</strong> DMX GLOBAL LOGISTICS LLC.</p>
-            <p><strong>CONTACT PERSON:</strong> {customername?.toUpperCase()}</p>
+            <p><strong>COMPANY NAME:</strong> {customername?.toUpperCase()}</p>
+            <p><strong>ADDRESS:</strong> {customerAddress?.toUpperCase()}</p>
+            <p><strong>PHONE NO:</strong> {customerPhone}</p>
+            <p><strong>TAX NUMBER:</strong> {customerTaxNumber}</p>
           </div>
           <div className="flex-1 p-3 text-right">
-            <p><strong>DATE:</strong> {new Date().toLocaleDateString()}</p>
+            <p><strong>INVOICE NO:</strong> {invoiceNumber}</p>
+            <p><strong>DATE:</strong> {(() => {
+    const date = new Date();
+    const day = date.getDate().toString().padStart(2, '0');
+    const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+    const month = months[date.getMonth()];
+    const year = date.getFullYear();
+    return `${day} ${month} ${year}`;
+  })()}</p>
           </div>
         </div>
 

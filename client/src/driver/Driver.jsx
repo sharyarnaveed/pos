@@ -54,10 +54,10 @@ const Driver = () => {
     if (isAddingDriver) return;
     
     setIsAddingDriver(true);
-    console.log(data);
+   
     try {
       const responce = await api.post("/api/user/adddriver", data)
-      console.log(responce.data);
+    
       if (responce.data.success) {
         toast.success(responce.data.message, {
           duration: 2000
@@ -87,7 +87,7 @@ const Driver = () => {
     setIsUpdating(true);
     try {
       const response = await api.put(`/api/user/updatedriver/${selectedDriver.id}`, data);
-      console.log(response.data);
+   
       if (response.data.success) {
         toast.success(response.data.message, {
           duration: 2000,
@@ -130,7 +130,7 @@ const Driver = () => {
     setcustoemrloading(true);
     try {
       const responce = await api.get("/api/user/viewdriver");
-      console.log(responce.data);
+    
       if (responce.data.success) {
         setcustoemrloading(false);
         setDrivers(responce.data.DriverData);
@@ -158,7 +158,7 @@ const Driver = () => {
     SetLoading(true);
     try {
       const responce = await api.get("/api/user/authcheck");
-      console.log(responce.data);
+  
       if (responce.data.authenticated == true) {
         SetLoading(false);
         await viewdrivers();

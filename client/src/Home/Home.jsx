@@ -14,7 +14,7 @@ const Home = () => {
     setLoading(true);
     try {
       const response = await api.get("/api/user/authcheck");
-      console.log(response.data);
+      
       if (response.data.authenticated === true) {
         await fetchDashboardData();
       } else {

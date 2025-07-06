@@ -20,7 +20,7 @@ const Payments = () => {
   const getallorder = useCallback(async () => {
     try {
       const responce = await api.get("/api/user/vieworders");
-      console.log(responce.data);
+   
       setOrders(responce.data.OrderData);
     } catch (error) {
       console.error("Error fetching orders:", error);
@@ -64,7 +64,7 @@ const Payments = () => {
     if (isProcessingPayment) return; // Prevent multiple clicks
     
     setIsProcessingPayment(true); // Start loading
-    console.log(`Adding ${paymentAmount} to order ${selectedOrder.id}`);
+   
 
     try {
       const responce = await api.put(
@@ -79,7 +79,7 @@ const Payments = () => {
         });
       }
       await getallorder();
-      console.log(responce.data);
+ 
     } catch (error) {
       console.error("Error processing payment:", error);
       toast.error("Failed to process payment. Please try again.", {
