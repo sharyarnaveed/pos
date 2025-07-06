@@ -108,7 +108,8 @@ const editorder = async (req, res) => {
       orderDate,
       extraChargeType,
       total,
-      vat
+      vat,
+      orderType
     } = req.body;
     console.log(
       rate,
@@ -136,6 +137,8 @@ const editorder = async (req, res) => {
         custWash,
         merc,
         extra,
+      type: orderType,
+
         remarks,
         date: orderDate,
         extratype: extraChargeType,
@@ -173,22 +176,23 @@ const vieworderBycustomerId = async (req, res) => {
   try {
     const { customerid } = req.params;
 
+
     const data = await Order.findAll({
-    include:[
-{
+      where: {
+        customer: customerid,
+      },
+      include:[
+        {
           model: Customer,
           as: "CustomerDetails",
         }
-    ],
+      ],
       raw: true,
-    },{
-        where: {
-        customer: customerid,
-      },
     });
 
     if (data) {
       const customerData = await Customer.findByPk(customerid, { raw: true });
+
 
       return res.json({
         success: true,

@@ -23,7 +23,7 @@ const sessionStore = new MySQLStore({
   port: 3306,
   user: 'root',
   password: '',
-  database: 'pos'
+  database: 'burjclke_pos'
 });
 app.use(session({
     secret:"just a shit",

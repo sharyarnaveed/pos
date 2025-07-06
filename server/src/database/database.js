@@ -5,11 +5,11 @@ dotenv.config({
     path:"./.env"
 });
 const sequelize = new Sequelize(
-  process.env.DATABASENAME,
-  process.env.DATABASEUSER,
+  "burjclke_pos",
+  "root",
   '',
   {
-    host: process.env.DATABASEHOST,
+    host: "localhost",
     dialect: 'mysql',
     logging: false,
   }

@@ -54,7 +54,7 @@ const AddCustomers = async (req, res) => {
           success: true,
         });
       } else {
-        console.log("data saved");
+      
         return res.json({
           message: "Customer Addition Failed",
           success: false,
@@ -89,6 +89,14 @@ const customerpayment = async (req, res) => {
     const { customerid } = req.params;
     console.log(customerid);
 
+    // Get customer information
+    const customerInfo = await Customer.findOne({
+      where: {
+        id: customerid,
+      },
+      raw: true,
+    });
+
     const unpaiddata = await Order.findAll({
       where: {
         customer: customerid,
@@ -109,13 +117,6 @@ const customerpayment = async (req, res) => {
       },
     });
 
-    if (!unpaiddata) {
-      return res.json({
-        message: "no unpaid data",
-        success: false,
-      });
-    }
-
     const paiddata = await Order.findAll({
       where: {
         customer: customerid,
@@ -124,22 +125,29 @@ const customerpayment = async (req, res) => {
       raw: true,
     });
 
-    if (!paiddata) {
-      return res.json({
-        message: "no paid data",
-        success: false,
-      });
-    }
+    // Calculate remaining amounts for each order
+    const processedUnpaidData = unpaiddata.map(order => ({
+      ...order,
+      remainingAmount: order.total - (order.paidamount || 0),
+      status: 'UNPAID'
+    }));
+
+    const processedPaidData = paiddata.map(order => ({
+      ...order,
+      remainingAmount: order.total - (order.paidamount || 0),
+      status: 'PAID'
+    }));
 
     let unpaidtotal = totalamount - totalpaid;
 
     return res.json({
       success: true,
-      unpaiddata: unpaiddata,
-      paiddata: paiddata,
+      unpaiddata: processedUnpaidData,
+      paiddata: processedPaidData,
       total: totalamount,
       paidtotal: totalpaid,
       unpaidtotal: unpaidtotal,
+      customerInfo: customerInfo,
     });
   } catch (error) {
     console.log("error in getting customer report", error);
