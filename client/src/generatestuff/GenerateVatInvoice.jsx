@@ -4,10 +4,70 @@ import toast from "react-hot-toast";
 
 const GenerateVatInvoice = ({ customerid }) => {
   const [customerData, setCustomerData] = useState([]);
+  const [allCustomerData, setAllCustomerData] = useState([]); // Store all data
   const [loading, setLoading] = useState(true);
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
 
   const handlePrint = () => {
     window.print();
+  };
+
+  // Filter data by date range
+  const filterDataByDateRange = (data, start, end) => {
+    if (!start || !end) return data;
+
+    const startDateObj = new Date(start);
+    const endDateObj = new Date(end);
+
+    return data.filter((item) => {
+      const itemDate = new Date(item.date);
+      return itemDate >= startDateObj && itemDate <= endDateObj;
+    });
+  };
+
+  // Handle date filter
+  const handleDateFilter = () => {
+    if (!startDate || !endDate) {
+      toast.error("Please select both start and end dates", {
+        duration: 3000,
+      });
+      return;
+    }
+
+    if (new Date(startDate) > new Date(endDate)) {
+      toast.error("Start date cannot be after end date", {
+        duration: 3000,
+      });
+      return;
+    }
+
+    const filteredData = filterDataByDateRange(
+      allCustomerData,
+      startDate,
+      endDate
+    );
+    setCustomerData(filteredData);
+
+    if (filteredData.length === 0) {
+      toast.error("No data found for the selected date range", {
+        duration: 3000,
+      });
+    } else {
+      toast.success(`Filtered ${filteredData.length} records`, {
+        duration: 3000,
+      });
+    }
+  };
+
+  // Reset filter to show all data
+  const handleResetFilter = () => {
+    setStartDate("");
+    setEndDate("");
+    setCustomerData(allCustomerData);
+    toast.success("Filter reset - showing all data", {
+      duration: 3000,
+    });
   };
 
   const formatDate = (dateString) => {
@@ -172,13 +232,15 @@ const GenerateVatInvoice = ({ customerid }) => {
       const response = await api.get(`/api/user/customerdata/${customerid}`);
 
       if (response.data.success && response.data.customerData) {
-        setCustomerData(response.data.customerData);
+        setAllCustomerData(response.data.customerData); // Store all data
+        setCustomerData(response.data.customerData); // Display all data initially
         SetCustomerName(response.data.customerInfo.customername);
         setCustomerAddress(response.data.customerInfo.address);
         setCustomerPhone(response.data.customerInfo.phoneno);
         setCustomerTaxNumber(response.data.customerInfo.taxnumber);
         // Generate random invoice number (5-6 digits)
-        const randomInvoiceNumber = Math.floor(Math.random() * 900000) + 100000;
+        const randomInvoiceNumber =
+          Math.floor(Math.random() * 900000) + 100000;
         setInvoiceNumber(randomInvoiceNumber);
       } else {
         toast.error("No customer data found", {
@@ -210,14 +272,62 @@ const GenerateVatInvoice = ({ customerid }) => {
 
   return (
     <div className="min-h-screen bg-white p-4">
-      {/* Print Button */}
+      {/* Controls Section */}
       <div className="mb-4 print:hidden">
-        <button
-          onClick={handlePrint}
-          className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition-colors"
-        >
-          🖨️ PRINT INVOICE
-        </button>
+        <div className="flex flex-wrap items-center gap-4">
+          {/* Date Filter Controls */}
+          <div className="flex items-center gap-2">
+            <label className="text-sm font-medium">From:</label>
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="border border-gray-300 rounded px-2 py-1 text-sm"
+            />
+          </div>
+
+          <div className="flex items-center gap-2">
+            <label className="text-sm font-medium">To:</label>
+            <input
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              className="border border-gray-300 rounded px-2 py-1 text-sm"
+            />
+          </div>
+
+          <button
+            onClick={handleDateFilter}
+            className="bg-green-600 text-white px-4 py-1 rounded text-sm hover:bg-green-700 transition-colors"
+          >
+            📅 FILTER
+          </button>
+
+          <button
+            onClick={handleResetFilter}
+            className="bg-gray-600 text-white px-4 py-1 rounded text-sm hover:bg-gray-700 transition-colors"
+          >
+            🔄 RESET
+          </button>
+
+          {/* Print Button */}
+          <button
+            onClick={handlePrint}
+            className="bg-blue-600 text-white px-6 py-1 rounded text-sm hover:bg-blue-700 transition-colors"
+          >
+            🖨️ PRINT INVOICE
+          </button>
+        </div>
+
+        {/* Display current filter info */}
+        {startDate && endDate && (
+          <div className="mt-2 text-sm text-gray-600">
+            Showing VAT invoice data from{" "}
+            {new Date(startDate).toLocaleDateString()} to{" "}
+            {new Date(endDate).toLocaleDateString()} ({customerData.length}{" "}
+            records)
+          </div>
+        )}
       </div>
 
       <div className="max-w-4xl mx-auto bg-white border-2 border-black">
