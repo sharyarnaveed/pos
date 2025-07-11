@@ -49,6 +49,10 @@ const Expences = sequelize.define(
     fuelStation: {
       type: DataTypes.STRING(100),
       allowNull: true,
+    },
+    billInvoice:{
+      type:DataTypes.STRING,
+      allowNull:true
     }
   },
   {

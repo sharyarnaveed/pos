@@ -5,7 +5,7 @@ const Vehicle = require("../models/Vehicle.model");
 const { Sequelize } = require("sequelize");
 const addexpences = async (req, res) => {
   try {
-    const { description, amount, category, vehicleId, remarks, date, quantity, dhs, fills, fuelStation } = req.body;
+    const { description, amount, category, vehicleId, remarks, date, quantity, dhs, fills, fuelStation,billInvoice } = req.body;
 
     const save = await Expences.create({
       description,
@@ -17,7 +17,8 @@ const addexpences = async (req, res) => {
       quantity: category === "Fuel" ? quantity : null,
       dhs: category === "Fuel" ? dhs : null,
       fills: category === "Fuel" ? fills : null,
-      fuelStation: category === "Fuel" ? fuelStation : null
+      fuelStation: category === "Fuel" ? fuelStation : null,
+      billInvoice
     });
 
     if (save) {
@@ -264,7 +265,7 @@ if(balanceHistory.length === 0)
 const editexpences = async (req, res) => {
   try {
     const { id } = req.params;
-    const { description, amount, category, vehicleId, remarks, date, quantity, dhs, fills, fuelStation } = req.body;
+    const { description, amount, category, vehicleId, remarks, date, quantity, dhs, fills, fuelStation,billInvoice } = req.body;
 
     // First, get the current expense to calculate balance difference
     const currentExpense = await Expences.findByPk(id);
@@ -292,7 +293,8 @@ const editexpences = async (req, res) => {
         quantity: category === "Fuel" ? quantity : null,
         dhs: category === "Fuel" ? dhs : null,
         fills: category === "Fuel" ? fills : null,
-        fuelStation: category === "Fuel" ? fuelStation : null
+        fuelStation: category === "Fuel" ? fuelStation : null,
+        billInvoice
       },
       {
         where: {

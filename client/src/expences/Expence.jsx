@@ -39,6 +39,7 @@ const Expence = () => {
       dhs: "",
       fills: "",
       fuelStation: "",
+      billInvoice: "", // Add new field
     },
   });
 
@@ -63,6 +64,7 @@ const Expence = () => {
       dhs: "",
       fills: "",
       fuelStation: "",
+      billInvoice: "", // Add new field
     },
   });
 
@@ -145,13 +147,15 @@ const Expence = () => {
 
   // Handle Edit Expense Click
   const handleEditExpense = (expense) => {
+    console.log(expense);
+    
     setEditingExpense(expense);
 
     // Pre-populate form with expense data
     setEditValue("description", expense.description || "");
     setEditValue("amount", expense.amount || "");
     setEditValue("category", expense.category || "Fuel");
-    setEditValue("vehicleId", expense.vehicle || expense.vehicleId || ""); // Use the vehicle field from expense
+    setEditValue("vehicleId", expense.vehicle || expense.vehicleId || "");
     setEditValue(
       "date",
       expense.date
@@ -167,6 +171,7 @@ const Expence = () => {
     setEditValue("dhs", expense.dhs || "");
     setEditValue("fills", expense.fills || "");
     setEditValue("fuelStation", expense.fuelStation || "");
+    setEditValue("billInvoice", expense.billInvoice || ""); // Add new field
 
     setIsEditExpenseModalOpen(true);
   };
@@ -576,10 +581,9 @@ const Expence = () => {
     );
   };
 
-  // Add conversion constant at the top of the component
-  const GALLON_TO_LITER = 3.78541; // 1 gallon = 3.78541 liters
+  const GALLON_TO_LITER = 3.78541; 
 
-  // Add helper functions for conversion
+
   const gallonsToLiters = (gallons) => {
     return gallons ? (parseFloat(gallons) * GALLON_TO_LITER).toFixed(2) : '0.00';
   };
@@ -588,7 +592,7 @@ const Expence = () => {
     return liters ? (parseFloat(liters) / GALLON_TO_LITER).toFixed(2) : '0.00';
   };
 
-  // Add this filtering logic before the return statement
+
   const filteredExpenses = (sampleExpenses || []).filter((expense) => {
     if (!searchTerm.trim()) return true;
 
@@ -609,7 +613,7 @@ const Expence = () => {
 
       if (response.data.authenticated === true) {
         setLoading(false);
-        // Load all data after authentication check
+        
         await Promise.all([
           viewExpences(),
           gettotals(),
@@ -1114,7 +1118,7 @@ const Expence = () => {
                           </div>
                         </div>
 
-                        <div className="sm:col-span-2">
+                        <div>
                           <label className="block text-sm font-medium text-black mb-2">
                             Fuel Station *
                           </label>
@@ -1132,6 +1136,28 @@ const Expence = () => {
                           {expenseErrors.fuelStation && (
                             <p className="text-red-500 text-xs mt-1">
                               {expenseErrors.fuelStation.message}
+                            </p>
+                          )}
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-black mb-2">
+                            Bill/Invoice Number *
+                          </label>
+                          <input
+                            type="text"
+                            {...registerExpense("billInvoice", {
+                              required:
+                                selectedCategory === "Fuel"
+                                  ? "Bill/Invoice number is required for fuel expenses"
+                                  : false,
+                            })}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-black focus:outline-none text-sm uppercase"
+                            placeholder="Enter bill/invoice number"
+                          />
+                          {expenseErrors.billInvoice && (
+                            <p className="text-red-500 text-xs mt-1">
+                              {expenseErrors.billInvoice.message}
                             </p>
                           )}
                         </div>
@@ -1199,9 +1225,9 @@ const Expence = () => {
                               placeholder="0.00"
                             />
                           </div>
-                          {editExpenseErrors.dhs && (
+                          {expenseErrors.dhs && (
                             <p className="text-red-500 text-xs mt-1">
-                              {editExpenseErrors.dhs.message}
+                              {expenseErrors.dhs.message}
                             </p>
                           )}
                         </div>
@@ -1478,7 +1504,7 @@ const Expence = () => {
                           </div>
                         </div>
 
-                        <div className="sm:col-span-2">
+                        <div>
                           <label className="block text-sm font-medium text-black mb-2">
                             Fuel Station *
                           </label>
@@ -1496,6 +1522,28 @@ const Expence = () => {
                           {editExpenseErrors.fuelStation && (
                             <p className="text-red-500 text-xs mt-1">
                               {editExpenseErrors.fuelStation.message}
+                            </p>
+                          )}
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-black mb-2">
+                            Bill/Invoice Number *
+                          </label>
+                          <input
+                            type="text"
+                            {...registerEditExpense("billInvoice", {
+                              required:
+                                selectedEditCategory === "Fuel"
+                                  ? "Bill/Invoice number is required for fuel expenses"
+                                  : false,
+                            })}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-black focus:outline-none text-sm uppercase"
+                            placeholder="Enter bill/invoice number"
+                          />
+                          {editExpenseErrors.billInvoice && (
+                            <p className="text-red-500 text-xs mt-1">
+                              {editExpenseErrors.billInvoice.message}
                             </p>
                           )}
                         </div>
@@ -1879,6 +1927,16 @@ const Expence = () => {
                                 </span>
                                 <span className="font-semibold text-blue-900 uppercase">
                                   {expencedetail.fuelStation}
+                                </span>
+                              </div>
+                            )}
+                            {expencedetail.billInvoice && (
+                              <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0">
+                                <span className="text-blue-700 text-sm font-medium">
+                                  Bill/Invoice:
+                                </span>
+                                <span className="font-semibold text-blue-900 uppercase">
+                                  {expencedetail.billInvoice}
                                 </span>
                               </div>
                             )}
