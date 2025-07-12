@@ -10,6 +10,12 @@ const { addexpences, viewexpences, addExpencebalance, gettotalexpenceandbalance,
 const { signup } = require("../controller/signup.controller");
 const { paymentadd } = require("../controller/payment.controller");
 const { getDashboardData } = require("../controller/dashboard.controlleer");
+const {
+  addMechanic,
+  viewMechanics,
+  updateMechanic,
+  deleteMechanic,
+} = require("../controller/maintainance.controller");
 
 
 
@@ -46,6 +52,10 @@ router.route("/updatecustomer/:id").put(requireAuth, updateCustomer);
 router.route("/updatedriver/:id").put(requireAuth, updateDriver);
 router.route("/updatevehicle/:id").put(requireAuth, updateVehicle);
 router.put('/editexpence/:id', editexpences);
+router.post("/addmechanic", addMechanic);
+router.get("/viewmechanic", viewMechanics);
+router.put("/updatemechanic/:id", updateMechanic);
+router.delete("/deletemechanic/:id", deleteMechanic);
 
 
 module.exports=router

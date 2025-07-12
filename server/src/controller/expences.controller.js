@@ -5,7 +5,21 @@ const Vehicle = require("../models/Vehicle.model");
 const { Sequelize } = require("sequelize");
 const addexpences = async (req, res) => {
   try {
-    const { description, amount, category, vehicleId, remarks, date, quantity, dhs, fills, fuelStation,billInvoice } = req.body;
+    const {
+      description,
+      amount,
+      category,
+      vehicleId,
+      remarks,
+      date,
+      quantity,
+      dhs,
+      fills,
+      fuelStation,
+      billInvoice,
+      maintenanceShop,
+      maintenanceBillNo,
+    } = req.body;
 
     const save = await Expences.create({
       description,
@@ -18,12 +32,14 @@ const addexpences = async (req, res) => {
       dhs: category === "Fuel" ? dhs : null,
       fills: category === "Fuel" ? fills : null,
       fuelStation: category === "Fuel" ? fuelStation : null,
-      billInvoice
+      billInvoice,
+      maintenanceShop,
+      maintenanceBillNo,
     });
 
     if (save) {
       const oldbalance = await Currentbalance.findAll({
-        raw: true
+        raw: true,
       });
 
       const previousbalance = oldbalance[0].balance;
@@ -32,7 +48,8 @@ const addexpences = async (req, res) => {
       const updatebalance = await Currentbalance.update(
         {
           balance: updatedbalance,
-        }, {
+        },
+        {
           where: {
             id: oldbalance[0].id,
           },
@@ -50,7 +67,6 @@ const addexpences = async (req, res) => {
         message: "Expense added successfully",
         success: true,
       });
-
     } else {
       return res.json({
         message: "Error in adding expense",
@@ -69,7 +85,7 @@ const addexpences = async (req, res) => {
 const viewexpences = async (req, res) => {
   try {
     console.log("Starting to fetch expenses...");
-    
+
     const expenceData = await Expences.findAll({
       raw: true,
       include: [
@@ -80,9 +96,9 @@ const viewexpences = async (req, res) => {
       ],
       order: [["createdAt", "DESC"]],
     });
-    
+
     console.log("Expenses fetched successfully:", expenceData.length);
-    
+
     const expenceCount = await Expences.findAll({
       attributes: [
         "vehicle",
@@ -111,165 +127,159 @@ const viewexpences = async (req, res) => {
     return res.json({
       message: "Error in viewing expenses",
       success: false,
-      error: error.message // Add this for debugging
+      error: error.message, // Add this for debugging
     });
   }
 };
 
-
-const addExpencebalance =async (req,res)=>
-{
+const addExpencebalance = async (req, res) => {
   try {
-    
-const {amount,description,vehicleId}=req.body
-console.log(amount,description);
+    const { amount, description, vehicleId } = req.body;
+    console.log(amount, description);
 
-const getamount=await Currentbalance.findAll({
-  raw:true
-})
+    const getamount = await Currentbalance.findAll({
+      raw: true,
+    });
 
-console.log(getamount[0].balance);
-const previousbalance = parseFloat(getamount[0].balance)
-const updatedbalance = previousbalance + parseFloat(amount)
+    console.log(getamount[0].balance);
+    const previousbalance = parseFloat(getamount[0].balance);
+    const updatedbalance = previousbalance + parseFloat(amount);
 
-console.log(updatedbalance);
+    console.log(updatedbalance);
 
-if(getamount.length<0)
-{
-  return res.json({
-    message: "No balance found",
-    success: false,
-  });
-}
+    if (getamount.length < 0) {
+      return res.json({
+        message: "No balance found",
+        success: false,
+      });
+    }
 
-const updatebalance= await Currentbalance.update({
-  balance:updatedbalance
-},
-{
-  where:{
-    id:getamount[0].id
-  }
-})
+    const updatebalance = await Currentbalance.update(
+      {
+        balance: updatedbalance,
+      },
+      {
+        where: {
+          id: getamount[0].id,
+        },
+      }
+    );
 
+    if (!updatebalance) {
+      return res.json({
+        message: "Error in updating balance",
+        success: false,
+      });
+    }
 
-if(!updatebalance)
-{
-  return res.json({
-    message: "Error in updating balance",
-    success: false,
-  });
+    const savehistory = await BalanceHistory.create({
+      balance: amount,
+      description: description,
+    });
 
-}
-
-const savehistory= await BalanceHistory.create({
-balance:amount,
-description:description
-})
-
-if(savehistory)
-{
-  return res.json({
-    message: "Expense balance added successfully",
-    success: true,
-  });
-}
-return res.json({
-  message: "Error in adding expense balance",
-  success: false,
-});
-
+    if (savehistory) {
+      return res.json({
+        message: "Expense balance added successfully",
+        success: true,
+      });
+    }
+    return res.json({
+      message: "Error in adding expense balance",
+      success: false,
+    });
   } catch (error) {
-  console.log("error in adding expences balance", error);
+    console.log("error in adding expences balance", error);
     return res.json({
       message: "Error in adding expences balance",
       success: false,
     });
   }
-}
+};
 
-
-const gettotalexpenceandbalance=async(req,res)=>
-{
-try {
-const totalExpence = await Expences.findAll({
-  attributes: [
-    [Sequelize.fn("SUM", Sequelize.col("amount")), "totalAmount"],
-  ],
-  raw: true,
-});
-const totalBalance = await Currentbalance.findAll({
-  attributes: ["balance"],
-  raw: true,
-});
-if (totalExpence.length === 0 || totalBalance.length === 0) {
-  return res.json({
-    message: "No expenses or balance found",
-    success: false,
-  });
-}
-const totalAmount = totalExpence[0].totalAmount || 0;
-const balance = totalBalance[0].balance || 0;
-return res.json({
-  message: "Total expense and balance fetched successfully",
-  success: true,
-  totalAmount: totalAmount,
-  balance: balance,
-});
-  
-} catch (error) {
-  console.log("error in getting total expence and balance", error);
-  return res.json({
-    message: "Error in getting total expence and balance",
-    success: false,
-  });
-  
-}
-}
-
-const getbalancehistory=async(req,res)=>
-{
+const gettotalexpenceandbalance = async (req, res) => {
   try {
-    
-    const balanceHistory=await BalanceHistory.findAll({
-      raw:true,
-      balancehistories:[['createdAt', 'DESC']]
-    })
+    const totalExpence = await Expences.findAll({
+      attributes: [
+        [Sequelize.fn("SUM", Sequelize.col("amount")), "totalAmount"],
+      ],
+      raw: true,
+    });
+    const totalBalance = await Currentbalance.findAll({
+      attributes: ["balance"],
+      raw: true,
+    });
+    if (totalExpence.length === 0 || totalBalance.length === 0) {
+      return res.json({
+        message: "No expenses or balance found",
+        success: false,
+      });
+    }
+    const totalAmount = totalExpence[0].totalAmount || 0;
+    const balance = totalBalance[0].balance || 0;
+    return res.json({
+      message: "Total expense and balance fetched successfully",
+      success: true,
+      totalAmount: totalAmount,
+      balance: balance,
+    });
+  } catch (error) {
+    console.log("error in getting total expence and balance", error);
+    return res.json({
+      message: "Error in getting total expence and balance",
+      success: false,
+    });
+  }
+};
 
+const getbalancehistory = async (req, res) => {
+  try {
+    const balanceHistory = await BalanceHistory.findAll({
+      raw: true,
+      balancehistories: [["createdAt", "DESC"]],
+    });
 
-
-if(balanceHistory.length === 0)
-{
-  return res.json({
-    message: "No balance history found",
-    success: false,
-  });
-}
+    if (balanceHistory.length === 0) {
+      return res.json({
+        message: "No balance history found",
+        success: false,
+      });
+    }
     return res.json({
       message: "Balance history fetched successfully",
       success: true,
       balanceHistory: balanceHistory,
     });
-
   } catch (error) {
-    
     console.log("error in getting balance history", error);
     return res.json({
       message: "Error in getting balance history",
       success: false,
     });
   }
-}
-
-
+};
 
 const editexpences = async (req, res) => {
   try {
     const { id } = req.params;
-    const { description, amount, category, vehicleId, remarks, date, quantity, dhs, fills, fuelStation,billInvoice } = req.body;
+    const {
+      description,
+      amount,
+      category,
+      vehicleId,
+      remarks,
+      date,
+      quantity,
+      dhs,
+      fills,
+      fuelStation,
+      billInvoice,
+      maintenanceShop,
+      maintenanceBillNo,
+    } = req.body;
 
     // First, get the current expense to calculate balance difference
     const currentExpense = await Expences.findByPk(id);
-    
+
     if (!currentExpense) {
       return res.json({
         message: "Expense not found",
@@ -294,7 +304,9 @@ const editexpences = async (req, res) => {
         dhs: category === "Fuel" ? dhs : null,
         fills: category === "Fuel" ? fills : null,
         fuelStation: category === "Fuel" ? fuelStation : null,
-        billInvoice
+        billInvoice,
+          maintenanceShop,
+      maintenanceBillNo,
       },
       {
         where: {
@@ -313,7 +325,7 @@ const editexpences = async (req, res) => {
     // Update balance if amount changed
     if (amountDifference !== 0) {
       const currentBalance = await Currentbalance.findAll({
-        raw: true
+        raw: true,
       });
 
       if (currentBalance.length === 0) {
@@ -349,7 +361,6 @@ const editexpences = async (req, res) => {
       message: "Expense updated successfully",
       success: true,
     });
-
   } catch (error) {
     console.log("error in updating expense", error);
     return res.json({
@@ -359,6 +370,11 @@ const editexpences = async (req, res) => {
   }
 };
 
-module.exports = { addexpences, viewexpences, addExpencebalance, gettotalexpenceandbalance,
-  getbalancehistory, editexpences
- };
+module.exports = {
+  addexpences,
+  viewexpences,
+  addExpencebalance,
+  gettotalexpenceandbalance,
+  getbalancehistory,
+  editexpences,
+};

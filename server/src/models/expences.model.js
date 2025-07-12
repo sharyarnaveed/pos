@@ -31,7 +31,7 @@ const Expences = sequelize.define(
     },
     date: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: false,
     },
     // Fuel-specific fields
     quantity: {
@@ -50,10 +50,18 @@ const Expences = sequelize.define(
       type: DataTypes.STRING(100),
       allowNull: true,
     },
-    billInvoice:{
-      type:DataTypes.STRING,
-      allowNull:true
-    }
+    billInvoice: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    maintenanceShop: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    maintenanceBillNo: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
   },
   {
     timestamps: true,
