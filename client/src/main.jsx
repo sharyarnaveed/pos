@@ -4,6 +4,7 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import "./index.css";
 import App from "./App.jsx";
 import { Toaster } from "react-hot-toast";
+import MechanicManagement from "./maintainance/MechanicManagement.jsx";
 
 // Lazy load components
 const Signin = lazy(() => import("./Auth/Signin.jsx"));
@@ -128,6 +129,10 @@ const router = createBrowserRouter([
             <PaymentInvoice/>
           </Suspense>
         )
+      },
+      {
+        path:"/mechanics",
+        element:<MechanicManagement/>
       }
     ],
   },

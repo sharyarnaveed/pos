@@ -16,6 +16,7 @@ const Expence = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("all");
   const [Vehicles, SetVehicles] = useState([]);
+  // const [mechanics, setMechanics] = useState([]);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -39,7 +40,10 @@ const Expence = () => {
       dhs: "",
       fills: "",
       fuelStation: "",
-      billInvoice: "", // Add new field
+      billInvoice: "",
+      // Add maintenance-specific fields
+      maintenanceShop: "",
+      maintenanceBillNo: "",
     },
   });
 
@@ -64,7 +68,10 @@ const Expence = () => {
       dhs: "",
       fills: "",
       fuelStation: "",
-      billInvoice: "", // Add new field
+      billInvoice: "",
+      // Add maintenance-specific fields
+      maintenanceShop: "",
+      maintenanceBillNo: "",
     },
   });
 
@@ -171,7 +178,11 @@ const Expence = () => {
     setEditValue("dhs", expense.dhs || "");
     setEditValue("fills", expense.fills || "");
     setEditValue("fuelStation", expense.fuelStation || "");
-    setEditValue("billInvoice", expense.billInvoice || ""); // Add new field
+    setEditValue("billInvoice", expense.billInvoice || "");
+
+    // Add maintenance-specific fields
+    setEditValue("maintenanceShop", expense.maintenanceShop || "");
+    setEditValue("maintenanceBillNo", expense.maintenanceBillNo || "");
 
     setIsEditExpenseModalOpen(true);
   };
@@ -236,6 +247,23 @@ const Expence = () => {
     }
   }, []);
 
+  // Add new state for mechanics/shops
+  const [mechanics, setMechanics] = useState([]);
+
+  // Add function to fetch mechanics data
+  const getMechanicsData = useCallback(async () => {
+    try {
+      const response = await api.get("/api/user/viewmechanic");
+      if (response.data.success) {
+        setMechanics(response.data.mechanicsData);
+      }
+      console.log(response.data);
+      
+    } catch (error) {
+      console.log("error in getting mechanics data", error);
+    }
+  }, []);
+
   const [balancehistory, setBalanceHistory] = useState([]);
 
   const getbalancehistory = useCallback(async () => {
@@ -276,6 +304,7 @@ const Expence = () => {
     gettotals();
     getVechilesData();
     getbalancehistory();
+    getMechanicsData();
   }, []);
 
   // Vehicle Expense Chart Component
@@ -619,6 +648,7 @@ const Expence = () => {
           gettotals(),
           getVechilesData(),
           getbalancehistory(),
+          getMechanicsData() // Add this line
         ]);
       } else {
         navigate("/signin");
@@ -778,14 +808,7 @@ const Expence = () => {
                     AED {totalExpence}
                   </div>
                 </div>
-                {/* <div className="bg-white border border-gray-200 p-4 lg:p-6 rounded-lg shadow-sm">
-                  <div className="text-xs lg:text-sm text-gray-600">
-                    Current Balance
-                  </div>
-                  <div className="text-lg lg:text-2xl font-bold text-blue-600 mt-2">
-                    AED {currentbalance}
-                  </div>
-                </div> */}
+           
               </div>
 
               {/* Conditional Content Based on Active Tab */}
@@ -1102,6 +1125,76 @@ const Expence = () => {
                         placeholder="Additional notes or remarks"
                       />
                     </div>
+
+                    {/* Maintenance-specific fields - Only show when category is Maintenance */}
+                    {selectedCategory === "Maintenance" && (
+                      <>
+                        {/* Maintenance Section Header */}
+                        <div className="sm:col-span-2 border-t border-gray-200 pt-6 mt-4">
+                          <div className="flex items-center gap-2 mb-4">
+                            <div className="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
+                              <span className="text-yellow-600 text-sm">🔧</span>
+                            </div>
+                            <h4 className="text-lg font-semibold text-gray-900">
+                              Maintenance Details
+                            </h4>
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-black mb-2">
+                            Shop Name *
+                          </label>
+                          <select
+                            {...registerExpense("maintenanceShop", {
+                              required:
+                                selectedCategory === "Maintenance"
+                                  ? "Shop name is required for maintenance expenses"
+                                  : false,
+                            })}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-black focus:outline-none text-sm"
+                          >
+                            <option value="">Select Maintenance Shop</option>
+                            {mechanics.map((mechanic) => (
+                              <option
+                                key={mechanic.id}
+                                value={mechanic.shopName}
+                                className="uppercase"
+                              >
+                                {mechanic.shopName}
+                              </option>
+                            ))}
+                          </select>
+                          {expenseErrors.maintenanceShop && (
+                            <p className="text-red-500 text-xs mt-1">
+                              {expenseErrors.maintenanceShop.message}
+                            </p>
+                          )}
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-black mb-2">
+                            Bill Number *
+                          </label>
+                          <input
+                            type="text"
+                            {...registerExpense("maintenanceBillNo", {
+                              required:
+                                selectedCategory === "Maintenance"
+                                  ? "Bill number is required for maintenance expenses"
+                                  : false,
+                            })}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-black focus:outline-none text-sm uppercase"
+                            placeholder="Enter bill/invoice number"
+                          />
+                          {expenseErrors.maintenanceBillNo && (
+                            <p className="text-red-500 text-xs mt-1">
+                              {expenseErrors.maintenanceBillNo.message}
+                            </p>
+                          )}
+                        </div>
+                      </>
+                    )}
 
                     {/* Fuel-specific fields - Only show when category is Fuel */}
                     {selectedCategory === "Fuel" && (
@@ -1488,7 +1581,7 @@ const Expence = () => {
                         placeholder="Additional notes or remarks"
                       />
                     </div>
-
+</div>
                     {/* Fuel-specific fields for Edit - Only show when category is Fuel */}
                     {selectedEditCategory === "Fuel" && (
                       <>
@@ -1699,127 +1792,129 @@ const Expence = () => {
                         </div>
                       </>
                     )}
-                  </div>
 
-                  {/* Modal Footer */}
-                  <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 mt-6 pt-6 border-t border-gray-200">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsEditExpenseModalOpen(false);
-                        setEditingExpense(null);
-                        resetEditExpense();
-                      }}
-                      className="w-full sm:w-auto px-4 py-2 text-sm border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      className="w-full sm:w-auto px-4 py-2 text-sm bg-black text-white hover:bg-gray-800 rounded-lg"
-                    >
-                      Update Expense
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          )}
+                    {/* Maintenance-specific fields for Edit - Only show when category is Maintenance */}
+                    {selectedEditCategory === "Maintenance" && (
+                      <>
+                        {/* Maintenance Section Header */}
+                        <div className="sm:col-span-2 border-t border-gray-200 pt-6 mt-4">
+                          <div className="flex items-center gap-2 mb-4">
+                            <div className="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
+                              <span className="text-yellow-600 text-sm">🔧</span>
+                            </div>
+                            <h4 className="text-lg font-semibold text-gray-900">
+                              Maintenance Details
+                            </h4>
+                          </div>
+                        </div>
 
-          {/* Add Amount Modal - Enhanced Responsive */}
-          {isAddAmountModalOpen && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
-              <div className="bg-white w-full max-w-md max-h-[90vh] overflow-y-auto rounded-lg m-2">
-                {/* Modal Header */}
-                <div className="bg-black text-white px-4 sm:px-6 py-3 sm:py-4 flex justify-between items-center sticky top-0 z-10">
-                  <h3 className="text-base sm:text-lg font-medium">
-                    Add Amount
-                  </h3>
-                  <button
-                    onClick={() => setIsAddAmountModalOpen(false)}
-                    className="text-white hover:text-gray-300 text-xl"
-                  >
-                    ×
-                  </button>
-                </div>
+                        <div>
+                          <label className="block text-sm font-medium text-black mb-2">
+                            Shop Name *
+                          </label>
+                          <select
+                            {...registerEditExpense("maintenanceShop", {
+                              required:
+                                selectedEditCategory === "Maintenance"
+                                  ? "Shop name is required for maintenance expenses"
+                                  : false,
+                            })}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-black focus:outline-none text-sm"
+                          >
+                            <option value="">Select Maintenance Shop</option>
+                            {mechanics.map((mechanic) => (
+                              <option
+                                key={mechanic.id}
+                                value={mechanic.shopName}
+                                className="uppercase"
+                              >
+                                {mechanic.shopName}
+                              </option>
+                            ))}
+                          </select>
+                          {editExpenseErrors.maintenanceShop && (
+                            <p className="text-red-500 text-xs mt-1">
+                              {editExpenseErrors.maintenanceShop.message}
+                            </p>
+                          )}
+                        </div>
 
-                {/* Modal Body */}
-                <form
-                  onSubmit={handleSubmitAmount(onSubmitAmount)}
-                  className="p-4 sm:p-6"
-                >
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-black mb-2">
-                        Amount *
-                      </label>
-                      <input
-                        type="number"
-                        step="0.01"
-                        {...registerAmount("amount", {
-                          required: "Amount is required",
-                          min: {
-                            value: 0.01,
-                            message: "Amount must be greater than 0",
-                          },
-                        })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-black focus:outline-none text-sm"
-                        placeholder="0.00"
-                      />
-                      {amountErrors.amount && (
-                        <p className="text-red-500 text-xs mt-1">
-                          {amountErrors.amount.message}
-                        </p>
-                      )}
+                        <div>
+                          <label className="block text-sm font-medium text-black mb-2">
+                            Bill Number *
+                          </label>
+                          <input
+                            type="text"
+                            {...registerEditExpense("maintenanceBillNo", {
+                              required:
+                                selectedEditCategory === "Maintenance"
+                                  ? "Bill number is required for maintenance expenses"
+                                  : false,
+                            })}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-black focus:outline-none text-sm uppercase"
+                            placeholder="Enter bill/invoice number"
+                          />
+                          {editExpenseErrors.maintenanceBillNo && (
+                            <p className="text-red-500 text-xs mt-1">
+                              {editExpenseErrors.maintenanceBillNo.message}
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Maintenance Summary */}
+                        <div className="sm:col-span-2">
+                          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                            <h5 className="text-sm font-medium text-yellow-900 mb-2">
+                              🔧 Maintenance Summary
+                            </h5>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                              <div>
+                                <span className="text-yellow-700">Shop Name:</span>
+                                <span className="font-medium text-yellow-900 ml-2">
+                                  {watchEditExpense("maintenanceShop") || "Not selected"}
+                                </span>
+                              </div>
+                              <div>
+                                <span className="text-yellow-700">Bill Number:</span>
+                                <span className="font-medium text-yellow-900 ml-2">
+                                  {watchEditExpense("maintenanceBillNo") || "Not specified"}
+                                </span>
+                              </div>
+                              <div>
+                                <span className="text-yellow-700">Total Cost:</span>
+                                <span className="font-bold text-yellow-900 ml-2">
+                                  AED {watchEditExpense("amount") || "0.00"}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="mt-2 text-xs text-yellow-600">
+                              🔧 Maintenance expense for vehicle repair/service
+                            </div>
+                          </div>
+                        </div>
+                      </>
+                    )}
+
+                    {/* Modal Footer */}
+                    <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 mt-6 pt-6 border-t border-gray-200">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsEditExpenseModalOpen(false);
+                          setEditingExpense(null);
+                          resetEditExpense();
+                        }}
+                        className="w-full sm:w-auto px-4 py-2 text-sm border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        className="w-full sm:w-auto px-4 py-2 text-sm bg-black text-white hover:bg-gray-800 rounded-lg"
+                      >
+                        Update Expense
+                      </button>
                     </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-black mb-2">
-                        Description
-                      </label>
-                      <input
-                        type="text"
-                        {...registerAmount("description")}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-black focus:outline-none text-sm uppercase"
-                        placeholder="Brief description (optional)"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-black mb-2">
-                        Date *
-                      </label>
-                      <input
-                        type="date"
-                        {...registerAmount("date", {
-                          required: "Date is required",
-                        })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-black focus:outline-none text-sm"
-                      />
-                      {amountErrors.date && (
-                        <p className="text-red-500 text-xs mt-1">
-                          {amountErrors.date.message}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Modal Footer */}
-                  <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 mt-6 pt-6 border-t border-gray-200">
-                    <button
-                      type="button"
-                      onClick={() => setIsAddAmountModalOpen(false)}
-                      className="w-full sm:w-auto px-4 py-2 text-sm border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      className="w-full sm:w-auto px-4 py-2 text-sm bg-black text-white hover:bg-gray-800 rounded-lg"
-                    >
-                      Add Amount
-                    </button>
-                  </div>
                 </form>
               </div>
             </div>
@@ -2072,6 +2167,122 @@ const Expence = () => {
                       </div>
                     </div>
                   )}
+
+{expencedetail.category === "Maintenance" && (
+  <div className="mt-6">
+    <div className="border-t border-gray-200 pt-6">
+      <div className="flex items-center gap-2 mb-4">
+        <div className="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
+          <span className="text-yellow-600 text-sm">🔧</span>
+        </div>
+        <h4 className="text-lg font-semibold text-black">
+          Maintenance Details
+        </h4>
+      </div>
+
+      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {expencedetail.maintenanceShop && (
+            <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0">
+              <span className="text-yellow-700 text-sm font-medium">
+                Shop Name:
+              </span>
+              <span className="font-semibold text-yellow-900 uppercase">
+                {expencedetail.maintenanceShop}
+              </span>
+            </div>
+          )}
+          {expencedetail.maintenanceBillNo && (
+            <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0">
+              <span className="text-yellow-700 text-sm font-medium">
+                Bill Number:
+              </span>
+              <span className="font-semibold text-yellow-900 uppercase">
+                {expencedetail.maintenanceBillNo}
+              </span>
+            </div>
+          )}
+          <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0">
+            <span className="text-yellow-700 text-sm font-medium">
+              Service Type:
+            </span>
+            <span className="font-semibold text-yellow-900">
+              {expencedetail.category.toUpperCase()}
+            </span>
+          </div>
+          <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0">
+            <span className="text-yellow-700 text-sm font-medium">
+              Service Date:
+            </span>
+            <span className="font-semibold text-yellow-900">
+              {expencedetail.date.split("T")[0]}
+            </span>
+          </div>
+        </div>
+
+        {/* Maintenance Summary */}
+        <div className="mt-4 pt-4 border-t border-yellow-200">
+          <div className="flex justify-between items-center">
+            <span className="text-yellow-700 text-sm font-medium">
+              Total Service Cost:
+            </span>
+            <span className="font-bold text-yellow-900 text-lg">
+              AED {parseFloat(expencedetail.amount).toFixed(2)}
+            </span>
+          </div>
+          <div className="text-xs text-yellow-600 mt-1">
+            Maintenance service performed on {expencedetail.date.split("T")[0]}
+          </div>
+        </div>
+
+        {/* Service Information */}
+        <div className="mt-4 pt-4 border-t border-yellow-200">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+            <div className="flex justify-between">
+              <span className="text-yellow-700">
+                Vehicle:
+              </span>
+              <span className="font-medium text-yellow-900 uppercase">
+                {expencedetail["vehicleDetails.plateNumber"]}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-yellow-700">
+                Service Category:
+              </span>
+              <span className="font-medium text-yellow-900">
+                MAINTENANCE
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Additional Info */}
+        <div className="mt-4 p-3 bg-yellow-100 border border-yellow-300 rounded-lg">
+          <div className="flex items-center gap-2">
+            <span className="text-yellow-600 text-sm">🔧</span>
+            <span className="text-yellow-800 text-xs font-medium">
+              Maintenance Service Details
+            </span>
+          </div>
+          <div className="mt-2 text-xs text-yellow-700">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {expencedetail.maintenanceShop && (
+                <div>• Shop: {expencedetail.maintenanceShop}</div>
+              )}
+              {expencedetail.maintenanceBillNo && (
+                <div>• Bill: {expencedetail.maintenanceBillNo}</div>
+              )}
+              <div>• Cost: AED {parseFloat(expencedetail.amount).toFixed(2)}</div>
+              <div>• Date: {expencedetail.date.split("T")[0]}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
+
 
                   {/* Remarks */}
                   <div className="mt-6">

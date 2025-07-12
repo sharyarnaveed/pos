@@ -16,6 +16,12 @@ const {
   updateMechanic,
   deleteMechanic,
 } = require("../controller/maintainance.controller");
+const {
+  addFuelStation,
+  viewFuelStations,
+  updateFuelStation,
+  deleteFuelStation,
+} = require("../controller/fuel.controller");
 
 
 
@@ -56,6 +62,10 @@ router.post("/addmechanic", addMechanic);
 router.get("/viewmechanic", viewMechanics);
 router.put("/updatemechanic/:id", updateMechanic);
 router.delete("/deletemechanic/:id", deleteMechanic);
+router.route("/addfuelstation").post(requireAuth, addFuelStation);
+router.route("/viewfuelstation").get(requireAuth, viewFuelStations);
+router.route("/updatefuelstation/:id").put(requireAuth, updateFuelStation);
+router.route("/deletefuelstation/:id").delete(requireAuth, deleteFuelStation);
 
 
 module.exports=router

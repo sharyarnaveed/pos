@@ -1,6 +1,7 @@
 import React from "react";
 import { FaFilter, FaDatabase, FaTruck, FaSignOutAlt } from "react-icons/fa";
 import { IoPeopleOutline } from "react-icons/io5";
+import { GrHostMaintenance } from "react-icons/gr";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { FaMoneyBill1 } from "react-icons/fa6";
 import api from "../api";
@@ -16,6 +17,11 @@ const Sidebar = ({ isSidebarCollapsed, setIsSidebarCollapsed }) => {
     { icon: <FaTruck />, label: "Vehicle", to: "/vehicle" },
     { icon: "💳", label: "Expenses", to: "/expenses" },
     { icon: <FaMoneyBill1 />, label: "Payments", to: "/payment" },
+      {
+    label: "Mechanics",
+    icon: <GrHostMaintenance />,
+    to: "/mechanics",
+  },
   ];
 
   const handleLogout = async () => {
