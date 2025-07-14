@@ -9,7 +9,7 @@ export default defineConfig({
   ],
   server:{
     proxy:{
-        '/api': 'https://admin.burjalsama.site',
+        '/api': 'http://localhost:3000',
     }
   }
   
