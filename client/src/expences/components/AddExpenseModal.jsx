@@ -12,6 +12,7 @@ const AddExpenseModal = ({
   selectedCategory,
   watchExpense,
   gallonsToLiters,
+  fuelStations,
 }) => {
   if (!isOpen) return null;
   return (
@@ -168,14 +169,19 @@ const AddExpenseModal = ({
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-black mb-2">Fuel Station *</label>
-                  <input
-                    type="text"
+                  <select
                     {...registerExpense("fuelStation", {
                       required: selectedCategory === "Fuel" ? "Fuel station is required for fuel expenses" : false,
                     })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-black focus:outline-none text-sm uppercase"
-                    placeholder="Enter fuel station name (e.g., ADNOC, ENOC, EPPCO)"
-                  />
+                  >
+                    <option value="">Select Fuel Station</option>
+                    {fuelStations && fuelStations.map((station) => (
+                      <option key={station.id} value={station.stationName} className="uppercase">
+                        {station.stationName} {station.location ? `- ${station.location}` : ""}
+                      </option>
+                    ))}
+                  </select>
                   {expenseErrors.fuelStation && (
                     <p className="text-red-500 text-xs mt-1">{expenseErrors.fuelStation.message}</p>
                   )}

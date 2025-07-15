@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import Spinner from "../components/Spinner";
 import ViewExpenseDetail from "./components/ViewExpenseDetail";
 import AddExpenseModal from "./components/AddExpenseModal";
+import EditExpenseModal from "./components/EditExpenseModal";
 
 const Expence = () => {
   const [isAddExpenseModalOpen, setIsAddExpenseModalOpen] = useState(false);
@@ -176,21 +177,18 @@ const Expence = () => {
     );
     setEditValue("remarks", expense.remarks || "");
 
-    // Add fuel-specific fields
     setEditValue("quantity", expense.quantity || "");
     setEditValue("dhs", expense.dhs || "");
     setEditValue("fills", expense.fills || "");
     setEditValue("fuelStation", expense.fuelStation || "");
     setEditValue("billInvoice", expense.billInvoice || "");
 
-    // Add maintenance-specific fields
     setEditValue("maintenanceShop", expense.maintenanceShop || "");
     setEditValue("maintenanceBillNo", expense.maintenanceBillNo || "");
 
     setIsEditExpenseModalOpen(true);
   };
 
-  // Handle Add Amount Form Submission
   const onSubmitAmount = async (data) => {
     try {
       // API call example (uncomment when backend is ready)
@@ -301,15 +299,28 @@ const Expence = () => {
     }
   }, []);
 
+  const [fuelStations, setFuelStations] = useState([]);
+
+  const getFuelStations = useCallback(async () => {
+    try {
+      const response = await api.get("/api/user/viewfuelstation");
+      if (response.data.success) {
+        setFuelStations(response.data.fuelStationsData || []);
+      }
+    } catch (error) {
+      console.error("Error fetching fuel stations:", error);
+    }
+  }, []);
+
   useEffect(() => {
     viewExpences();
     gettotals();
     getVechilesData();
     getbalancehistory();
     getMechanicsData();
+    getFuelStations();
   }, []);
 
-  // Vehicle Expense Chart Component
   const VehicleExpenseChart = () => {
     if (!sampleVehicles || sampleVehicles.length === 0) {
       return (
@@ -355,27 +366,6 @@ const Expence = () => {
 
     return (
       <div className="bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden">
-        {/* Header */}
-        <div className="bg-gradient-to-r from-gray-900 to-gray-800 p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-xl font-bold text-white mb-2">
-                Vehicle Expenses Analysis
-              </h3>
-              <p className="text-gray-300 text-sm">
-                Comprehensive breakdown of expenses by vehicle
-              </p>
-            </div>
-            <div className="text-right">
-              <div className="text-3xl text-white mb-1">🚗</div>
-              <div className="text-white text-sm font-medium">
-                {sampleVehicles.length} Vehicles
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Chart Content */}
         <div className="p-6">
           <div className="space-y-6">
             {sampleVehicles.map((vehicleData, index) => {
@@ -394,7 +384,6 @@ const Expence = () => {
                   key={index}
                   className="group hover:bg-gray-50 p-4 rounded-lg transition-all duration-300 border border-transparent hover:border-gray-200"
                 >
-                  {/* Vehicle Header */}
                   <div className="flex justify-between items-center mb-4">
                     <div className="flex items-center gap-4">
                       <div className="relative">
@@ -439,19 +428,16 @@ const Expence = () => {
                     </div>
                   </div>
 
-                  {/* Progress Bar */}
                   <div className="relative mb-3">
                     <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden shadow-inner">
                       <div
                         className={`bg-gradient-to-r ${gradientClass} h-4 rounded-full transition-all duration-1000 ease-out shadow-sm relative overflow-hidden`}
                         style={{ width: `${percentage}%` }}
                       >
-                        {/* Animated shine effect */}
                         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-30 animate-pulse"></div>
                       </div>
                     </div>
 
-                    {/* Progress indicator */}
                     <div
                       className="absolute top-0 transform -translate-y-8 transition-all duration-1000 ease-out"
                       style={{ left: `${Math.min(percentage, 95)}%` }}
@@ -467,7 +453,6 @@ const Expence = () => {
                     </div>
                   </div>
 
-                  {/* Additional Stats */}
                   <div className="flex justify-between items-center text-xs text-gray-500 mt-2">
                     <span>Relative to highest expense vehicle</span>
                     <div className="flex items-center gap-4">
@@ -492,119 +477,9 @@ const Expence = () => {
           </div>
         </div>
 
-        {/* Footer */}
         <div className="bg-gray-50 px-6 py-4 border-t">
           <div className="flex items-center justify-between text-sm text-gray-600">
             <span>📊 Data updated in real-time</span>
-            <span>Last updated: {new Date().toLocaleDateString()}</span>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  // Balance History Component
-  const BalanceHistoryChart = () => {
-    if (!balancehistory || balancehistory.length === 0) {
-      return (
-        <div className="bg-white border border-gray-200 p-6 rounded-lg shadow-sm">
-          <h3 className="text-lg font-semibold text-black mb-6">
-            Balance History
-          </h3>
-          <div className="text-center py-12">
-            <div className="text-gray-400 text-6xl mb-4">💰</div>
-            <p className="text-gray-500">No balance history available</p>
-          </div>
-        </div>
-      );
-    }
-
-    const maxAmount = Math.max(...balancehistory.map((entry) => entry.amount));
-    const minAmount = Math.min(...balancehistory.map((entry) => entry.amount));
-
-    return (
-      <div className="bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden">
-        {/* Balance History Timeline */}
-        <div className="p-6">
-          <div className="space-y-4">
-            {balancehistory.map((entry, index) => {
-              const isPositive = entry.type === "credit" || entry.amount > 0;
-              const date = new Date(entry.createdAt || entry.date);
-
-              return (
-                <div
-                  key={index}
-                  className="group hover:bg-gray-50 p-4 rounded-lg transition-all duration-300 border border-transparent hover:border-gray-200"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <div
-                        className={`w-12 h-12 ${
-                          isPositive ? "bg-green-100" : "bg-red-100"
-                        } rounded-full flex items-center justify-center shadow-sm`}
-                      >
-                        <span
-                          className={`text-lg ${
-                            isPositive ? "text-green-600" : "text-red-600"
-                          }`}
-                        >
-                          {isPositive ? "💰" : "💸"}
-                        </span>
-                      </div>
-                      <div>
-                        <h4 className="font-semibold text-gray-900 uppercase">
-                          {entry.description ||
-                            (isPositive ? "Amount Added" : "Expense Deducted")}
-                        </h4>
-                        <p className="text-sm text-gray-500">
-                          {date.toLocaleDateString()} at{" "}
-                          {date.toLocaleTimeString()}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="text-right">
-                      <div
-                        className={`text-xl font-bold ${
-                          isPositive ? " text-red-600" : "text-green-600"
-                        }`}
-                      >
-                        {isPositive ? "-" : "+"}AED{" "}
-                        {Math.abs(entry.balance).toFixed(2)}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Transaction Type Badge */}
-                  <div className="mt-3 flex items-center justify-between">
-                    <span
-                      className={`text-xs px-3 py-1 rounded-full ${
-                        isPositive
-                          ? "bg-green-100 text-green-800"
-                          : "bg-red-100 text-red-800"
-                      }`}
-                    >
-                      {(
-                        entry.type || (isPositive ? "Credit" : "Debit")
-                      ).toUpperCase()}
-                    </span>
-
-                    {entry.reference && (
-                      <span className="text-xs text-gray-400 uppercase">
-                        Ref: {entry.reference}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="bg-gray-50 px-6 py-4 border-t">
-          <div className="flex items-center justify-between text-sm text-gray-600">
-            <span>💰 Balance history updated in real-time</span>
             <span>Last updated: {new Date().toLocaleDateString()}</span>
           </div>
         </div>
@@ -650,7 +525,7 @@ const Expence = () => {
           gettotals(),
           getVechilesData(),
           getbalancehistory(),
-          getMechanicsData(), // Add this line
+          getMechanicsData(),
         ]);
       } else {
         navigate("/signin");
@@ -671,7 +546,6 @@ const Expence = () => {
 
   return (
     <>
-      {/* Expense Detail Modal */}
       {showExpenseDetail && (
         <ViewExpenseDetail
           expense={expencedetail}
@@ -701,14 +575,7 @@ const Expence = () => {
                   Expenses
                 </h1>
 
-                {/* Mobile Action Buttons */}
                 <div className="flex gap-2">
-                  {/* <button
-                    onClick={() => setIsAddAmountModalOpen(true)}
-                    className="bg-gray-800 text-white px-2 py-1 text-xs rounded"
-                  >
-                    Amount
-                  </button> */}
                   <button
                     onClick={() => setIsAddExpenseModalOpen(true)}
                     className="bg-black text-white px-2 py-1 text-xs rounded"
@@ -719,7 +586,6 @@ const Expence = () => {
               </div>
             </div>
 
-            {/* Desktop Header */}
             <div className="hidden lg:block border-b border-gray-200 bg-white">
               <div className="px-4 sm:px-8 py-4 md:py-6">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -732,12 +598,6 @@ const Expence = () => {
                     </p>
                   </div>
                   <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
-                    {/* <button
-                      onClick={() => setIsAddAmountModalOpen(true)}
-                      className="bg-gray-800 text-white px-4 py-2 text-xs md:text-sm font-medium hover:bg-gray-700 transition-colors w-full sm:w-auto"
-                    >
-                      Add Amount
-                    </button> */}
                     <button
                       onClick={() => setIsAddExpenseModalOpen(true)}
                       className="bg-black text-white px-4 py-2 text-xs md:text-sm font-medium hover:bg-gray-800 transition-colors w-full sm:w-auto"
@@ -749,11 +609,8 @@ const Expence = () => {
               </div>
             </div>
 
-            {/* Content */}
             <div className="p-3 lg:p-8">
-              {/* Search and Tabs */}
               <div className="mb-6 lg:mb-8">
-                {/* Search Bar */}
                 <div className="mb-4 lg:mb-6">
                   <input
                     type="text"
@@ -770,7 +627,6 @@ const Expence = () => {
                   )}
                 </div>
 
-                {/* Tabs - Mobile Scrollable */}
                 <div className="flex overflow-x-auto border-b border-gray-200 mb-4 lg:mb-6 scrollbar-hide">
                   <div className="flex space-x-0 min-w-max">
                     <button
@@ -793,16 +649,6 @@ const Expence = () => {
                     >
                       View by Vehicle
                     </button>
-                    {/* <button
-                      onClick={() => setActiveTab("history")}
-                      className={`px-4 lg:px-6 py-2 lg:py-3 text-sm lg:text-base font-medium border-b-2 transition-colors whitespace-nowrap ${
-                        activeTab === "history"
-                          ? "border-black text-black"
-                          : "border-transparent text-gray-600 hover:text-black"
-                      }`}
-                    >
-                      Balance History
-                    </button> */}
                   </div>
                 </div>
               </div>
@@ -819,15 +665,9 @@ const Expence = () => {
                 </div>
               </div>
 
-              {/* Conditional Content Based on Active Tab */}
               {activeTab === "vehicle" ? (
-                /* Vehicle Expense Chart */
                 <VehicleExpenseChart />
-              ) : activeTab === "history" ? (
-                /* Balance History Chart */
-                <BalanceHistoryChart />
               ) : (
-                /* Expenses Table - Mobile Cards + Desktop Table */
                 <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
                   {/* Desktop Table View */}
                   <div className="hidden lg:block">
@@ -999,514 +839,33 @@ const Expence = () => {
               selectedCategory={selectedCategory}
               watchExpense={watchExpense}
               gallonsToLiters={gallonsToLiters}
+              fuelStations={fuelStations} // <-- Add this prop
             />
           )}
 
           {/* Edit Expense Modal - Similar conditional structure */}
           {isEditExpenseModalOpen && editingExpense && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
-              <div className="bg-white w-full max-w-full sm:max-w-2xl max-h-[95vh] overflow-y-auto rounded-lg m-2">
-                {/* Modal Header */}
-                <div className="bg-black text-white px-4 sm:px-6 py-3 sm:py-4 flex justify-between items-center sticky top-0 z-10">
-                  <h3 className="text-base sm:text-lg font-medium">
-                    Edit Expense
-                  </h3>
-                  <button
-                    onClick={() => {
-                      setIsEditExpenseModalOpen(false);
-                      setEditingExpense(null);
-                      resetEditExpense();
-                    }}
-                    className="text-white hover:text-gray-300 text-xl"
-                  >
-                    ×
-                  </button>
-                </div>
-
-                {/* Modal Body */}
-                <form
-                  onSubmit={handleSubmitEditExpense(onSubmitEditExpense)}
-                  className="p-4 sm:p-6"
-                >
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-                    <div className="sm:col-span-2">
-                      <label className="block text-sm font-medium text-black mb-2">
-                        Description *
-                      </label>
-                      <input
-                        type="text"
-                        {...registerEditExpense("description", {
-                          required: "Description is required",
-                        })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-black focus:outline-none text-sm uppercase"
-                        placeholder="Enter expense description"
-                      />
-                      {editExpenseErrors.description && (
-                        <p className="text-red-500 text-xs mt-1">
-                          {editExpenseErrors.description.message}
-                        </p>
-                      )}
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-black mb-2">
-                        Amount *
-                      </label>
-                      <input
-                        type="number"
-                        step="0.01"
-                        {...registerEditExpense("amount", {
-                          required: "Amount is required",
-                          min: {
-                            value: 0.01,
-                            message: "Amount must be greater than 0",
-                          },
-                        })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-black focus:outline-none text-sm"
-                        placeholder="0.00"
-                      />
-                      {editExpenseErrors.amount && (
-                        <p className="text-red-500 text-xs mt-1">
-                          {editExpenseErrors.amount.message}
-                        </p>
-                      )}
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-black mb-2">
-                        Category *
-                      </label>
-                      <select
-                        {...registerEditExpense("category", {
-                          required: "Category is required",
-                        })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-black focus:outline-none text-sm"
-                      >
-                        <option value="Fuel">Fuel</option>
-                        <option value="Maintenance">Maintenance</option>
-                        <option value="Fixed Costs">Fixed Costs</option>
-                        <option value="Marketing">Marketing</option>
-                        <option value="Utilities">Utilities</option>
-                        <option value="Insurance">Insurance</option>
-                        <option value="Other">Other</option>
-                      </select>
-                      {editExpenseErrors.category && (
-                        <p className="text-red-500 text-xs mt-1">
-                          {editExpenseErrors.category.message}
-                        </p>
-                      )}
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-black mb-2">
-                        Vehicle
-                      </label>
-                      <select
-                        {...registerEditExpense("vehicleId", {
-                          required: "Vehicle is required",
-                        })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-black focus:outline-none text-sm"
-                      >
-                        <option value="">Select Vehicle</option>
-                        {Vehicles.map((item) => (
-                          <option
-                            key={item.id}
-                            value={item.id}
-                            className="uppercase"
-                          >
-                            {item.plateNumber}
-                          </option>
-                        ))}
-                      </select>
-                      {editExpenseErrors.vehicleId && (
-                        <p className="text-red-500 text-xs mt-1">
-                          {editExpenseErrors.vehicleId.message}
-                        </p>
-                      )}
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-black mb-2">
-                        Date *
-                      </label>
-                      <input
-                        type="date"
-                        {...registerEditExpense("date", {
-                          required: "Date is required",
-                        })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-black focus:outline-none text-sm"
-                      />
-                      {editExpenseErrors.date && (
-                        <p className="text-red-500 text-xs mt-1">
-                          {editExpenseErrors.date.message}
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="sm:col-span-2">
-                      <label className="block text-sm font-medium text-black mb-2">
-                        Remarks
-                      </label>
-                      <textarea
-                        {...registerEditExpense("remarks")}
-                        rows="3"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-black focus:outline-none text-sm resize-none uppercase"
-                        placeholder="Additional notes or remarks"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Fuel-specific fields for Edit - Only show when category is Fuel */}
-                  {selectedEditCategory === "Fuel" && (
-                    <>
-                      {/* Fuel Section Header */}
-                      <div className="sm:col-span-2 border-t border-gray-200 pt-6 mt-4">
-                        <div className="flex items-center gap-2 mb-4">
-                          <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                            <span className="text-blue-600 text-sm">⛽</span>
-                          </div>
-                          <h4 className="text-lg font-semibold text-gray-900">
-                            Fuel Details
-                          </h4>
-                        </div>
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-black mb-2">
-                          Fuel Station *
-                        </label>
-                        <input
-                          type="text"
-                          {...registerEditExpense("fuelStation", {
-                            required:
-                              selectedEditCategory === "Fuel"
-                                ? "Fuel station is required for fuel expenses"
-                                : false,
-                          })}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-black focus:outline-none text-sm uppercase"
-                          placeholder="Enter fuel station name (e.g., ADNOC, ENOC, EPPCO)"
-                        />
-                        {editExpenseErrors.fuelStation && (
-                          <p className="text-red-500 text-xs mt-1">
-                            {editExpenseErrors.fuelStation.message}
-                          </p>
-                        )}
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-black mb-2">
-                          Bill/Invoice Number *
-                        </label>
-                        <input
-                          type="text"
-                          {...registerEditExpense("billInvoice", {
-                            required:
-                              selectedEditCategory === "Fuel"
-                                ? "Bill/Invoice number is required for fuel expenses"
-                                : false,
-                          })}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-black focus:outline-none text-sm uppercase"
-                          placeholder="Enter bill/invoice number"
-                        />
-                        {editExpenseErrors.billInvoice && (
-                          <p className="text-red-500 text-xs mt-1">
-                            {editExpenseErrors.billInvoice.message}
-                          </p>
-                        )}
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-black mb-2">
-                          Quantity (Gallons) *
-                        </label>
-                        <div className="relative">
-                          <input
-                            type="number"
-                            step="0.01"
-                            {...registerEditExpense("quantity", {
-                              required:
-                                selectedEditCategory === "Fuel"
-                                  ? "Quantity is required for fuel expenses"
-                                  : false,
-                              min: {
-                                value: 0.01,
-                                message: "Quantity must be greater than 0",
-                              },
-                            })}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-black focus:outline-none text-sm pr-12"
-                            placeholder="0.00"
-                          />
-                          <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm">
-                            Gal
-                          </span>
-                        </div>
-                        {/* Display conversion to liters */}
-                        {watchEditExpense("quantity") && (
-                          <div className="mt-1 text-xs text-blue-600">
-                            ≈ {gallonsToLiters(watchEditExpense("quantity"))}{" "}
-                            Liters
-                          </div>
-                        )}
-                        {editExpenseErrors.quantity && (
-                          <p className="text-red-500 text-xs mt-1">
-                            {editExpenseErrors.quantity.message}
-                          </p>
-                        )}
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-black mb-2">
-                          Price per Gallon (AED) *
-                        </label>
-                        <div className="relative">
-                          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm">
-                            AED
-                          </span>
-                          <input
-                            type="number"
-                            step="0.01"
-                            {...registerEditExpense("dhs", {
-                              required:
-                                selectedEditCategory === "Fuel"
-                                  ? "Price per gallon is required for fuel expenses"
-                                  : false,
-                              min: {
-                                value: 0.01,
-                                message: "Price must be greater than 0",
-                              },
-                            })}
-                            className="w-full px-3 py-2 pl-12 border border-gray-300 rounded-lg focus:border-black focus:outline-none text-sm"
-                            placeholder="0.00"
-                          />
-                        </div>
-                        {editExpenseErrors.dhs && (
-                          <p className="text-red-500 text-xs mt-1">
-                            {editExpenseErrors.dhs.message}
-                          </p>
-                        )}
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-black mb-2">
-                          Number of Fills *
-                        </label>
-                        <input
-                          type="number"
-                          {...registerEditExpense("fills", {
-                            required:
-                              selectedEditCategory === "Fuel"
-                                ? "Number of fills is required for fuel expenses"
-                                : false,
-                            min: {
-                              value: 1,
-                              message: "Number of fills must be at least 1",
-                            },
-                          })}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-black focus:outline-none text-sm"
-                          placeholder="1"
-                        />
-                        {editExpenseErrors.fills && (
-                          <p className="text-red-500 text-xs mt-1">
-                            {editExpenseErrors.fills.message}
-                          </p>
-                        )}
-                      </div>
-
-                      {/* Fuel Calculation Display for Edit */}
-                      <div className="sm:col-span-2">
-                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                          <h5 className="text-sm font-medium text-blue-900 mb-2">
-                            📊 Fuel Calculation Summary
-                          </h5>
-                          <div className="grid grid-cols-2 gap-4 text-sm">
-                            <div>
-                              <span className="text-blue-700">
-                                Total Quantity:
-                              </span>
-                              <span className="font-medium text-blue-900 ml-2">
-                                {watchEditExpense("quantity") || "0"} Gal
-                              </span>
-                              <div className="text-xs text-blue-600">
-                                (≈{" "}
-                                {gallonsToLiters(watchEditExpense("quantity"))}{" "}
-                                L)
-                              </div>
-                            </div>
-                            <div>
-                              <span className="text-blue-700">
-                                Rate per Gallon:
-                              </span>
-                              <span className="font-medium text-blue-900 ml-2">
-                                AED {watchEditExpense("dhs") || "0.00"}
-                              </span>
-                            </div>
-                            <div>
-                              <span className="text-blue-700">
-                                Number of Fills:
-                              </span>
-                              <span className="font-medium text-blue-900 ml-2">
-                                {watchEditExpense("fills") || "0"}
-                              </span>
-                            </div>
-                            <div>
-                              <span className="text-blue-700">
-                                Calculated Total:
-                              </span>
-                              <span className="font-bold text-blue-900 ml-2">
-                                AED{" "}
-                                {(
-                                  (parseFloat(watchEditExpense("quantity")) ||
-                                    0) *
-                                  (parseFloat(watchEditExpense("dhs")) || 0)
-                                ).toFixed(2)}
-                              </span>
-                            </div>
-                          </div>
-                          <div className="mt-2 text-xs text-blue-600">
-                            💡 Tip: Enter quantity in gallons, price per gallon
-                            in AED
-                          </div>
-                        </div>
-                      </div>
-                    </>
-                  )}
-
-                  {/* Maintenance-specific fields for Edit - Only show when category is Maintenance */}
-                  {selectedEditCategory === "Maintenance" && (
-                    <>
-                      {/* Maintenance Section Header */}
-                      <div className="sm:col-span-2 border-t border-gray-200 pt-6 mt-4">
-                        <div className="flex items-center gap-2 mb-4">
-                          <div className="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
-                            <span className="text-yellow-600 text-sm">🔧</span>
-                          </div>
-                          <h4 className="text-lg font-semibold text-gray-900">
-                            Maintenance Details
-                          </h4>
-                        </div>
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-black mb-2">
-                          Shop Name *
-                        </label>
-                        <select
-                          {...registerEditExpense("maintenanceShop", {
-                            required:
-                              selectedEditCategory === "Maintenance"
-                                ? "Shop name is required for maintenance expenses"
-                                : false,
-                          })}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-black focus:outline-none text-sm"
-                        >
-                          <option value="">Select Maintenance Shop</option>
-                          {mechanics.map((mechanic) => (
-                            <option
-                              key={mechanic.id}
-                              value={mechanic.shopName}
-                              className="uppercase"
-                            >
-                              {mechanic.shopName}
-                            </option>
-                          ))}
-                        </select>
-                        {editExpenseErrors.maintenanceShop && (
-                          <p className="text-red-500 text-xs mt-1">
-                            {editExpenseErrors.maintenanceShop.message}
-                          </p>
-                        )}
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-black mb-2">
-                          Bill Number *
-                        </label>
-                        <input
-                          type="text"
-                          {...registerEditExpense("maintenanceBillNo", {
-                            required:
-                              selectedEditCategory === "Maintenance"
-                                ? "Bill number is required for maintenance expenses"
-                                : false,
-                          })}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-black focus:outline-none text-sm uppercase"
-                          placeholder="Enter bill/invoice number"
-                        />
-                        {editExpenseErrors.maintenanceBillNo && (
-                          <p className="text-red-500 text-xs mt-1">
-                            {editExpenseErrors.maintenanceBillNo.message}
-                          </p>
-                        )}
-                      </div>
-
-                      {/* Maintenance Summary */}
-                      <div className="sm:col-span-2">
-                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                          <h5 className="text-sm font-medium text-yellow-900 mb-2">
-                            🔧 Maintenance Summary
-                          </h5>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-                            <div>
-                              <span className="text-yellow-700">
-                                Shop Name:
-                              </span>
-                              <span className="font-medium text-yellow-900 ml-2">
-                                {watchEditExpense("maintenanceShop") ||
-                                  "Not selected"}
-                              </span>
-                            </div>
-                            <div>
-                              <span className="text-yellow-700">
-                                Bill Number:
-                              </span>
-                              <span className="font-medium text-yellow-900 ml-2">
-                                {watchEditExpense("maintenanceBillNo") ||
-                                  "Not specified"}
-                              </span>
-                            </div>
-                            <div>
-                              <span className="text-yellow-700">
-                                Total Cost:
-                              </span>
-                              <span className="font-bold text-yellow-900 ml-2">
-                                AED {watchEditExpense("amount") || "0.00"}
-                              </span>
-                            </div>
-                          </div>
-                          <div className="mt-2 text-xs text-yellow-600">
-                            🔧 Maintenance expense for vehicle repair/service
-                          </div>
-                        </div>
-                      </div>
-                    </>
-                  )}
-
-                  {/* Modal Footer */}
-                  <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 mt-6 pt-6 border-t border-gray-200">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsEditExpenseModalOpen(false);
-                        setEditingExpense(null);
-                        resetEditExpense();
-                      }}
-                      className="w-full sm:w-auto px-4 py-2 text-sm border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      className="w-full sm:w-auto px-4 py-2 text-sm bg-black text-white hover:bg-gray-800 rounded-lg"
-                    >
-                      Update Expense
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
+            <EditExpenseModal
+              isOpen={isEditExpenseModalOpen}
+              editingExpense={editingExpense}
+              onClose={() => {
+                setIsEditExpenseModalOpen(false);
+                setEditingExpense(null);
+                resetEditExpense();
+              }}
+              onSubmitEditExpense={onSubmitEditExpense}
+              handleSubmitEditExpense={handleSubmitEditExpense}
+              registerEditExpense={registerEditExpense}
+              editExpenseErrors={editExpenseErrors}
+              Vehicles={Vehicles}
+              mechanics={mechanics}
+              selectedEditCategory={selectedEditCategory}
+              watchEditExpense={watchEditExpense}
+              gallonsToLiters={gallonsToLiters}
+              fuelStations={fuelStations} // <-- Add this line
+            />
           )}
 
-          {/* Expense Detail Modal - Enhanced with fuel details */}
           {showExpenseDetail && expencedetail && (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
               <div className="bg-white w-full max-w-full sm:max-w-2xl max-h-[95vh] overflow-y-auto rounded-lg m-2">
@@ -1586,7 +945,6 @@ const Expence = () => {
                     </div>
                   </div>
 
-                  {/* Fuel-specific details - Only show if category is Fuel */}
                   {expencedetail.category === "Fuel" && (
                     <div className="mt-6">
                       <div className="border-t border-gray-200 pt-6">
@@ -1657,7 +1015,6 @@ const Expence = () => {
                             )}
                           </div>
 
-                          {/* Calculation Summary */}
                           {expencedetail.quantity && expencedetail.dhs && (
                             <div className="mt-4 pt-4 border-t border-blue-200">
                               <div className="flex justify-between items-center">
@@ -1719,7 +1076,6 @@ const Expence = () => {
                             </div>
                           )}
 
-                          {/* Fuel Efficiency Display */}
                           {expencedetail.quantity && expencedetail.fills && (
                             <div className="mt-4 pt-4 border-t border-blue-200">
                               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
@@ -1763,7 +1119,6 @@ const Expence = () => {
                     </div>
                   )}
 
-                  {/* Maintenance-specific details - Only show if category is Maintenance */}
                   {expencedetail.category === "Maintenance" && (
                     <div className="mt-6">
                       <div className="border-t border-gray-200 pt-6">
@@ -1833,7 +1188,6 @@ const Expence = () => {
                             </div>
                           </div>
 
-                          {/* Service Information */}
                           <div className="mt-4 pt-4 border-t border-yellow-200">
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                               <div className="flex justify-between">
@@ -1855,7 +1209,6 @@ const Expence = () => {
                             </div>
                           </div>
 
-                          {/* Additional Info */}
                           <div className="mt-4 p-3 bg-yellow-100 border border-yellow-300 rounded-lg">
                             <div className="flex items-center gap-2">
                               <span className="text-yellow-600 text-sm">
@@ -1892,7 +1245,6 @@ const Expence = () => {
                     </div>
                   )}
 
-                  {/* Remarks */}
                   <div className="mt-6">
                     <h4 className="text-base lg:text-lg font-semibold text-black border-b border-gray-200 pb-2 mb-4">
                       Remarks
