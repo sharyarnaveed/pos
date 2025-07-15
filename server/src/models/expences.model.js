@@ -25,6 +25,10 @@ const Expences = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: false,
     },
+      driverId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
     remarks: {
       type: DataTypes.TEXT,
       allowNull: true,

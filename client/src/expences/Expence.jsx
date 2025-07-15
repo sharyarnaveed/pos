@@ -37,15 +37,14 @@ const Expence = () => {
       amount: "",
       category: "Fuel",
       vehicleId: "",
+      driverId: "",
       date: new Date().toISOString().split("T")[0],
       remarks: "",
-      // Add new fuel-specific fields
       quantity: "",
       dhs: "",
       fills: "",
       fuelStation: "",
       billInvoice: "",
-      // Add maintenance-specific fields
       maintenanceShop: "",
       maintenanceBillNo: "",
     },
@@ -67,13 +66,13 @@ const Expence = () => {
       vehicleId: "",
       date: new Date().toISOString().split("T")[0],
       remarks: "",
-      // Add new fuel-specific fields
+
       quantity: "",
       dhs: "",
       fills: "",
       fuelStation: "",
       billInvoice: "",
-      // Add maintenance-specific fields
+
       maintenanceShop: "",
       maintenanceBillNo: "",
     },
@@ -94,24 +93,46 @@ const Expence = () => {
 
   const [sampleVehicles, SetsampleVehicles] = useState(null);
 
-  const getCategoryColor = (category) => {
-    switch (category.toLowerCase()) {
-      case "fuel":
-        return "bg-blue-100 text-blue-800";
-      case "maintenance":
-        return "bg-yellow-100 text-yellow-800";
-      case "fixed costs":
-        return "bg-purple-100 text-purple-800";
-      case "marketing":
-        return "bg-green-100 text-green-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
+ 
+const getCategoryColor = (category) => {
+  if (!category) return "bg-gray-100 text-gray-800";
+  switch (category.trim().toLowerCase()) {
+    case "fuel":
+      return "bg-blue-100 text-blue-800";
+    case "machanic expense":
+      return "bg-orange-100 text-orange-800";
+    case "electriction exercise":
+      return "bg-yellow-100 text-yellow-800";
+    case "spare parts expense":
+      return "bg-cyan-100 text-cyan-800"; // You may need to define brown in your Tailwind config
+    case "office expense":
+      return "bg-purple-100 text-purple-800";
+    case "office rent":
+      return "bg-pink-100 text-pink-800";
+    case "car petrol":
+      return "bg-indigo-100 text-indigo-800";
+    case "staff salary":
+      return "bg-green-100 text-green-800";
+    case "trade licence renewal":
+      return "bg-teal-100 text-teal-800";
+    case "dp world payment":
+      return "bg-red-100 text-red-800";
+    case "petty cash":
+      return "bg-cyan-100 text-cyan-800";
+    case "company road permit fee":
+      return "bg-lime-100 text-lime-800";
+    case "other expense":
+      return "bg-gray-200 text-gray-800";
+    default:
+      return "bg-gray-100 text-gray-800";
+  }
+};
 
   // Handle Add Expense Form Submission
   const onSubmitExpense = async (data) => {
     try {
+      console.log(data);
+
       const responce = await api.post("/api/user/addexpence", data);
 
       viewExpences();
@@ -189,28 +210,6 @@ const Expence = () => {
     setIsEditExpenseModalOpen(true);
   };
 
-  const onSubmitAmount = async (data) => {
-    try {
-      // API call example (uncomment when backend is ready)
-      const response = await api.post("/api/user/addamount", data);
-      if (response.data.success) {
-        toast.success("Amount added successfully!", { duration: 2000 });
-        resetAmount();
-        setIsAddAmountModalOpen(false);
-        await gettotals();
-      } else {
-        toast.error(response.data.message, {
-          duration: 3000,
-        });
-      }
-    } catch (error) {
-      console.error("Error adding amount:", error);
-      toast.error("Failed to add amount. Please try again.", {
-        duration: 3000,
-      });
-    }
-  };
-
   const viewExpences = useCallback(async () => {
     try {
       const response = await api.get("/api/user/viewexpences");
@@ -248,7 +247,6 @@ const Expence = () => {
     }
   }, []);
 
-  // Add new state for mechanics/shops
   const [mechanics, setMechanics] = useState([]);
 
   // Add function to fetch mechanics data
@@ -312,11 +310,29 @@ const Expence = () => {
     }
   }, []);
 
+  const [drivers, setDrivers] = useState([]);
+
+  const viewdrivers = useCallback(async () => {
+    try {
+      const responce = await api.get("/api/user/viewdriver");
+
+      if (responce.data.success) {
+        setDrivers(responce.data.DriverData);
+      } else {
+        toast.error("error in getting data", {
+          duration: 3000,
+        });
+      }
+    } catch (error) {
+      console.log("error in getting custoemrs data", error);
+    }
+  }, []);
+
   useEffect(() => {
     viewExpences();
     gettotals();
     getVechilesData();
-    getbalancehistory();
+    viewdrivers();
     getMechanicsData();
     getFuelStations();
   }, []);
@@ -840,11 +856,13 @@ const Expence = () => {
               watchExpense={watchExpense}
               gallonsToLiters={gallonsToLiters}
               fuelStations={fuelStations} // <-- Add this prop
+              drivers={drivers}
             />
           )}
 
           {/* Edit Expense Modal - Similar conditional structure */}
           {isEditExpenseModalOpen && editingExpense && (
+       
             <EditExpenseModal
               isOpen={isEditExpenseModalOpen}
               editingExpense={editingExpense}
@@ -862,418 +880,18 @@ const Expence = () => {
               selectedEditCategory={selectedEditCategory}
               watchEditExpense={watchEditExpense}
               gallonsToLiters={gallonsToLiters}
-              fuelStations={fuelStations} // <-- Add this line
+              fuelStations={fuelStations}
+              drivers={drivers} // <-- Add this line
             />
           )}
+         
 
           {showExpenseDetail && expencedetail && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
-              <div className="bg-white w-full max-w-full sm:max-w-2xl max-h-[95vh] overflow-y-auto rounded-lg m-2">
-                <div className="bg-black text-white px-4 sm:px-6 py-3 sm:py-4 flex justify-between items-center sticky top-0 z-10">
-                  <h3 className="text-base sm:text-lg font-medium">
-                    Expense Details
-                  </h3>
-                  <button
-                    onClick={() => setShowExpenseDetail(false)}
-                    className="text-white hover:text-gray-300 text-xl"
-                  >
-                    ×
-                  </button>
-                </div>
-
-                <div className="p-4 sm:p-6">
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
-                    {/* Expense Information */}
-                    <div>
-                      <h4 className="text-lg font-semibold text-black border-b border-gray-200 pb-2 mb-4">
-                        Expense Information
-                      </h4>
-                      <div className="space-y-3">
-                        <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0">
-                          <span className="text-gray-600 text-sm">
-                            Description:
-                          </span>
-                          <span className="font-medium text-sm break-words uppercase">
-                            {expencedetail.description ||
-                              `${expencedetail.category} for Vehicle ${expencedetail["vehicleDetails.plateNumber"]}`}
-                          </span>
-                        </div>
-                        <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0">
-                          <span className="text-gray-600 text-sm">Amount:</span>
-                          <span className="font-bold text-red-600">
-                            AED {expencedetail.amount}
-                          </span>
-                        </div>
-                        <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0">
-                          <span className="text-gray-600 text-sm">
-                            Category:
-                          </span>
-                          <span className="px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800 w-fit">
-                            {expencedetail.category.toUpperCase()}
-                          </span>
-                        </div>
-                        <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0">
-                          <span className="text-gray-600 text-sm">Date:</span>
-                          <span className="font-medium text-sm">
-                            {expencedetail.date.split("T")[0]}
-                          </span>
-                        </div>
-                        <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0">
-                          <span className="text-gray-600 text-sm">Type:</span>
-                          <span className="px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800 w-fit">
-                            VEHICLE
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Vehicle Information */}
-                    <div>
-                      <h4 className="text-lg font-semibold text-black border-b border-gray-200 pb-2 mb-4">
-                        Vehicle Information
-                      </h4>
-                      <div className="space-y-3">
-                        <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0">
-                          <span className="text-gray-600 text-sm">
-                            Plate Number:
-                          </span>
-                          <span className="font-medium text-sm uppercase">
-                            {expencedetail["vehicleDetails.plateNumber"]}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {expencedetail.category === "Fuel" && (
-                    <div className="mt-6">
-                      <div className="border-t border-gray-200 pt-6">
-                        <div className="flex items-center gap-2 mb-4">
-                          <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                            <span className="text-blue-600 text-sm">⛽</span>
-                          </div>
-                          <h4 className="text-lg font-semibold text-gray-900">
-                            Fuel Details
-                          </h4>
-                        </div>
-
-                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            {expencedetail.fuelStation && (
-                              <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0">
-                                <span className="text-blue-700 text-sm font-medium">
-                                  Fuel Station:
-                                </span>
-                                <span className="font-semibold text-blue-900 uppercase">
-                                  {expencedetail.fuelStation}
-                                </span>
-                              </div>
-                            )}
-                            {expencedetail.billInvoice && (
-                              <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0">
-                                <span className="text-blue-700 text-sm font-medium">
-                                  Bill/Invoice:
-                                </span>
-                                <span className="font-semibold text-blue-900 uppercase">
-                                  {expencedetail.billInvoice}
-                                </span>
-                              </div>
-                            )}
-                            {expencedetail.quantity && (
-                              <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0">
-                                <span className="text-blue-700 text-sm font-medium">
-                                  Quantity:
-                                </span>
-                                <span className="font-semibold text-blue-900">
-                                  {expencedetail.quantity} Gallons
-                                  <div className="text-xs text-blue-600">
-                                    (≈ {gallonsToLiters(expencedetail.quantity)}{" "}
-                                    Liters)
-                                  </div>
-                                </span>
-                              </div>
-                            )}
-                            {expencedetail.dhs && (
-                              <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0">
-                                <span className="text-blue-700 text-sm font-medium">
-                                  Price per Gallon:
-                                </span>
-                                <span className="font-semibold text-blue-900">
-                                  AED {expencedetail.dhs}
-                                </span>
-                              </div>
-                            )}
-                            {expencedetail.fills && (
-                              <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0">
-                                <span className="text-blue-700 text-sm font-medium">
-                                  Number of Fills:
-                                </span>
-                                <span className="font-semibold text-blue-900">
-                                  {expencedetail.fills}
-                                </span>
-                              </div>
-                            )}
-                          </div>
-
-                          {expencedetail.quantity && expencedetail.dhs && (
-                            <div className="mt-4 pt-4 border-t border-blue-200">
-                              <div className="flex justify-between items-center">
-                                <span className="text-blue-700 text-sm font-medium">
-                                  Calculated Total:
-                                </span>
-                                <span className="font-bold text-blue-900 text-lg">
-                                  AED{" "}
-                                  {(
-                                    parseFloat(expencedetail.quantity) *
-                                    parseFloat(expencedetail.dhs)
-                                  ).toFixed(2)}
-                                </span>
-                              </div>
-                              <div className="text-xs text-blue-600 mt-1">
-                                {expencedetail.quantity} Gal × AED{" "}
-                                {expencedetail.dhs} = AED{" "}
-                                {(
-                                  parseFloat(expencedetail.quantity) *
-                                  parseFloat(expencedetail.dhs)
-                                ).toFixed(2)}
-                                <br />
-                                Equivalent:{" "}
-                                {gallonsToLiters(expencedetail.quantity)} L ×
-                                AED{" "}
-                                {(
-                                  parseFloat(expencedetail.dhs) /
-                                  GALLON_TO_LITER
-                                ).toFixed(3)}{" "}
-                                per L
-                              </div>
-
-                              {/* Show variance if calculated total differs from actual amount */}
-                              {(
-                                parseFloat(expencedetail.quantity) *
-                                parseFloat(expencedetail.dhs)
-                              ).toFixed(2) !==
-                                parseFloat(expencedetail.amount).toFixed(2) && (
-                                <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded">
-                                  <div className="flex items-center gap-2">
-                                    <span className="text-yellow-600 text-sm">
-                                      ⚠️
-                                    </span>
-                                    <span className="text-yellow-800 text-xs font-medium">
-                                      Note: Calculated total (AED{" "}
-                                      {(
-                                        parseFloat(expencedetail.quantity) *
-                                        parseFloat(expencedetail.dhs)
-                                      ).toFixed(2)}
-                                      ) differs from actual amount (AED{" "}
-                                      {parseFloat(expencedetail.amount).toFixed(
-                                        2
-                                      )}
-                                      )
-                                    </span>
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          )}
-
-                          {expencedetail.quantity && expencedetail.fills && (
-                            <div className="mt-4 pt-4 border-t border-blue-200">
-                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-                                <div className="flex justify-between">
-                                  <span className="text-blue-700">
-                                    Avg per Fill:
-                                  </span>
-                                  <span className="font-medium text-blue-900">
-                                    {(
-                                      parseFloat(expencedetail.quantity) /
-                                      parseFloat(expencedetail.fills)
-                                    ).toFixed(2)}{" "}
-                                    Gal
-                                    <div className="text-xs text-blue-600">
-                                      (≈{" "}
-                                      {gallonsToLiters(
-                                        parseFloat(expencedetail.quantity) /
-                                          parseFloat(expencedetail.fills)
-                                      )}{" "}
-                                      L)
-                                    </div>
-                                  </span>
-                                </div>
-                                <div className="flex justify-between">
-                                  <span className="text-blue-700">
-                                    Cost per Fill:
-                                  </span>
-                                  <span className="font-medium text-blue-900">
-                                    AED{" "}
-                                    {(
-                                      parseFloat(expencedetail.amount) /
-                                      parseFloat(expencedetail.fills)
-                                    ).toFixed(2)}
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {expencedetail.category === "Maintenance" && (
-                    <div className="mt-6">
-                      <div className="border-t border-gray-200 pt-6">
-                        <div className="flex items-center gap-2 mb-4">
-                          <div className="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
-                            <span className="text-yellow-600 text-sm">🔧</span>
-                          </div>
-                          <h4 className="text-lg font-semibold text-gray-900">
-                            Maintenance Details
-                          </h4>
-                        </div>
-
-                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            {expencedetail.maintenanceShop && (
-                              <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0">
-                                <span className="text-yellow-700 text-sm font-medium">
-                                  Shop Name:
-                                </span>
-                                <span className="font-semibold text-yellow-900 uppercase">
-                                  {expencedetail.maintenanceShop}
-                                </span>
-                              </div>
-                            )}
-                            {expencedetail.maintenanceBillNo && (
-                              <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0">
-                                <span className="text-yellow-700 text-sm font-medium">
-                                  Bill Number:
-                                </span>
-                                <span className="font-semibold text-yellow-900 uppercase">
-                                  {expencedetail.maintenanceBillNo}
-                                </span>
-                              </div>
-                            )}
-                            <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0">
-                              <span className="text-yellow-700 text-sm font-medium">
-                                Service Type:
-                              </span>
-                              <span className="font-semibold text-yellow-900">
-                                {expencedetail.category.toUpperCase()}
-                              </span>
-                            </div>
-                            <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0">
-                              <span className="text-yellow-700 text-sm font-medium">
-                                Service Date:
-                              </span>
-                              <span className="font-semibold text-yellow-900">
-                                {expencedetail.date.split("T")[0]}
-                              </span>
-                            </div>
-                          </div>
-
-                          {/* Maintenance Summary */}
-                          <div className="mt-4 pt-4 border-t border-yellow-200">
-                            <div className="flex justify-between items-center">
-                              <span className="text-yellow-700 text-sm font-medium">
-                                Total Service Cost:
-                              </span>
-                              <span className="font-bold text-yellow-900 text-lg">
-                                AED{" "}
-                                {parseFloat(expencedetail.amount).toFixed(2)}
-                              </span>
-                            </div>
-                            <div className="text-xs text-yellow-600 mt-1">
-                              Maintenance service performed on{" "}
-                              {expencedetail.date.split("T")[0]}
-                            </div>
-                          </div>
-
-                          <div className="mt-4 pt-4 border-t border-yellow-200">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-                              <div className="flex justify-between">
-                                <span className="text-yellow-700">
-                                  Vehicle:
-                                </span>
-                                <span className="font-medium text-yellow-900 uppercase">
-                                  {expencedetail["vehicleDetails.plateNumber"]}
-                                </span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-yellow-700">
-                                  Service Category:
-                                </span>
-                                <span className="font-medium text-yellow-900">
-                                  MAINTENANCE
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="mt-4 p-3 bg-yellow-100 border border-yellow-300 rounded-lg">
-                            <div className="flex items-center gap-2">
-                              <span className="text-yellow-600 text-sm">
-                                🔧
-                              </span>
-                              <span className="text-yellow-800 text-xs font-medium">
-                                Maintenance Service Details
-                              </span>
-                            </div>
-                            <div className="mt-2 text-xs text-yellow-700">
-                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                {expencedetail.maintenanceShop && (
-                                  <div>
-                                    • Shop: {expencedetail.maintenanceShop}
-                                  </div>
-                                )}
-                                {expencedetail.maintenanceBillNo && (
-                                  <div>
-                                    • Bill: {expencedetail.maintenanceBillNo}
-                                  </div>
-                                )}
-                                <div>
-                                  • Cost: AED{" "}
-                                  {parseFloat(expencedetail.amount).toFixed(2)}
-                                </div>
-                                <div>
-                                  • Date: {expencedetail.date.split("T")[0]}
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="mt-6">
-                    <h4 className="text-base lg:text-lg font-semibold text-black border-b border-gray-200 pb-2 mb-4">
-                      Remarks
-                    </h4>
-                    <p className="text-gray-700 bg-gray-50 p-4 rounded-lg text-sm uppercase">
-                      {expencedetail.remarks || "No remarks"}
-                    </p>
-                  </div>
-
-                  <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 mt-6 pt-6 border-t border-gray-200">
-                    <button
-                      onClick={() => {
-                        setShowExpenseDetail(false);
-                        handleEditExpense(expencedetail);
-                      }}
-                      className="w-full sm:w-auto px-4 py-2 text-sm bg-green-600 text-white hover:bg-green-700 rounded-lg"
-                    >
-                      Edit Expense
-                    </button>
-                    <button
-                      onClick={() => setShowExpenseDetail(false)}
-                      className="w-full sm:w-auto px-4 py-2 text-sm border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg"
-                    >
-                      Close
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <ViewExpenseDetail
+              expense={expencedetail}
+              onClose={() => setShowExpenseDetail(false)}
+              onEdit={handleEditExpense}
+            />
           )}
         </div>
       )}

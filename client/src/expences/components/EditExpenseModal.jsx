@@ -13,7 +13,8 @@ const EditExpenseModal = ({
   selectedEditCategory,
   watchEditExpense,
   gallonsToLiters,
-  fuelStations, // <-- Add this prop
+  fuelStations,
+  drivers, // <-- Add this line
 }) => {
   if (!isOpen || !editingExpense) return null;
 
@@ -87,13 +88,20 @@ const EditExpenseModal = ({
                 })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-black focus:outline-none text-sm"
               >
+               <option value="">Select Category</option>
                 <option value="Fuel">Fuel</option>
-                <option value="Maintenance">Maintenance</option>
-                <option value="Fixed Costs">Fixed Costs</option>
-                <option value="Marketing">Marketing</option>
-                <option value="Utilities">Utilities</option>
-                <option value="Insurance">Insurance</option>
-                <option value="Other">Other</option>
+                <option value="Machanic Expense">Machanic Expense</option>
+                <option value="Electriction exercise">Electriction exercise</option>
+                <option value="Spare parts Expense">Spare parts Expense</option>
+                <option value="Office Expense">Office Expense</option>
+                <option value="Office rent">Office rent</option>
+                <option value="Car petrol">Car petrol</option>
+                <option value="Staff salary">Staff salary</option>
+                <option value="Trade licence renewal">Trade licence renewal</option>
+                <option value="DP world payment">DP world payment</option>
+                <option value="Petty cash">Petty cash</option>
+                <option value="Company road permit fee">Company road permit fee</option>
+                <option value="Other Expense">Other Expense</option>
               </select>
               {editExpenseErrors.category && (
                 <p className="text-red-500 text-xs mt-1">
@@ -122,6 +130,32 @@ const EditExpenseModal = ({
               {editExpenseErrors.vehicleId && (
                 <p className="text-red-500 text-xs mt-1">
                   {editExpenseErrors.vehicleId.message}
+                </p>
+              )}
+            </div>
+            {/* --- Add Driver Select --- */}
+            <div>
+              <label className="block text-sm font-medium text-black mb-2">
+                Driver
+              </label>
+              <select
+                {...registerEditExpense("driverId", {
+                  required: false, // Set to true if driver is required
+                })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-black focus:outline-none text-sm"
+              >
+                <option value="">Select Driver</option>
+                {drivers && drivers.length > 0
+                  ? drivers.map((driver) => (
+                      <option key={driver.id || driver._id} value={driver.id || driver._id}>
+                       {driver.drivername}
+                      </option>
+                    ))
+                  : null}
+              </select>
+              {editExpenseErrors.driverId && (
+                <p className="text-red-500 text-xs mt-1">
+                  {editExpenseErrors.driverId.message}
                 </p>
               )}
             </div>
@@ -358,7 +392,7 @@ const EditExpenseModal = ({
           )}
 
           {/* Maintenance-specific fields for Edit */}
-          {selectedEditCategory === "Maintenance" && (
+          {selectedEditCategory === "Machanic Expense" || selectedEditCategory === "Spare parts Expense"  && (
             <>
               <div className="sm:col-span-2 border-t border-gray-200 pt-6 mt-4">
                 <div className="flex items-center gap-2 mb-4">

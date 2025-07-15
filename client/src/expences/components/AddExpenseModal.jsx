@@ -13,6 +13,7 @@ const AddExpenseModal = ({
   watchExpense,
   gallonsToLiters,
   fuelStations,
+  drivers, // <-- Add this prop
 }) => {
   if (!isOpen) return null;
   return (
@@ -63,13 +64,20 @@ const AddExpenseModal = ({
                 {...registerExpense("category", { required: "Category is required" })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-black focus:outline-none text-sm"
               >
+                <option value="">Select Category</option>
                 <option value="Fuel">Fuel</option>
-                <option value="Maintenance">Maintenance</option>
-                <option value="Fixed Costs">Fixed Costs</option>
-                <option value="Marketing">Marketing</option>
-                <option value="Utilities">Utilities</option>
-                <option value="Insurance">Insurance</option>
-                <option value="Other">Other</option>
+                <option value="Machanic Expense">Machanic Expense</option>
+                <option value="Electriction exercise">Electriction exercise</option>
+                <option value="Spare parts Expense">Spare parts Expense</option>
+                <option value="Office Expense">Office Expense</option>
+                <option value="Office rent">Office rent</option>
+                <option value="Car petrol">Car petrol</option>
+                <option value="Staff salary">Staff salary</option>
+                <option value="Trade licence renewal">Trade licence renewal</option>
+                <option value="DP world payment">DP world payment</option>
+                <option value="Petty cash">Petty cash</option>
+                <option value="Company road permit fee">Company road permit fee</option>
+                <option value="Other Expense">Other Expense</option>
               </select>
               {expenseErrors.category && (
                 <p className="text-red-500 text-xs mt-1">{expenseErrors.category.message}</p>
@@ -93,6 +101,23 @@ const AddExpenseModal = ({
               )}
             </div>
             <div>
+              <label className="block text-sm font-medium text-black mb-2">Driver *</label>
+              <select
+                {...registerExpense("driverId", { required: "Driver is required" })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-black focus:outline-none text-sm"
+              >
+                <option value="">Select Driver</option>
+                {drivers && drivers.map((driver) => (
+                  <option key={driver.id} value={driver.id} className="uppercase">
+                    {driver.drivername}
+                  </option>
+                ))}
+              </select>
+              {expenseErrors.driverId && (
+                <p className="text-red-500 text-xs mt-1">{expenseErrors.driverId.message}</p>
+              )}
+            </div>
+            <div>
               <label className="block text-sm font-medium text-black mb-2">Date *</label>
               <input
                 type="date"
@@ -112,7 +137,7 @@ const AddExpenseModal = ({
                 placeholder="Additional notes or remarks"
               />
             </div>
-            {selectedCategory === "Maintenance" && (
+            {selectedCategory === "Machanic Expense" || selectedCategory === "Spare parts Expense" && (
               <>
                 <div className="sm:col-span-2 border-t border-gray-200 pt-6 mt-4">
                   <div className="flex items-center gap-2 mb-4">

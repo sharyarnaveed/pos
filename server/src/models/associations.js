@@ -24,5 +24,7 @@ Vehicle.hasMany(Expences, {
   foreignKey: 'vehicle',
   as: 'expenses'
 });
+Driver.hasMany(Expences,{ foreignKey: 'driverId', as: 'expenses' })
+Expences.belongsTo(Driver, { foreignKey: 'driverId', as: 'driverdetails' });
 
 module.exports = { Order, Vehicle, Expences };

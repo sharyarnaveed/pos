@@ -1,5 +1,6 @@
 const Currentbalance = require("../models/balance.model");
 const BalanceHistory = require("../models/balancehistory.model");
+const Driver = require("../models/Driver.model");
 const Expences = require("../models/expences.model");
 const Vehicle = require("../models/Vehicle.model");
 const { Sequelize } = require("sequelize");
@@ -19,6 +20,7 @@ const addexpences = async (req, res) => {
       billInvoice,
       maintenanceShop,
       maintenanceBillNo,
+      driverId
     } = req.body;
 
     const save = await Expences.create({
@@ -35,6 +37,7 @@ const addexpences = async (req, res) => {
       billInvoice,
       maintenanceShop,
       maintenanceBillNo,
+      driverId
     });
 
     if (save) {
@@ -93,6 +96,10 @@ const viewexpences = async (req, res) => {
           model: Vehicle,
           as: "vehicleDetails",
         },
+        {
+          model:Driver,
+          as:"driverdetails"
+        }
       ],
       order: [["createdAt", "DESC"]],
     });
@@ -275,6 +282,8 @@ const editexpences = async (req, res) => {
       billInvoice,
       maintenanceShop,
       maintenanceBillNo,
+      driverId
+
     } = req.body;
 
     // First, get the current expense to calculate balance difference
@@ -307,6 +316,8 @@ const editexpences = async (req, res) => {
         billInvoice,
           maintenanceShop,
       maintenanceBillNo,
+      driverId
+
       },
       {
         where: {
