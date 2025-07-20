@@ -4,6 +4,24 @@ import api from "../api";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import {
+  FaGasPump,
+  FaTools,
+  FaBolt,
+  FaCogs,
+  FaBuilding,
+  FaHome,
+  FaCar,
+  FaUserTie,
+  FaIdBadge,
+  FaGlobe,
+  FaMoneyBill,
+  FaRoad,
+  FaEllipsisH,
+  FaSearch,
+  FaFilter,
+  FaSortAmountDown,
+} from "react-icons/fa";
 
 import Spinner from "../components/Spinner";
 import ViewExpenseDetail from "./components/ViewExpenseDetail";
@@ -77,7 +95,21 @@ const Expence = () => {
       maintenanceBillNo: "",
     },
   });
-
+  const expenseCategories = [
+    "Fuel",
+    "Machanic Expense",
+    "Electriction exercise",
+    "Spare parts Expense",
+    "Office Expense",
+    "Office rent",
+    "Car petrol",
+    "Staff salary",
+    "Trade licence renewal",
+    "DP world payment",
+    "Petty cash",
+    "Company road permit fee",
+    "Other Expense",
+  ];
   // Watch category changes
   const selectedCategory = watchExpense("category");
   const selectedEditCategory = watchEditExpense("category");
@@ -93,40 +125,55 @@ const Expence = () => {
 
   const [sampleVehicles, SetsampleVehicles] = useState(null);
 
- 
-const getCategoryColor = (category) => {
-  if (!category) return "bg-gray-100 text-gray-800";
-  switch (category.trim().toLowerCase()) {
-    case "fuel":
-      return "bg-blue-100 text-blue-800";
-    case "machanic expense":
-      return "bg-orange-100 text-orange-800";
-    case "electriction exercise":
-      return "bg-yellow-100 text-yellow-800";
-    case "spare parts expense":
-      return "bg-cyan-100 text-cyan-800"; // You may need to define brown in your Tailwind config
-    case "office expense":
-      return "bg-purple-100 text-purple-800";
-    case "office rent":
-      return "bg-pink-100 text-pink-800";
-    case "car petrol":
-      return "bg-indigo-100 text-indigo-800";
-    case "staff salary":
-      return "bg-green-100 text-green-800";
-    case "trade licence renewal":
-      return "bg-teal-100 text-teal-800";
-    case "dp world payment":
-      return "bg-red-100 text-red-800";
-    case "petty cash":
-      return "bg-cyan-100 text-cyan-800";
-    case "company road permit fee":
-      return "bg-lime-100 text-lime-800";
-    case "other expense":
-      return "bg-gray-200 text-gray-800";
-    default:
-      return "bg-gray-100 text-gray-800";
-  }
-};
+  const getCategoryColor = (category) => {
+    if (!category) return "bg-gray-100 text-gray-800";
+    switch (category.trim().toLowerCase()) {
+      case "fuel":
+        return "bg-blue-100 text-blue-800";
+      case "machanic expense":
+        return "bg-orange-100 text-orange-800";
+      case "electriction exercise":
+        return "bg-yellow-100 text-yellow-800";
+      case "spare parts expense":
+        return "bg-cyan-100 text-cyan-800"; // You may need to define brown in your Tailwind config
+      case "office expense":
+        return "bg-purple-100 text-purple-800";
+      case "office rent":
+        return "bg-pink-100 text-pink-800";
+      case "car petrol":
+        return "bg-indigo-100 text-indigo-800";
+      case "staff salary":
+        return "bg-green-100 text-green-800";
+      case "trade licence renewal":
+        return "bg-teal-100 text-teal-800";
+      case "dp world payment":
+        return "bg-red-100 text-red-800";
+      case "petty cash":
+        return "bg-cyan-100 text-cyan-800";
+      case "company road permit fee":
+        return "bg-lime-100 text-lime-800";
+      case "other expense":
+        return "bg-gray-200 text-gray-800";
+      default:
+        return "bg-gray-100 text-gray-800";
+    }
+  };
+
+  const categoryIcons = {
+    Fuel: <FaGasPump className="mr-2" />,
+    "Machanic Expense": <FaTools className="mr-2" />,
+    "Electriction exercise": <FaBolt className="mr-2" />,
+    "Spare parts Expense": <FaCogs className="mr-2" />,
+    "Office Expense": <FaBuilding className="mr-2" />,
+    "Office rent": <FaHome className="mr-2" />,
+    "Car petrol": <FaCar className="mr-2" />,
+    "Staff salary": <FaUserTie className="mr-2" />,
+    "Trade licence renewal": <FaIdBadge className="mr-2" />,
+    "DP world payment": <FaGlobe className="mr-2" />,
+    "Petty cash": <FaMoneyBill className="mr-2" />,
+    "Company road permit fee": <FaRoad className="mr-2" />,
+    "Other Expense": <FaEllipsisH className="mr-2" />,
+  };
 
   // Handle Add Expense Form Submission
   const onSubmitExpense = async (data) => {
@@ -516,13 +563,21 @@ const getCategoryColor = (category) => {
   };
 
   const filteredExpenses = (sampleExpenses || []).filter((expense) => {
-    if (!searchTerm.trim()) return true;
+    if (!searchTerm.trim() && (activeTab === "all" || activeTab === "vehicle"))
+      return true;
 
     const searchLower = searchTerm.toLowerCase();
     const description = expense.description?.toLowerCase() || "";
     const vehicleNumber =
       expense["vehicleDetails.plateNumber"]?.toLowerCase() || "";
 
+    // If a category tab is active, filter by category
+    if (expenseCategories.includes(activeTab)) {
+      if (expense.category?.toLowerCase() !== activeTab.toLowerCase())
+        return false;
+    }
+
+    // Filter by search term
     return (
       description.includes(searchLower) || vehicleNumber.includes(searchLower)
     );
@@ -560,6 +615,79 @@ const getCategoryColor = (category) => {
     checkAccountLogin();
   }, []);
 
+  const [showMoreTabs, setShowMoreTabs] = useState(false);
+  // For modal overlay
+  const [showMoreModal, setShowMoreModal] = useState(false);
+
+  // Remove dropdown click-outside logic, use modal instead
+
+const StatCard = ({ title, value, icon, color }) => (
+    <div className={`bg-white border border-gray-200 p-4 rounded-lg shadow-sm flex items-center ${color}`}>
+      <div className="mr-4 p-3 rounded-full bg-opacity-20 bg-white">
+        {icon}
+      </div>
+      <div>
+        <p className="text-xs font-medium text-gray-600">{title}</p>
+        <p className="text-xl font-bold">{value}</p>
+      </div>
+    </div>
+  );
+
+  const ExpenseCategoryTag = ({ category }) => {
+    const icon = categoryIcons[category] || <FaEllipsisH className="mr-1" />;
+    return (
+      <span
+        className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getCategoryColor(
+          category
+        )}`}
+      >
+        {icon}
+        {category}
+      </span>
+    );
+  };
+
+  const EnhancedSearchInput = () => (
+    <div className="relative mb-6">
+      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+        <FaSearch className="text-gray-400" />
+      </div>
+      <input
+        type="text"
+        placeholder="Search expenses by vehicle, description..."
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+      />
+      {searchTerm && (
+        <div className="absolute right-3 inset-y-0 flex items-center">
+          <button
+            onClick={() => setSearchTerm("")}
+            className="text-gray-400 hover:text-gray-600"
+          >
+            ×
+          </button>
+        </div>
+      )}
+    </div>
+  );
+
+  const EnhancedTabButton = ({ tab, currentTab, onClick, icon }) => (
+    <button
+      onClick={onClick}
+      className={`flex items-center px-4 py-2 rounded-lg font-medium transition-all whitespace-nowrap ${
+        currentTab === tab
+          ? "bg-black text-white shadow-md"
+          : "bg-gray-50 text-gray-700 hover:bg-gray-100"
+      }`}
+    >
+      {icon && <span className="mr-2">{icon}</span>}
+      {tab}
+    </button>
+  );
+
+  // ... (keep all your existing functions like getCategoryColor, categoryIcons, etc.)
+
   return (
     <>
       {showExpenseDetail && (
@@ -571,15 +699,15 @@ const getCategoryColor = (category) => {
       {loading ? (
         <Spinner />
       ) : (
-        <div className="flex min-h-screen bg-white">
+        <div className="flex min-h-screen bg-gray-50">
           <Sidebar
             isSidebarCollapsed={isSidebarCollapsed}
             setIsSidebarCollapsed={setIsSidebarCollapsed}
           />
 
           <div className="flex-1 lg:ml-16 transition-all duration-300">
-            {/* Mobile Header */}
-            <div className="lg:hidden bg-white shadow-sm border-b border-gray-200 p-4">
+            {/* Enhanced Mobile Header */}
+            <div className="lg:hidden bg-white shadow-sm border-b border-gray-200 p-4 sticky top-0 z-10">
               <div className="flex items-center justify-between">
                 <button
                   onClick={() => setIsSidebarCollapsed(false)}
@@ -588,114 +716,164 @@ const getCategoryColor = (category) => {
                   <span className="text-xl">☰</span>
                 </button>
                 <h1 className="text-lg font-semibold text-gray-900">
-                  Expenses
+                  Expense Tracker
                 </h1>
-
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setIsAddExpenseModalOpen(true)}
-                    className="bg-black text-white px-2 py-1 text-xs rounded"
-                  >
-                    Expense
-                  </button>
-                </div>
+                <button
+                  onClick={() => setIsAddExpenseModalOpen(true)}
+                  className="bg-black text-white px-3 py-1 text-xs rounded-lg shadow"
+                >
+                  + Add
+                </button>
               </div>
             </div>
 
-            <div className="hidden lg:block border-b border-gray-200 bg-white">
-              <div className="px-4 sm:px-8 py-4 md:py-6">
+            {/* Enhanced Desktop Header */}
+            <div className="hidden lg:block border-b border-gray-200 bg-white sticky top-0 z-10">
+              <div className="px-8 py-6">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                   <div>
-                    <h1 className="text-xl md:text-2xl font-bold text-black">
+                    <h1 className="text-2xl font-bold text-gray-900">
                       Expense Management
                     </h1>
-                    <p className="text-gray-600 text-xs md:text-sm mt-1">
-                      Track and manage your business expenses
+                    <p className="text-gray-600 text-sm mt-1">
+                      Track, manage and analyze business expenses
                     </p>
                   </div>
-                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
+                  <div className="flex gap-3">
                     <button
                       onClick={() => setIsAddExpenseModalOpen(true)}
-                      className="bg-black text-white px-4 py-2 text-xs md:text-sm font-medium hover:bg-gray-800 transition-colors w-full sm:w-auto"
+                      className="bg-black text-white px-5 py-2.5 text-sm font-medium hover:bg-gray-800 transition-colors rounded-lg shadow-md flex items-center"
                     >
-                      Add Expense
+                      <span className="mr-2">+</span> Add Expense
                     </button>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="p-3 lg:p-8">
-              <div className="mb-6 lg:mb-8">
-                <div className="mb-4 lg:mb-6">
-                  <input
-                    type="text"
-                    placeholder="Search by vehicle number or description..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full px-3 lg:px-4 py-2 lg:py-3 border border-gray-300 rounded-lg focus:border-black focus:outline-none text-sm lg:text-base"
+            <div className="p-4 lg:p-8">
+              {/* Enhanced Stats Section */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <StatCard
+                  title="Total Expenses"
+                  value={`AED ${totalExpence}`}
+                  icon={<FaMoneyBill className="text-red-500" />}
+                  color="border-l-4 border-red-500"
+                />
+                {/* <StatCard
+                  title="Current Balance"
+                  value={`AED ${currentbalance}`}
+                  icon={<FaMoneyBill className="text-green-500" />}
+                  color="border-l-4 border-green-500"
+                /> */}
+                <StatCard
+                  title="Vehicles Tracked"
+                  value={Vehicles.length}
+                  icon={<FaCar className="text-blue-500" />}
+                  color="border-l-4 border-blue-500"
+                />
+                <StatCard
+                  title="Active Categories"
+                  value={expenseCategories.length}
+                  icon={<FaFilter className="text-purple-500" />}
+                  color="border-l-4 border-purple-500"
+                />
+              </div>
+
+              {/* Enhanced Search and Filter Section */}
+              <EnhancedSearchInput />
+
+              {/* Enhanced Tabs Section */}
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex flex-wrap gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                  <EnhancedTabButton
+                    tab="All"
+                    currentTab={activeTab}
+                    onClick={() => setActiveTab("all")}
                   />
-                  {searchTerm && (
-                    <p className="text-xs text-gray-500 mt-2">
-                      Showing results for: "{searchTerm}" (
-                      {filteredExpenses.length} found)
-                    </p>
-                  )}
+                  <EnhancedTabButton
+                    tab="Vehicle"
+                    currentTab={activeTab}
+                    onClick={() => setActiveTab("vehicle")}
+                    icon="🚗"
+                  />
+                  {expenseCategories.slice(0, 3).map((cat) => (
+                    <EnhancedTabButton
+                      key={cat}
+                      tab={cat}
+                      currentTab={activeTab}
+                      onClick={() => setActiveTab(cat)}
+                      icon={categoryIcons[cat]}
+                    />
+                  ))}
+                  <EnhancedTabButton
+                    tab="More"
+                    currentTab={expenseCategories.slice(3).includes(activeTab) ? activeTab : "More"}
+                    onClick={() => setShowMoreModal(true)}
+                    icon={<FaEllipsisH />}
+                  />
                 </div>
-
-                <div className="flex overflow-x-auto border-b border-gray-200 mb-4 lg:mb-6 scrollbar-hide">
-                  <div className="flex space-x-0 min-w-max">
+              {/* Modal for More Tabs */}
+              {showMoreModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+                  <div className="bg-white rounded-xl shadow-2xl w-full max-w-xs mx-4 p-6 relative animate-fadein">
                     <button
-                      onClick={() => setActiveTab("all")}
-                      className={`px-4 lg:px-6 py-2 lg:py-3 text-sm lg:text-base font-medium border-b-2 transition-colors whitespace-nowrap ${
-                        activeTab === "all"
-                          ? "border-black text-black"
-                          : "border-transparent text-gray-600 hover:text-black"
-                      }`}
+                      className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 text-xl"
+                      onClick={() => setShowMoreModal(false)}
+                      aria-label="Close"
                     >
-                      All Expenses
+                      ×
                     </button>
-                    <button
-                      onClick={() => setActiveTab("vehicle")}
-                      className={`px-4 lg:px-6 py-2 lg:py-3 text-sm lg:text-base font-medium border-b-2 transition-colors whitespace-nowrap ${
-                        activeTab === "vehicle"
-                          ? "border-black text-black"
-                          : "border-transparent text-gray-600 hover:text-black"
-                      }`}
-                    >
-                      View by Vehicle
-                    </button>
+                    <h3 className="text-lg font-semibold mb-4 text-center text-gray-900">Select Category</h3>
+                    <div className="max-h-72 overflow-y-auto flex flex-col gap-2">
+                      {expenseCategories.slice(3).map((cat) => (
+                        <button
+                          key={cat}
+                          onClick={() => {
+                            setActiveTab(cat);
+                            setShowMoreModal(false);
+                          }}
+                          className={`flex items-center w-full text-left px-4 py-2 rounded-lg text-sm transition-colors duration-150 border border-gray-100 ${
+                            activeTab === cat
+                              ? "bg-gray-200 text-black font-semibold"
+                              : "text-gray-700 hover:bg-gray-100"
+                          }`}
+                        >
+                          {categoryIcons[cat]}
+                          <span className="ml-2">{cat}</span>
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
+              )}
+                {/* <div className="hidden md:flex items-center gap-2">
+                  <button className="flex items-center text-xs text-gray-600 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-200 shadow-sm hover:bg-gray-100">
+                    <FaSortAmountDown className="mr-1" />
+                    Sort
+                  </button>
+                  <button className="flex items-center text-xs text-gray-600 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-200 shadow-sm hover:bg-gray-100">
+                    <FaFilter className="mr-1" />
+                    Filter
+                  </button>
+                </div> */}
               </div>
 
-              {/* Stats Cards - Responsive Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-6 mb-6 lg:mb-8">
-                <div className="bg-white border border-gray-200 p-4 lg:p-6 rounded-lg shadow-sm">
-                  <div className="text-xs lg:text-sm text-gray-600">
-                    Total Expenses
-                  </div>
-                  <div className="text-lg lg:text-2xl font-bold text-red-600 mt-2">
-                    AED {totalExpence}
-                  </div>
-                </div>
-              </div>
-
+              {/* Main Content Area */}
               {activeTab === "vehicle" ? (
                 <VehicleExpenseChart />
               ) : (
-                <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
-                  {/* Desktop Table View */}
+                <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200">
+                  {/* Enhanced Desktop Table */}
                   <div className="hidden lg:block">
-                    <div className="bg-black text-white">
-                      <div className="grid grid-cols-7 gap-4 px-6 py-4 text-sm font-medium">
-                        <div>Description</div>
-                        <div>Category</div>
-                        <div>Amount</div>
-                        <div>Vehicle</div>
-                        <div>Date</div>
-                        <div>Type</div>
-                        <div>Actions</div>
+                    <div className="bg-gray-50 border-b border-gray-200">
+                      <div className="grid grid-cols-12 gap-4 px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        <div className="col-span-3">Description</div>
+                        <div className="col-span-2">Category</div>
+                        <div className="col-span-1 text-right">Amount</div>
+                        <div className="col-span-2">Vehicle</div>
+                        <div className="col-span-2">Date</div>
+                        <div className="col-span-2 text-right">Actions</div>
                       </div>
                     </div>
                     <div className="divide-y divide-gray-200">
@@ -703,52 +881,33 @@ const getCategoryColor = (category) => {
                         filteredExpenses.map((expense) => (
                           <div
                             key={expense.id}
-                            className="grid grid-cols-7 gap-4 px-6 py-4 text-sm hover:bg-gray-50 transition-colors"
+                            className="grid grid-cols-12 gap-4 px-6 py-4 text-sm hover:bg-gray-50 transition-colors"
                           >
-                            <div className="font-medium text-black truncate uppercase">
+                            <div className="col-span-3 font-medium text-gray-900 truncate">
                               {expense.description}
                             </div>
-                            <div>
-                              <span
-                                className={`text-xs px-2 py-1 rounded-full ${getCategoryColor(
-                                  expense.category
-                                )}`}
-                              >
-                                {expense.category.toUpperCase()}
-                              </span>
+                            <div className="col-span-2">
+                              <ExpenseCategoryTag category={expense.category} />
                             </div>
-                            <div className="font-medium text-red-600">
+                            <div className="col-span-1 text-right font-semibold text-red-600">
                               AED {expense.amount.toFixed(2)}
                             </div>
-                            <div className="text-gray-600 truncate uppercase">
+                            <div className="col-span-2 text-gray-600 truncate">
                               {expense["vehicleDetails.plateNumber"] || "N/A"}
                             </div>
-                            <div className="text-gray-600">
-                              {expense.date.split("T")[0]}
+                            <div className="col-span-2 text-gray-500">
+                              {new Date(expense.date).toLocaleDateString()}
                             </div>
-                            <div>
-                              <span
-                                className={`text-xs px-2 py-1 rounded-full ${
-                                  expense.type === "vehicle"
-                                    ? "bg-blue-100 text-blue-800"
-                                    : "bg-gray-100 text-gray-800"
-                                }`}
-                              >
-                                {expense[
-                                  "vehicleDetails.type"
-                                ]?.toUpperCase() || "VEHICLE"}
-                              </span>
-                            </div>
-                            <div className="flex gap-2">
+                            <div className="col-span-2 flex justify-end space-x-2">
                               <button
                                 onClick={() => handleExpencedetail(expense)}
-                                className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                                className="text-blue-600 hover:text-blue-800 text-sm font-medium px-3 py-1 rounded-lg bg-blue-50 hover:bg-blue-100"
                               >
                                 View
                               </button>
                               <button
                                 onClick={() => handleEditExpense(expense)}
-                                className="text-green-600 hover:text-green-800 text-sm font-medium"
+                                className="text-green-600 hover:text-green-800 text-sm font-medium px-3 py-1 rounded-lg bg-green-50 hover:bg-green-100"
                               >
                                 Edit
                               </button>
@@ -756,83 +915,86 @@ const getCategoryColor = (category) => {
                           </div>
                         ))
                       ) : (
-                        <div className="px-6 py-12 text-center">
-                          <div className="text-gray-400 text-4xl mb-4">🔍</div>
-                          <p className="text-gray-500 text-lg mb-2">
+                        <div className="px-6 py-12 text-center col-span-12">
+                          <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                            <FaSearch className="text-gray-400 text-3xl" />
+                          </div>
+                          <h3 className="text-lg font-medium text-gray-900 mb-1">
                             No expenses found
-                          </p>
-                          <p className="text-gray-400 text-sm">
-                            Try adjusting your search terms for "
-                            {searchTerm.toUpperCase()}"
+                          </h3>
+                          <p className="text-gray-500">
+                            Try adjusting your search or filter criteria
                           </p>
                         </div>
                       )}
                     </div>
                   </div>
 
-                  {/* Mobile Card View */}
-                  <div className="lg:hidden space-y-3 p-3">
+                  {/* Enhanced Mobile List */}
+                  <div className="lg:hidden space-y-3">
                     {filteredExpenses.length > 0 ? (
                       filteredExpenses.map((expense) => (
                         <div
                           key={expense.id}
-                          className="bg-white border border-gray-200 rounded-lg p-4"
+                          className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm"
                         >
-                          <div className="flex justify-between items-start mb-3">
+                          <div className="flex justify-between items-start mb-2">
                             <div className="flex-1 min-w-0">
-                              <h3 className="font-medium text-gray-900 truncate uppercase">
+                              <h3 className="font-medium text-gray-900 truncate">
                                 {expense.description}
                               </h3>
-                              <p className="text-sm text-gray-600 mt-1 uppercase">
-                                {expense["vehicleDetails.plateNumber"] || "N/A"}
-                              </p>
+                              <div className="mt-1">
+                                <ExpenseCategoryTag category={expense.category} />
+                              </div>
                             </div>
-                            <div className="text-right ml-3">
+                            <div className="ml-3 text-right">
                               <div className="font-bold text-red-600">
                                 AED {expense.amount.toFixed(2)}
                               </div>
-                              <div className="text-xs text-gray-500">
-                                {expense.date.split("T")[0]}
+                              <div className="text-xs text-gray-500 mt-1">
+                                {new Date(expense.date).toLocaleDateString()}
                               </div>
                             </div>
                           </div>
 
-                          <div className="flex items-center justify-between mb-3">
-                            <span
-                              className={`text-xs px-2 py-1 rounded-full ${getCategoryColor(
-                                expense.category
-                              )}`}
-                            >
-                              {expense.category.toUpperCase()}
-                            </span>
-                          </div>
-
-                          <div className="flex gap-2">
-                            <button
-                              onClick={() => handleExpencedetail(expense)}
-                              className="flex-1 text-blue-600 hover:text-blue-800 text-sm font-medium border border-blue-600 hover:border-blue-800 rounded px-3 py-1"
-                            >
-                              View Details
-                            </button>
-                            <button
-                              onClick={() => handleEditExpense(expense)}
-                              className="flex-1 text-green-600 hover:text-green-800 text-sm font-medium border border-green-600 hover:border-green-800 rounded px-3 py-1"
-                            >
-                              Edit
-                            </button>
+                          <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
+                            <div className="text-sm text-gray-600">
+                              {expense["vehicleDetails.plateNumber"] || "N/A"}
+                            </div>
+                            <div className="flex space-x-2">
+                              <button
+                                onClick={() => handleExpencedetail(expense)}
+                                className="text-sm font-medium text-blue-600 hover:text-blue-800 px-2 py-1 rounded"
+                              >
+                                Details
+                              </button>
+                              <button
+                                onClick={() => handleEditExpense(expense)}
+                                className="text-sm font-medium text-green-600 hover:text-green-800 px-2 py-1 rounded"
+                              >
+                                Edit
+                              </button>
+                            </div>
                           </div>
                         </div>
                       ))
                     ) : (
-                      <div className="text-center py-12">
-                        <div className="text-gray-400 text-4xl mb-4">🔍</div>
-                        <p className="text-gray-500 text-base mb-2">
-                          No expenses found
+                      <div className="bg-white border border-gray-200 rounded-lg p-8 text-center">
+                        <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                          <FaSearch className="text-gray-400 text-xl" />
+                        </div>
+                        <h3 className="text-md font-medium text-gray-900 mb-1">
+                          No matching expenses
+                        </h3>
+                        <p className="text-gray-500 text-sm">
+                          Adjust your search or add a new expense
                         </p>
-                        <p className="text-gray-400 text-sm">
-                          Try adjusting your search terms for "
-                          {searchTerm.toUpperCase()}"
-                        </p>
+                        <button
+                          onClick={() => setIsAddExpenseModalOpen(true)}
+                          className="mt-4 bg-black text-white px-4 py-2 text-sm rounded-lg shadow"
+                        >
+                          Add Expense
+                        </button>
                       </div>
                     )}
                   </div>
@@ -841,7 +1003,7 @@ const getCategoryColor = (category) => {
             </div>
           </div>
 
-          {/* Add Expense Modal - Enhanced Responsive */}
+          {/* Keep your modal components as they were */}
           {isAddExpenseModalOpen && (
             <AddExpenseModal
               isOpen={isAddExpenseModalOpen}
@@ -855,14 +1017,12 @@ const getCategoryColor = (category) => {
               selectedCategory={selectedCategory}
               watchExpense={watchExpense}
               gallonsToLiters={gallonsToLiters}
-              fuelStations={fuelStations} // <-- Add this prop
+              fuelStations={fuelStations}
               drivers={drivers}
             />
           )}
 
-          {/* Edit Expense Modal - Similar conditional structure */}
           {isEditExpenseModalOpen && editingExpense && (
-       
             <EditExpenseModal
               isOpen={isEditExpenseModalOpen}
               editingExpense={editingExpense}
@@ -881,10 +1041,9 @@ const getCategoryColor = (category) => {
               watchEditExpense={watchEditExpense}
               gallonsToLiters={gallonsToLiters}
               fuelStations={fuelStations}
-              drivers={drivers} // <-- Add this line
+              drivers={drivers}
             />
           )}
-         
 
           {showExpenseDetail && expencedetail && (
             <ViewExpenseDetail

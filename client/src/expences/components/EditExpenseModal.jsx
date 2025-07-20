@@ -140,8 +140,9 @@ const EditExpenseModal = ({
               </label>
               <select
                 {...registerEditExpense("driverId", {
-                  required: false, // Set to true if driver is required
+                  required: false,
                 })}
+                defaultValue={editingExpense.driverId || ""}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-black focus:outline-none text-sm"
               >
                 <option value="">Select Driver</option>
