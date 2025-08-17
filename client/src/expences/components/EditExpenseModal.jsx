@@ -393,102 +393,104 @@ const EditExpenseModal = ({
           )}
 
           {/* Maintenance-specific fields for Edit */}
-          {selectedEditCategory === "Machanic Expense" || selectedEditCategory === "Spare parts Expense"  && (
-            <>
-              <div className="sm:col-span-2 border-t border-gray-200 pt-6 mt-4">
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
-                    <span className="text-yellow-600 text-sm">🔧</span>
-                  </div>
-                  <h4 className="text-lg font-semibold text-gray-900">
-                    Maintenance Details
-                  </h4>
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-black mb-2">
-                  Shop Name *
-                </label>
-                <select
-                  {...registerEditExpense("maintenanceShop", {
-                    required:
-                      selectedEditCategory === "Maintenance"
-                        ? "Shop name is required for maintenance expenses"
-                        : false,
-                  })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-black focus:outline-none text-sm"
-                >
-                  <option value="">Select Maintenance Shop</option>
-                  {mechanics.map((mechanic) => (
-                    <option
-                      key={mechanic.id}
-                      value={mechanic.shopName}
-                      className="uppercase"
-                    >
-                      {mechanic.shopName}
-                    </option>
-                  ))}
-                </select>
-                {editExpenseErrors.maintenanceShop && (
-                  <p className="text-red-500 text-xs mt-1">
-                    {editExpenseErrors.maintenanceShop.message}
-                  </p>
-                )}
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-black mb-2">
-                  Bill Number *
-                </label>
-                <input
-                  type="text"
-                  {...registerEditExpense("maintenanceBillNo", {
-                    required:
-                      selectedEditCategory === "Maintenance"
-                        ? "Bill number is required for maintenance expenses"
-                        : false,
-                  })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-black focus:outline-none text-sm uppercase"
-                  placeholder="Enter bill/invoice number"
-                />
-                {editExpenseErrors.maintenanceBillNo && (
-                  <p className="text-red-500 text-xs mt-1">
-                    {editExpenseErrors.maintenanceBillNo.message}
-                  </p>
-                )}
-              </div>
-              <div className="sm:col-span-2">
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                  <h5 className="text-sm font-medium text-yellow-900 mb-2">
-                    🔧 Maintenance Summary
-                  </h5>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <span className="text-yellow-700">Shop Name:</span>
-                      <span className="font-medium text-yellow-900 ml-2">
-                        {watchEditExpense("maintenanceShop") || "Not selected"}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-yellow-700">Bill Number:</span>
-                      <span className="font-medium text-yellow-900 ml-2">
-                        {watchEditExpense("maintenanceBillNo") ||
-                          "Not specified"}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-yellow-700">Total Cost:</span>
-                      <span className="font-bold text-yellow-900 ml-2">
-                        AED {watchEditExpense("amount") || "0.00"}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="mt-2 text-xs text-yellow-600">
-                    🔧 Maintenance expense for vehicle repair/service
-                  </div>
-                </div>
-              </div>
-            </>
-          )}
+
+{(selectedEditCategory === "Machanic Expense" || selectedEditCategory === "Spare parts Expense") && (
+  <>
+    <div className="sm:col-span-2 border-t border-gray-200 pt-6 mt-4">
+      <div className="flex items-center gap-2 mb-4">
+        <div className="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
+          <span className="text-yellow-600 text-sm">🔧</span>
+        </div>
+        <h4 className="text-lg font-semibold text-gray-900">
+          Maintenance Details
+        </h4>
+      </div>
+    </div>
+    <div>
+      <label className="block text-sm font-medium text-black mb-2">
+        Shop Name *
+      </label>
+      <select
+        {...registerEditExpense("maintenanceShop", {
+          required:
+            selectedEditCategory === "Machanic Expense" || selectedEditCategory === "Spare parts Expense"
+              ? "Shop name is required for maintenance expenses"
+              : false,
+        })}
+        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-black focus:outline-none text-sm"
+      >
+        <option value="">Select Maintenance Shop</option>
+        {mechanics.map((mechanic) => (
+          <option
+            key={mechanic.id}
+            value={mechanic.shopName}
+            className="uppercase"
+          >
+            {mechanic.shopName}
+          </option>
+        ))}
+      </select>
+      {editExpenseErrors.maintenanceShop && (
+        <p className="text-red-500 text-xs mt-1">
+          {editExpenseErrors.maintenanceShop.message}
+        </p>
+      )}
+    </div>
+    <div>
+      <label className="block text-sm font-medium text-black mb-2">
+        Bill Number *
+      </label>
+      <input
+        type="text"
+        {...registerEditExpense("maintenanceBillNo", {
+          required:
+            selectedEditCategory === "Machanic Expense" || selectedEditCategory === "Spare parts Expense"
+              ? "Bill number is required for maintenance expenses"
+              : false,
+        })}
+        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-black focus:outline-none text-sm uppercase"
+        placeholder="Enter bill/invoice number"
+      />
+      {editExpenseErrors.maintenanceBillNo && (
+        <p className="text-red-500 text-xs mt-1">
+          {editExpenseErrors.maintenanceBillNo.message}
+        </p>
+      )}
+    </div>
+    <div className="sm:col-span-2">
+      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+        <h5 className="text-sm font-medium text-yellow-900 mb-2">
+          🔧 Maintenance Summary
+        </h5>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+          <div>
+            <span className="text-yellow-700">Shop Name:</span>
+            <span className="font-medium text-yellow-900 ml-2">
+              {watchEditExpense("maintenanceShop") || "Not selected"}
+            </span>
+          </div>
+          <div>
+            <span className="text-yellow-700">Bill Number:</span>
+            <span className="font-medium text-yellow-900 ml-2">
+              {watchEditExpense("maintenanceBillNo") ||
+                "Not specified"}
+            </span>
+          </div>
+          <div>
+            <span className="text-yellow-700">Total Cost:</span>
+            <span className="font-bold text-yellow-900 ml-2">
+              AED {watchEditExpense("amount") || "0.00"}
+            </span>
+          </div>
+        </div>
+        <div className="mt-2 text-xs text-yellow-600">
+          🔧 Maintenance expense for vehicle repair/service
+        </div>
+      </div>
+    </div>
+  </>
+)}
+// ...existing code...
 
           {/* Modal Footer */}
           <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 mt-6 pt-6 border-t border-gray-200">

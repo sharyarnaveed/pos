@@ -22,6 +22,7 @@ const Sidebar = ({ isSidebarCollapsed, setIsSidebarCollapsed }) => {
     icon: <GrHostMaintenance />,
     to: "/mechanics",
   },
+   { icon: "🧾", label: "Invoice", to: "/invoice" },
   ];
 
   const handleLogout = async () => {

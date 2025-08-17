@@ -3,7 +3,7 @@ import Sidebar from "../components/Sidebar";
 import api from "../api";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   FaGasPump,
   FaTools,
@@ -27,8 +27,11 @@ import Spinner from "../components/Spinner";
 import ViewExpenseDetail from "./components/ViewExpenseDetail";
 import AddExpenseModal from "./components/AddExpenseModal";
 import EditExpenseModal from "./components/EditExpenseModal";
+import GenerateReport from "./components/GenerateReport"; // Add this import at the top
 
 const Expence = () => {
+   const [isGenerateReportOpen, setIsGenerateReportOpen] = useState(false);
+
   const [isAddExpenseModalOpen, setIsAddExpenseModalOpen] = useState(false);
   const [isEditExpenseModalOpen, setIsEditExpenseModalOpen] = useState(false);
   const [editingExpense, setEditingExpense] = useState(null);
@@ -621,7 +624,7 @@ const Expence = () => {
 
   // Remove dropdown click-outside logic, use modal instead
 
-const StatCard = ({ title, value, icon, color }) => (
+  const StatCard = ({ title, value, icon, color }) => (
     <div className={`bg-white border border-gray-200 p-4 rounded-lg shadow-sm flex items-center ${color}`}>
       <div className="mr-4 p-3 rounded-full bg-opacity-20 bg-white">
         {icon}
@@ -685,8 +688,6 @@ const StatCard = ({ title, value, icon, color }) => (
       {tab}
     </button>
   );
-
-  // ... (keep all your existing functions like getCategoryColor, categoryIcons, etc.)
 
   return (
     <>
@@ -813,40 +814,48 @@ const StatCard = ({ title, value, icon, color }) => (
                     icon={<FaEllipsisH />}
                   />
                 </div>
-              {/* Modal for More Tabs */}
-              {showMoreModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-                  <div className="bg-white rounded-xl shadow-2xl w-full max-w-xs mx-4 p-6 relative animate-fadein">
-                    <button
-                      className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 text-xl"
-                      onClick={() => setShowMoreModal(false)}
-                      aria-label="Close"
-                    >
-                      ×
-                    </button>
-                    <h3 className="text-lg font-semibold mb-4 text-center text-gray-900">Select Category</h3>
-                    <div className="max-h-72 overflow-y-auto flex flex-col gap-2">
-                      {expenseCategories.slice(3).map((cat) => (
-                        <button
-                          key={cat}
-                          onClick={() => {
-                            setActiveTab(cat);
-                            setShowMoreModal(false);
-                          }}
-                          className={`flex items-center w-full text-left px-4 py-2 rounded-lg text-sm transition-colors duration-150 border border-gray-100 ${
-                            activeTab === cat
-                              ? "bg-gray-200 text-black font-semibold"
-                              : "text-gray-700 hover:bg-gray-100"
-                          }`}
-                        >
-                          {categoryIcons[cat]}
-                          <span className="ml-2">{cat}</span>
-                        </button>
-                      ))}
+                {/* Add Generate Report Button here */}
+                <Link
+                  onClick={() => navigate("/generateexpencereprot")}
+                  className="flex items-center text-xs text-white bg-blue-600 px-3 py-1.5 rounded-lg border border-blue-700 shadow-sm hover:bg-blue-700 ml-2"
+                >
+                  <span className="mr-1">📄</span>
+                  Generate Report
+                </Link>
+                {/* Modal for More Tabs */}
+                {showMoreModal && (
+                  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-xs mx-4 p-6 relative animate-fadein">
+                      <button
+                        className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 text-xl"
+                        onClick={() => setShowMoreModal(false)}
+                        aria-label="Close"
+                      >
+                        ×
+                      </button>
+                      <h3 className="text-lg font-semibold mb-4 text-center text-gray-900">Select Category</h3>
+                      <div className="max-h-72 overflow-y-auto flex flex-col gap-2">
+                        {expenseCategories.slice(3).map((cat) => (
+                          <button
+                            key={cat}
+                            onClick={() => {
+                              setActiveTab(cat);
+                              setShowMoreModal(false);
+                            }}
+                            className={`flex items-center w-full text-left px-4 py-2 rounded-lg text-sm transition-colors duration-150 border border-gray-100 ${
+                              activeTab === cat
+                                ? "bg-gray-200 text-black font-semibold"
+                                : "text-gray-700 hover:bg-gray-100"
+                            }`}
+                          >
+                            {categoryIcons[cat]}
+                            <span className="ml-2">{cat}</span>
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
+                )}
                 {/* <div className="hidden md:flex items-center gap-2">
                   <button className="flex items-center text-xs text-gray-600 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-200 shadow-sm hover:bg-gray-100">
                     <FaSortAmountDown className="mr-1" />
@@ -1051,6 +1060,22 @@ const StatCard = ({ title, value, icon, color }) => (
               onClose={() => setShowExpenseDetail(false)}
               onEdit={handleEditExpense}
             />
+          )}
+
+          {/* Generate Report Modal */}
+          {isGenerateReportOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+              <div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl mx-4 p-6 relative">
+                <button
+                  className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 text-xl"
+                  onClick={() => setIsGenerateReportOpen(false)}
+                  aria-label="Close"
+                >
+                  ×
+                </button>
+                <GenerateReport />
+              </div>
+            </div>
           )}
         </div>
       )}

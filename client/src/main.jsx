@@ -5,6 +5,7 @@ import "./index.css";
 import App from "./App.jsx";
 import { Toaster } from "react-hot-toast";
 import MechanicManagement from "./maintainance/MechanicManagement.jsx";
+import GenerateReport from "./expences/components/GenerateReport.jsx";
 
 // Lazy load components
 const Signin = lazy(() => import("./Auth/Signin.jsx"));
@@ -20,7 +21,7 @@ const GenerateVatInvoice = lazy(() => import("./generatestuff/GenerateVatInvoice
 const OverviewInvoice = lazy(() => import("./generatestuff/OverviewInvoice.jsx"));
 const DriverReport = lazy(() => import("./generatestuff/DriverReport.jsx"));
 const PaymentInvoice = lazy(() => import("./generatestuff/PaymentInvoice.jsx"));
-
+const Invoice=lazy(()=>import("./invoice/Invoice.jsx"))
 const router = createBrowserRouter([
   {
     path: "/",
@@ -133,6 +134,14 @@ const router = createBrowserRouter([
       {
         path:"/mechanics",
         element:<MechanicManagement/>
+      },
+         {
+        path:"/generateexpencereprot",
+        element:<GenerateReport/>
+      },
+        {
+        path:"/invoice",
+        element:<Invoice/>
       }
     ],
   },

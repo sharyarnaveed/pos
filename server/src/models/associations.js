@@ -1,6 +1,7 @@
 const Customer = require("./Customer.model.js");
 const Driver = require("./Driver.model.js");
 const Expences  = require("./expences.model.js");
+const Invoice = require("./invoice.model.js");
 const Order = require("./order.model.js");
 const Vehicle = require("./Vehicle.model.js");
 
@@ -27,4 +28,7 @@ Vehicle.hasMany(Expences, {
 Driver.hasMany(Expences,{ foreignKey: 'driverId', as: 'expenses' })
 Expences.belongsTo(Driver, { foreignKey: 'driverId', as: 'driverdetails' });
 
-module.exports = { Order, Vehicle, Expences };
+Invoice.belongsTo(Order, { foreignKey: 'orderid', as: 'order' });
+Order.hasMany(Invoice, { foreignKey: 'orderid', as: 'invoices' })
+
+module.exports = { Order, Vehicle, Expences, Customer, Driver, Invoice };

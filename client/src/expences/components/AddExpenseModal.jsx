@@ -137,7 +137,7 @@ const AddExpenseModal = ({
                 placeholder="Additional notes or remarks"
               />
             </div>
-            {selectedCategory === "Machanic Expense" || selectedCategory === "Spare parts Expense" && (
+            {(selectedCategory === "Machanic Expense" || selectedCategory === "Spare parts Expense") && (
               <>
                 <div className="sm:col-span-2 border-t border-gray-200 pt-6 mt-4">
                   <div className="flex items-center gap-2 mb-4">

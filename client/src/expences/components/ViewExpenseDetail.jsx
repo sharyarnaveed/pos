@@ -267,7 +267,7 @@ const ViewExpenseDetail = ({ expense, onClose, onEdit }) => {
           )}
 
           {/* Maintenance Details */}
-          {expense.category === "Maintenance" && (
+          {(expense.category === "Machanic Expense"||expense.category==="Machanic Expense") && (
             <div className="mt-6">
               <div className="border-t border-gray-200 pt-6">
                 <div className="flex items-center gap-2 mb-4">

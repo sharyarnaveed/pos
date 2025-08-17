@@ -22,7 +22,7 @@ const {
   updateFuelStation,
   deleteFuelStation,
 } = require("../controller/fuel.controller");
-
+const { saveinvoice, getInvoices } = require("../controller/invoice.controller");
 
 
 
@@ -67,5 +67,7 @@ router.route("/viewfuelstation").get(requireAuth, viewFuelStations);
 router.route("/updatefuelstation/:id").put(requireAuth, updateFuelStation);
 router.route("/deletefuelstation/:id").delete(requireAuth, deleteFuelStation);
 
+router.route("/saveinvoice").post(requireAuth, saveinvoice);
+router.route("/viewinvoices").get(requireAuth, getInvoices);
 
 module.exports=router
